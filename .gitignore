@@ -11,3 +11,4 @@ quiz_key.tex
 quiz.py
 exam_build.py
 *.xlsx
+!docs/*.xlsx

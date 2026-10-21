@@ -18,6 +18,14 @@ The course was built from an earlier *Mobile LiDAR Basics* seminar, a four-modul
 
 Both are revision R0 (October 2026), compressed for download.
 
+## Download the exercise files
+
+| File | Description | |
+|------|-------------|---|
+| 📊 [**Worked-examples workbook**](docs/LiDAR_Worked_Examples.xlsx) (Excel, 23 sheets) | Every worked example from the book, rebuilt with live formulas, one sheet per module, plus a Monte Carlo sheet and the capstone dataset | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/LiDAR_Worked_Examples.xlsx) |
+| 📍 [**Sample checkpoints**](figs/sample_checkpoints.csv) (CSV, 30 points) | Checkpoint survey vs. LiDAR elevations with dE, dN and dZ, for the capstone accuracy test | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/figs/sample_checkpoints.csv) |
+| 🚗 [**Sample trajectory**](figs/sample_trajectory.csv) (CSV, 2 km) | Vehicle trajectory with position, heading, standard deviations and GNSS status, including a GNSS outage | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/figs/sample_trajectory.csv) |
+
 ## Modules
 
 | # | Module | Source |
@@ -50,7 +58,7 @@ Back matter ([`ch16_back.tex`](ch16_back.tex)) includes answers to the in-text e
 
 | Path | Contents |
 |------|----------|
-| [`docs/`](docs/) | Course text and seminar slides as PDFs (see [Read the course](#read-the-course)) |
+| [`docs/`](docs/) | Course text and seminar slides (PDF) and the worked-examples workbook (see [Read the course](#read-the-course) and [Download the exercise files](#download-the-exercise-files)) |
 | [`main.tex`](main.tex) | Master document. Build this to produce the course text. |
 | `ch*.tex` | Module chapters (linked in the table above) |
 | [`ins_asprs.tex`](ins_asprs.tex), [`ins_pen.tex`](ins_pen.tex), [`ins_rhr.tex`](ins_rhr.tex), [`ins_traj.tex`](ins_traj.tex) | Inserts used within the chapters |
@@ -80,7 +88,7 @@ python3 figs1.py
 
 (Repeat for `figs2.py` … `figs9.py`.)
 
-**Worked-examples workbook**: requires `openpyxl`. Writes `xl/LiDAR_Worked_Examples.xlsx`.
+**Worked-examples workbook**: a ready-made copy is in [`docs/`](docs/LiDAR_Worked_Examples.xlsx). To rebuild it, install `openpyxl`; the script writes `xl/LiDAR_Worked_Examples.xlsx`.
 
 ```bash
 cd xl && python3 build.py
