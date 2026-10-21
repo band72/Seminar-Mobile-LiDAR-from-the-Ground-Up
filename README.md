@@ -11,43 +11,48 @@ The course was built from an earlier *Mobile LiDAR Basics* seminar, a four-modul
 
 ## Modules
 
-| # | Module |
-|---|--------|
-| 1 | What Is LiDAR? |
-| 2 | The Math Toolkit |
-| 3 | Measuring Distance with Light |
-| 4 | The Laser Beam and the Echo |
-| 5 | From Angles and Distance to X, Y, Z |
-| 6 | Rotation, Pose and Frames |
-| 7 | The IMU: Feeling Motion |
-| 8 | Timing, GNSS and Motion Compensation |
-| 9 | Lever Arm and Boresight Calibration |
-| 10 | SLAM: Mapping While Finding Yourself |
-| 11 | Scan Matching: Fitting Clouds Together |
-| 12 | Factor Graphs and LIO-SAM |
-| 13 | Control, Error Budgets and Accuracy Standards (incl. ASPRS Edition 2) |
-| 14 | Error Propagation and Error Budgets |
-| 15 | Ouster OS0 Case Study: Errors and Resolution |
-| 16 | Choosing an IMU: AHRS, GNSS/INS and Tactical GNSS/INS |
-| 17 | Survey-Grade Case Study: RIEGL VUX-240 |
-| 18 | Processing, QA/QC and Deliverables |
-| 19 | Florida Standards of Practice, FDOT and the New Datums |
-| 20 | Professional Practice for LiDAR Surveys |
-| 21 | Capstone and Sample Project Dataset |
+| # | Module | Source |
+|---|--------|--------|
+| 1 | [What Is LiDAR?](ch01_intro.tex) | [`ch01_intro.tex`](ch01_intro.tex) |
+| 2 | [The Math Toolkit](ch02_math.tex) | [`ch02_math.tex`](ch02_math.tex) |
+| 3 | [Measuring Distance with Light](ch03_tof.tex) | [`ch03_tof.tex`](ch03_tof.tex) |
+| 4 | [The Laser Beam and the Echo](ch04_beam.tex) | [`ch04_beam.tex`](ch04_beam.tex) |
+| 5 | [From Angles and Distance to X, Y, Z](ch05_polar.tex) | [`ch05_polar.tex`](ch05_polar.tex) |
+| 6 | [Rotation, Pose and Frames](ch06_rotation.tex) | [`ch06_rotation.tex`](ch06_rotation.tex) |
+| 7 | [The IMU: Feeling Motion](ch07_imu.tex) | [`ch07_imu.tex`](ch07_imu.tex) |
+| 8 | [Timing, GNSS and Motion Compensation](ch08_timing.tex) | [`ch08_timing.tex`](ch08_timing.tex) |
+| 9 | [Lever Arm and Boresight Calibration](ch09_calib.tex) | [`ch09_calib.tex`](ch09_calib.tex) |
+| 10 | [SLAM: Mapping While Finding Yourself](ch10_slam.tex) | [`ch10_slam.tex`](ch10_slam.tex) |
+| 11 | [Scan Matching: Fitting Clouds Together](ch11_scanmatch.tex) | [`ch11_scanmatch.tex`](ch11_scanmatch.tex) |
+| 12 | [Factor Graphs and LIO-SAM](ch12_factor.tex) | [`ch12_factor.tex`](ch12_factor.tex) |
+| 13 | [Control, Error Budgets and Accuracy Standards (incl. ASPRS Edition 2)](ch13_accuracy.tex) | [`ch13_accuracy.tex`](ch13_accuracy.tex) |
+| 14 | [Error Propagation and Error Budgets](ch13b_errprop.tex) | [`ch13b_errprop.tex`](ch13b_errprop.tex) |
+| 15 | [Ouster OS0 Case Study: Errors and Resolution](ch13c_os0.tex) | [`ch13c_os0.tex`](ch13c_os0.tex) |
+| 16 | [Choosing an IMU: AHRS, GNSS/INS and Tactical GNSS/INS](ch13d_gx5.tex) | [`ch13d_gx5.tex`](ch13d_gx5.tex) |
+| 17 | [Survey-Grade Case Study: RIEGL VUX-240](ch13e_riegl.tex) | [`ch13e_riegl.tex`](ch13e_riegl.tex) |
+| 18 | [Processing, QA/QC and Deliverables](ch14_processing.tex) | [`ch14_processing.tex`](ch14_processing.tex) |
+| 19 | [Florida Standards of Practice, FDOT and the New Datums](ch14b_florida.tex) | [`ch14b_florida.tex`](ch14b_florida.tex) |
+| 20 | [Professional Practice for LiDAR Surveys](ch14c_practice.tex) | [`ch14c_practice.tex`](ch14c_practice.tex) |
+| 21 | [Capstone and Sample Project Dataset](ch15_capstone.tex) | [`ch15_capstone.tex`](ch15_capstone.tex) |
 
-Back matter includes answers to the in-text exercises, hands-on labs, a sample SOP and client accuracy agreement, an equation summary, a glossary and references.
+Back matter ([`ch16_back.tex`](ch16_back.tex)) includes answers to the in-text exercises, [hands-on labs](ch16b_labs.tex), a [sample SOP and client accuracy agreement](ch16c_sop.tex), an equation summary, a glossary and references. The front matter and "How to Use This Course" are in [`ch00_front.tex`](ch00_front.tex).
 
 ## Repository layout
 
 | Path | Contents |
 |------|----------|
-| `main.tex` | Master document. Build this to produce the course text. |
-| `ch*.tex`, `ins_*.tex` | Module chapters and inserts |
-| `figs/` | Figures, plus the sample project dataset (`sample_trajectory.csv`, `sample_checkpoints.csv`) |
-| `figs*.py`, `style.py`, `crop.py` | Scripts that generate the figures |
-| `calc*.py` | Scripts behind the worked examples' numbers |
-| `xl/` | Builds the companion Excel workbook of worked examples |
-| `review/` | Independent recomputation of key printed values, with its log |
+| [`main.tex`](main.tex) | Master document. Build this to produce the course text. |
+| `ch*.tex` | Module chapters (linked in the table above) |
+| [`ins_asprs.tex`](ins_asprs.tex), [`ins_pen.tex`](ins_pen.tex), [`ins_rhr.tex`](ins_rhr.tex), [`ins_traj.tex`](ins_traj.tex) | Inserts used within the chapters |
+| [`quiz_items.tex`](quiz_items.tex), [`sample_table.tex`](sample_table.tex) | Quiz questions (no answers) and the sample results table |
+| [`figs/`](figs/) | Figures |
+| [`figs/sample_trajectory.csv`](figs/sample_trajectory.csv), [`figs/sample_checkpoints.csv`](figs/sample_checkpoints.csv), [`figs/sample_stats.json`](figs/sample_stats.json) | Sample project dataset used in the capstone |
+| [`style.py`](style.py), `figs1.py` … `figs9.py`, [`crop.py`](crop.py) | Scripts that generate the figures |
+| [`calc.py`](calc.py), [`calc2.py`](calc2.py), [`calc3.py`](calc3.py), [`calc_ep.py`](calc_ep.py), [`calc_ep2.py`](calc_ep2.py), [`calc_riegl.py`](calc_riegl.py), [`calc_trav.py`](calc_trav.py) | Scripts behind the worked examples' numbers |
+| [`usfix.py`](usfix.py) | Converts British spellings to US spellings in the chapter files |
+| [`xl/`](xl/) | Builds the companion Excel workbook of worked examples ([`xl/build.py`](xl/build.py)) |
+| [`review/`](review/) | [`tech_review.py`](review/tech_review.py) recomputes key printed values; results in [`Technical_Review_Log.txt`](review/Technical_Review_Log.txt) |
+| [`LICENSE`](LICENSE) | MIT license |
 
 ## Building
 
