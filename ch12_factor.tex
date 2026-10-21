@@ -1,0 +1,170 @@
+\chapter{Factor Graphs and LIO-SAM}
+
+\section{From a filter to a graph}
+\begin{kid}
+Imagine a row of people connected by rubber bands. Each rubber band says ``you two should be this far apart.'' One person is also tied to a post that says ``you belong here.'' If one band pulls a little wrong, everyone wiggles until the pulling is shared out as fairly as possible. A \textbf{factor graph} is that picture: the people are the car's positions over time, and the rubber bands are measurements.
+\end{kid}
+
+\fig[0.95]{factorgraph}{A factor graph: circles are unknown states (poses); small squares are measurements (factors) that tie them together.}
+
+\begin{eng}
+A filter (EKF) processes data once and forgets the past. A \textbf{smoother} keeps the whole trajectory as unknowns and re-solves when new information arrives --- so a loop closure at minute 20 can correct the pose at minute 3. The data structure is a \textbf{factor graph}: \emph{variable nodes} $\vect x_i$ (poses, velocities, IMU biases) and \emph{factor nodes}, each encoding one measurement as a probability that depends on a few variables. Assuming Gaussian noise, finding the most probable trajectory (maximum a posteriori, MAP) is exactly a non-linear weighted least-squares problem --- the same mathematics as a survey network adjustment.
+\end{eng}
+
+\begin{keyeq}{MAP estimation becomes least squares}
+\[ \vect X^*=\arg\max_{\vect X}\prod_k\phi_k(\vect X_k)=\arg\min_{\vect X}\sum_k\big\|\vect h_k(\vect X_k)-\vect z_k\big\|^2_{\boldsymbol\Sigma_k} \]
+\begin{symbols}
+$\vect X$ & all unknowns together (every pose, velocity, bias) & ---\\
+$\vect X^*$ & the best (most probable) solution & ---\\
+$\phi_k$ & factor $k$: a Gaussian probability $\propto\exp(-\tfrac12\|\cdot\|^2_{\Sigma})$ & ---\\
+$\vect X_k$ & only the few variables factor $k$ touches & ---\\
+$\vect h_k$ & measurement model: what factor $k$ \emph{should} measure given $\vect X_k$ & ---\\
+$\vect z_k$ & what it actually measured & ---\\
+$\|\vect e\|^2_{\boldsymbol\Sigma}=\vect e^{\mathsf T}\boldsymbol\Sigma^{-1}\vect e$ & squared Mahalanobis distance: residuals divided by their uncertainty (weights $=\boldsymbol\Sigma^{-1}$) & ---\\
+\end{symbols}
+Taking $-\log$ of a product of Gaussians turns ``maximize the product'' into ``minimize the sum of squares.''
+\end{keyeq}
+
+\section{A factor graph you can solve by hand}
+\fig[0.95]{fg1d}{Four positions along a straight road, three odometry factors, one GPS factor and a prior.}
+
+\begin{worked}{1-D pose graph with a GPS misclosure}
+\textbf{Given:} $x_0=0$ (fixed prior). LiDAR odometry: $x_1-x_0=1.0$, $x_2-x_1=1.1$, $x_3-x_2=0.9$ m. GPS: $x_3=3.2$ m. All four measurements have the same $\sigma=0.10$ m (equal weights).
+\step{Step 1 --- write the residual equations $\vect A\vect x=\vect b$}
+\[ \begin{pmatrix}1&0&0\\-1&1&0\\0&-1&1\\0&0&1\end{pmatrix}\begin{pmatrix}x_1\\x_2\\x_3\end{pmatrix}=\begin{pmatrix}1.0\\1.1\\0.9\\3.2\end{pmatrix} \]
+\step{Step 2 --- normal equations $\vect A^{\mathsf T}\vect A\,\vect x=\vect A^{\mathsf T}\vect b$}
+\[ \begin{pmatrix}2&-1&0\\-1&2&-1\\0&-1&2\end{pmatrix}\vect x=\begin{pmatrix}1.0-1.1\\1.1-0.9\\0.9+3.2\end{pmatrix}=\begin{pmatrix}-0.1\\0.2\\4.1\end{pmatrix} \]
+\step{Step 3 --- solve} From row 1: $x_2=2x_1+0.1$. Row 2: $-x_1+2(2x_1+0.1)-x_3=0.2\Rightarrow x_3=3x_1$. Row 3: $-(2x_1+0.1)+6x_1=4.1\Rightarrow x_1=1.05$. Then $x_2=2.20$, $x_3=3.15$.
+\step{Step 4 --- residuals} odometry: $1.05-1.0=+0.05$, $1.15-1.1=+0.05$, $0.95-0.9=+0.05$; GPS: $3.15-3.2=-0.05$
+\result{$x_1=1.05$, $x_2=2.20$, $x_3=3.15$ m. The 0.20 m misclosure is shared equally by the four equally weighted measurements --- the compass/least-squares adjustment of a traverse, done by a factor graph.}
+\end{worked}
+
+\begin{eng}
+Notice $\vect A^{\mathsf T}\vect A$ is \emph{sparse} (mostly zeros): each pose only links to its neighbors. Real graphs have tens of thousands of nodes (LIO-SAM's Amsterdam run: 23\,304 nodes, 49\,617 factors) but stay sparse, so they solve quickly. \textbf{iSAM2} (incremental smoothing and mapping with the Bayes tree) goes further: when a new node arrives it re-solves only the part of the graph that changed, which is how LIO-SAM runs in real time. GTSAM is the open-source library implementing it.
+\end{eng}
+
+\section{LIO-SAM, piece by piece}
+LIO-SAM (Shan, Englot, Meyers, Wang, Ratti \& Rus, IROS 2020) is a \emph{tightly-coupled} lidar--inertial odometry and mapping system built on a factor graph. ``Tightly coupled'' means the IMU and LiDAR are optimized \emph{together} (the IMU biases are estimated from the LiDAR results), rather than the IMU merely supplying a guess.
+
+\begin{keyeq}{The LIO-SAM state (paper eq.\ 1)}
+\[ \vect x=\big[\vect R^{\mathsf T},\ \vect p^{\mathsf T},\ \vect v^{\mathsf T},\ \vect b^{\mathsf T}\big]^{\mathsf T},\qquad \vect T=[\vect R\mid\vect p]\in SE(3) \]
+\begin{symbols}
+$\vect R\in SO(3)$ & attitude (body to world) & ---\\
+$\vect p\in\mathbb R^3$ & position & m\\
+$\vect v$ & velocity & m/s\\
+$\vect b$ & IMU biases (gyro and accelerometer) & rad/s, m/s$^2$\\
+$\vect T$ & pose as a rigid transform (Module 6) & ---\\
+\end{symbols}
+\end{keyeq}
+
+\subsection{The four factors}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{2.6cm}XX}\toprule
+Factor & What it measures & Surveying analog\\\midrule
+\color{orange}IMU preintegration & relative motion $\Delta\vect v_{ij},\Delta\vect p_{ij},\Delta\vect R_{ij}$ between consecutive states (Module 7) & a measured distance and angle between traverse stations\\
+\color{teal}LiDAR odometry & relative transform $\Delta\vect T_{i,i+1}=\vect T_i^{-1}\vect T_{i+1}$ from scan-to-map matching (Module 11) & a second, independent set of traverse observations\\
+\color{gold}GPS & absolute position of a state (converted to local Cartesian) & tying a station to a control point\\
+\color{purple}Loop closure & relative transform between a new state and an old nearby one & closing the traverse on itself\\\bottomrule
+\end{tabularx}\end{center}
+
+\subsection{Keyframes and the sliding window}
+\fig[0.95]{keyframes}{Only keyframes enter the graph; a new keyframe is matched to a local map of the last $n$ sub-keyframes.}
+
+\begin{eng}
+Adding every LiDAR frame (10 per second) would make the graph enormous. LIO-SAM adds a new state $\vect x_{i+1}$ (a \textbf{keyframe}) only when the pose changes by more than \textbf{1 m} or \textbf{10°}; frames in between are discarded. To create a LiDAR odometry factor:
+\begin{enumerate}
+\item extract edge and planar features from the new de-skewed scan (roughness, Module 11);
+\item transform the last $n=25$ keyframes (``sub-keyframes'') into the world frame and merge them into a local voxel map $\vect M_i=\{\vect M^e_i,\vect M^p_i\}$, down-sampled at 0.2 m (edges) and 0.4 m (planes);
+\item using the IMU-predicted pose $\tilde{\vect T}_{i+1}$ as the starting guess, find edge/plane correspondences and minimize $\sum d_e+\sum d_p$ by Gauss--Newton;
+\item the relative transform to the previous state becomes the factor.
+\end{enumerate}
+Matching to a small local map, rather than a global one as in LOAM, is the main reason LIO-SAM is fast.
+\end{eng}
+
+\subsection{GPS and loop-closure factors}
+\begin{eng}
+\textbf{GPS factor.} GPS is converted to a local Cartesian frame; if not hardware-synchronized it is linearly interpolated to the keyframe time. Because lidar--inertial drift grows slowly, a GPS factor is added only when the estimated position covariance is \emph{larger} than the GPS covariance --- a sensible ``only use control when you need it'' rule.
+
+\textbf{Loop-closure factor.} When a new state is added, LIO-SAM searches for earlier states within \textbf{15 m}. For a candidate $\vect x_3$, the new keyframe is matched to the $2m+1$ keyframes around it ($m=12$), giving $\Delta\vect T_{3,i+1}$ as a factor. The authors note loop closures are especially valuable for correcting \emph{altitude}, where GPS was poor (errors approaching 100 m without loops in their tests).
+\end{eng}
+
+\subsection{What it achieved}
+\begin{center}\small
+\begin{tabular}{lrrrrr}\toprule
+\multicolumn{6}{c}{\textbf{End-to-end translation error (m; LIO-SAM in ft in parentheses) --- LIO-SAM paper, Table II}}\\\midrule
+Dataset & LOAM & LIOM & LIO-odom & LIO-GPS & LIO-SAM\\\midrule
+Campus (1.4 km / 0.9 mi) & 192.43 & fail & 9.44 & 6.87 & \textbf{0.12} (0.39 ft)\\
+Park (2.9 km / 1.8 mi) & 121.74 & 34.60 & 36.36 & 2.93 & \textbf{0.04} (0.13 ft)\\
+Amsterdam (19 km / 11.8 mi) & fail & fail & fail & 1.21 & \textbf{0.17} (0.56 ft)\\\bottomrule
+\end{tabular}\end{center}
+\textit{LIO-odom} uses only IMU + LiDAR factors; \textit{LIO-GPS} adds GPS; full \textit{LIO-SAM} adds loop closures. Each extra factor type removes another layer of drift. LIO-SAM processed scans in 42--101 ms and ran up to 13$\times$ faster than real time.
+
+\begin{improve}
+These are research-grade results judged against the start/end point or GPS, on a robot, not survey-grade checkpoint accuracy. A 4--17 cm loop misclosure over kilometers is excellent odometry, but a deliverable still needs calibration, control and \emph{independent checkpoints} (Module 13) before any accuracy can be stated. Also, the paper's eq.\ (12) writes $\Delta\vect T=\vect T_i^{\mathsf T}\vect T_{i+1}$; the correct general form is $\vect T_i^{-1}\vect T_{i+1}$.
+\end{improve}
+
+\begin{tip}
+You do not need to write an optimizer, but you should be able to answer: Which factors were active in this dataset? Where were the loop closures? Where was GNSS used? Where did the corridor degrade LiDAR odometry? Good processing software lets you view the trajectory colored by its estimated standard deviation --- inspect it before trusting any part of the cloud.
+\end{tip}
+
+\section{Building the trajectory: poses, scans, IMU, GNSS and images}
+\begin{kid}
+Think of a trip recorded as a flip-book. Each page is a \textbf{pose}: where the car was and which way it was pointing at one instant. The IMU writes a new page hundreds of times a second, so the flip-book is smooth --- but it slowly drifts. The LiDAR compares each new scan with the last ones and corrects the drift, like recognizing the same buildings. GNSS now and then says ``this page is exactly here on Earth.'' The camera takes pictures along the way, and each picture is glued to the page for the moment it was taken. Flip through all the pages and you have the \textbf{trajectory}: the path, with direction, at every instant.
+\end{kid}
+
+\subsection*{The words}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{3.0cm}X}\toprule
+Pose & position ($X,Y,Z$) \emph{and} orientation (roll, pitch, yaw) at one instant (Module 6)\\
+Trajectory & the continuous sequence of poses over time --- the ``path with direction'' (often delivered as a time-stamped file, e.g.\ an SBET or a pose table)\\
+Keyframe pose & a pose that is a node in the factor graph (LIO-SAM: every 1 m or 10°)\\
+Interpolated pose & a pose computed \emph{between} keyframes for any time you need: each laser pulse, each image\\
+Image pose & the camera's pose at exposure time (photogrammetrists call it exterior orientation): trajectory pose + camera lever arm and boresight\\\bottomrule
+\end{tabularx}\end{center}
+
+\fig[1.0]{traj_timeline}{One second of data. The IMU ticks 200 times, the LiDAR completes 10 sweeps, GNSS gives 5 fixes and the camera takes 2 images. The trajectory (top row) is the common thread that gives every one of them a pose.}
+
+\subsection*{What each sensor contributes}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{2.0cm}>{\raggedright\arraybackslash}p{1.4cm}XX}\toprule
+Sensor & Rate & Contributes to the trajectory & Cannot do\\\midrule
+\color{teal}IMU & 100--1000 Hz & smooth, high-rate motion between everything else; roll and pitch from gravity; de-skews every LiDAR sweep; bridges gaps (preintegration factors) & stay accurate on its own for more than seconds; give absolute position\\
+\color{orange}LiDAR scans & 10--20 Hz & relative motion from scan matching (odometry factors); heading and drift control wherever there is geometry; loop closures when places are revisited; the map itself & work in featureless places (corridors, open fields); give absolute coordinates\\
+\color{gold}GNSS & 1--20 Hz & absolute position in the datum (GNSS factors); stops long-term drift; RTK makes it centimeter-level; dual antenna adds heading & work in tunnels, under canopy, indoors; supply attitude at high rate\\
+\color{purple}Camera images & 1--10 Hz & in LIO-SAM: nothing --- images \emph{receive} poses. (Visual--inertial systems also use image features as extra odometry.) & ---\\
+\textbf{Control} & a few points & ties the whole trajectory to surveyed coordinates; checkpoints prove it & ---\\\bottomrule
+\end{tabularx}\end{center}
+
+\fig[0.98]{traj_map}{The path as built: blue trajectory with pose axes, orange LiDAR scan coverage used for matching, gold GNSS fixes (absent in the tunnel), and purple camera images, each placed with its own interpolated pose.}
+
+\fig[0.9]{traj_share}{Conceptually, the factor graph leans on whichever sensors have information at each moment: LiDAR and IMU carry the tunnel; GNSS and IMU carry the featureless field.}
+
+\begin{worked}{giving a camera image its pose}
+\textbf{Given:} trajectory poses at $t_1=10.00$ s: $E=100.00$, $N=200.00$ m, heading $30.0^\circ$; at $t_2=10.10$ s: $E=101.50$, $N=200.10$ m, heading $31.0^\circ$. A photo is exposed at $t=10.04$ s.
+\step{Step 1 --- fraction of the way} $f=(10.04-10.00)/(10.10-10.00)=0.4$
+\step{Step 2 --- position} $E=100.00+0.4(1.50)=100.60$ m;\ $N=200.00+0.4(0.10)=200.04$ m
+\step{Step 3 --- heading} $30.0+0.4(1.0)=30.4^\circ$ (real software interpolates the full rotation, e.g.\ quaternion ``slerp'')
+\step{Step 4 --- camera offset} apply the camera's lever arm and boresight (Module 9) to move from the IMU to the lens
+\result{the image pose is $(100.60,\ 200.04)$, heading $30.4^\circ$. The same interpolation gives every one of the millions of laser pulses its pose.}
+\end{worked}
+
+\begin{worked}{why the camera needs calibration and timing too}
+\step{Boresight error $0.1^\circ$, point 20 m away} $20\times0.001745=0.035$ m --- colors land 3.5 cm off their points
+\step{Timing error 5 ms at 10 m/s} $10\times0.005=0.05$ m --- colors smear 5 cm along the road
+\result{colorized point clouds and photo-measured features inherit every trajectory error \emph{plus} the camera's own calibration and timing errors. Calibrate and synchronize the camera like the LiDAR (Modules 8--9).}
+\end{worked}
+
+\begin{tip}
+\textbf{Deliver and archive the trajectory.} Keep the final trajectory (time, position, attitude and their standard deviations), the image exterior orientations, the calibration file and the processing log with the project. When a client later asks ``where did this point come from?'', the trajectory is the answer --- and it is the first thing a reviewer will inspect for drift, gaps and GNSS outages.
+\end{tip}
+
+\begin{tryit}
+\textbf{12.1} Repeat the 1-D example with GPS saying $x_3=3.0$. What happens and why?\\
+\textbf{12.2} Repeat with GPS $x_3=3.2$ but GPS $\sigma=0.05$ m (weight 4$\times$ the others). Solve the weighted normal equations.\\
+\textbf{12.3} (Simple) In the rubber-band picture, what happens if one band is much stiffer than the rest?
+\end{tryit}
+
+\sources{Shan \emph{et al.}\ (2020), LIO-SAM (Tables I--IV, keyframe and loop-closure parameters); Kaess, M.\ \emph{et al.}\ (2012), iSAM2, \emph{Int.\ J.\ Robotics Research} 31(2); Dellaert \& Kaess (2017), Factor graphs for robot perception.}

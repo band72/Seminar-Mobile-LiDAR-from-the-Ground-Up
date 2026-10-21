@@ -1,0 +1,115 @@
+\chapter{Lever Arm and Boresight Calibration}
+
+\section{Two boxes on one plate}
+\begin{kid}
+Put a toy camera on your shoulder and close your eyes. A friend asks, ``Where is the camera?'' You know where \emph{you} are, but the camera is a little to the side and a little higher --- and it might be turned slightly. If you forget that, you will point to the wrong place. The car's ``body'' (the IMU) and its laser ``eye'' are in different spots too. The \textbf{lever arm} is how far apart they are. The \textbf{boresight} is how much one is twisted compared to the other.
+\end{kid}
+
+\fig[0.78]{leverarm}{The lever arm is the vector from the IMU origin to the LiDAR origin.}
+
+\begin{eng}
+The trajectory solution describes the motion of the IMU (body frame B). The LiDAR measures in its own frame S. Two fixed calibration quantities connect them:
+\begin{itemize}
+\item \textbf{Lever arm} $\vect l^{B}=(d_x,d_y,d_z)$: position of the LiDAR's optical center in B. Measured with a total station, a calibration bay or the manufacturer's CAD; mm-level is needed.
+\item \textbf{Boresight} $\vect R^{B}_{S}$: the small rotation from S to B, three angles $(\delta\phi,\delta\theta,\delta\psi)$. These cannot be measured with a tape --- they are estimated from data (see below).
+\end{itemize}
+A GNSS antenna has its own lever arm too; an error there shifts the whole trajectory.
+\end{eng}
+
+\section{The direct georeferencing equation}
+This is the single most important equation in mobile mapping. Every point in every deliverable went through it.
+
+\fig[1.0]{chain}{The chain of operations from a laser echo to a map coordinate.}
+
+\begin{keyeq}{Direct georeferencing}
+\[ \vect r_W=\vect p_W(t)+\vect R^{W}_{B}(t)\Big(\vect R^{B}_{S}\,\vect r_S+\vect l^{B}\Big) \]
+\begin{symbols}
+$\vect r_W$ & the final point in the world/project frame & m\\
+$\vect p_W(t)$ & IMU position at the pulse time $t$ (from the trajectory) & m\\
+$\vect R^{W}_{B}(t)$ & attitude: body-to-world rotation from roll, pitch, yaw at $t$ & ---\\
+$\vect R^{B}_{S}$ & boresight: sensor-to-body rotation (fixed) & ---\\
+$\vect r_S$ & the point in the LiDAR frame (from polar-to-Cartesian, Module 5) & m\\
+$\vect l^{B}$ & lever arm: LiDAR origin in the body frame (fixed) & m\\
+\end{symbols}
+\end{keyeq}
+
+Read it from the inside out: (1) turn the LiDAR's point into body axes (boresight), (2) shift it to the IMU origin (lever arm), (3) rotate into world axes (attitude), (4) add where the IMU was (position).
+
+\begin{tip}
+In ROS-based systems the lever arm and boresight live in the static transform \texttt{/tf\_static} between \texttt{imu\_link} and the LiDAR frame, e.g.\ translation $[0.120,\ 0.000,\ 0.085]$ m and roll-pitch-yaw $[0.11^\circ,\ -0.23^\circ,\ 0.01^\circ]$. If that transform is missing or wrong, you get the bird's nest of Module 1.
+\end{tip}
+
+\section{Effect of calibration errors}
+\begin{keyeq}{Calibration-error rules of thumb}
+\[ \delta r_{\text{lever}}\approx\|\delta\vect l\|\qquad\qquad \delta r_{\text{bore}}\approx\rho\,\delta\alpha \]
+\begin{symbols}
+$\delta\vect l$ & error in the lever arm & m\\
+$\delta r_{\text{lever}}$ & resulting point error: the \emph{same size at every range}, but its direction rotates with the vehicle's heading & m\\
+$\delta\alpha$ & residual boresight angle & rad\\
+$\delta r_{\text{bore}}$ & resulting point error: \emph{grows with range} & m\\
+\end{symbols}
+\end{keyeq}
+
+\begin{worked}{boresight residual at mapping range}
+\textbf{Given:} residual boresight 0.05°; target 80 m away.
+\step{Step 1} $0.05\times\pi/180=8.727\times10^{-4}$ rad
+\step{Step 2} $80\times8.727\times10^{-4}=0.0698$ m
+\result{7.0 cm. Compare: a 7 mm lever-arm error causes 7 mm everywhere. Boresight dominates at long range; lever arm dominates close in.}
+\end{worked}
+
+\section{How boresight is calibrated}
+\fig[0.95]{boresight_cal}{Driving past the same building in opposite directions doubles the visible effect of a boresight error.}
+
+\begin{eng}
+Because a boresight error rotates with the vehicle, scanning the same features from \textbf{opposite directions} and \textbf{different ranges} makes it visible: a roll error tilts the road one way on the northbound pass and the other way on the southbound pass; a yaw error shifts facades forward on one pass and backward on the other. Calibration software extracts planes (road, walls, roofs) or targets from overlapping passes and solves, by least squares, for the three angles (and optionally lever-arm refinements) that minimize the plane-to-plane disagreement. A good calibration site has:
+\begin{itemize}
+\item planar surfaces in many orientations (walls facing different ways, flat road, sloped roofs);
+\item passes in opposite directions, at two or more offsets/ranges, plus a turn;
+\item surveyed targets or control for an absolute check.
+\end{itemize}
+\end{eng}
+
+\begin{tip}
+Treat calibration like any instrument adjustment: re-check after any mount change, impact, or long storage, and at the start of every project with a short loop over known features. Document the values used for every dataset.
+\end{tip}
+
+\section{Full worked example: one pulse to project coordinates}
+\begin{worked}{direct georeferencing, every step}
+\textbf{Given (FLU body frame, ENU world, ZYX angles):}
+IMU position $\vect p_W=(1000.000,\ 2000.000,\ 10.000)$ m; roll $1.0^\circ$, pitch $-0.5^\circ$, yaw $30.0^\circ$. Lever arm $\vect l=(0.120,\ 0.000,\ 0.085)$ m. Boresight $(0.05^\circ,\ -0.03^\circ,\ 0.02^\circ)$. Laser: $\rho=25.000$ m, $H=10.0^\circ$, $V=2.0^\circ$.
+
+\step{Step 1 --- polar to Cartesian (Module 5)}
+$x_S=25\cos2^\circ\cos10^\circ=24.6052$;\ $y_S=25\cos2^\circ\sin10^\circ=4.3386$;\ $z_S=25\sin2^\circ=0.8725$ m
+
+\step{Step 2 --- boresight rotation $\vect R^B_S=\vect R_z(0.02^\circ)\vect R_y(-0.03^\circ)\vect R_x(0.05^\circ)$}
+For tiny angles $\vect R\approx\begin{psmallmatrix}1&-\delta\psi&\delta\theta\\\delta\psi&1&-\delta\phi\\-\delta\theta&\delta\phi&1\end{psmallmatrix}$ with $\delta\phi=0.000873$, $\delta\theta=-0.000524$, $\delta\psi=0.000349$ rad:\\
+$x=24.6052-0.000349(4.3386)-0.000524(0.8725)=24.6032$\\
+$y=0.000349(24.6052)+4.3386-0.000873(0.8725)=4.3464$\\
+$z=0.000524(24.6052)+0.000873(4.3386)+0.8725=0.8892$ m
+
+\step{Step 3 --- add the lever arm}
+$\vect r_B=(24.6032+0.120,\ 4.3464+0,\ 0.8892+0.085)=(24.7232,\ 4.3464,\ 0.9742)$ m
+
+\step{Step 4 --- attitude $\vect R^W_B=\vect R_z(30^\circ)\vect R_y(-0.5^\circ)\vect R_x(1.0^\circ)$}
+Multiplying out gives
+$\vect R^W_B=\begin{psmallmatrix}0.86599&-0.50006&0.00117\\0.49998&0.86582&-0.01948\\0.00873&0.01745&0.99981\end{psmallmatrix}$.\\
+Row by row: $X=0.86599(24.7232)-0.50006(4.3464)+0.00117(0.9742)=19.2378$\\
+$Y=0.49998(24.7232)+0.86582(4.3464)-0.01948(0.9742)=16.1053$\\
+$Z=0.00873(24.7232)+0.01745(4.3464)+0.99981(0.9742)=1.2656$ m
+
+\step{Step 5 --- add the trajectory position}
+$\vect r_W=(1000+19.2378,\ 2000+16.1053,\ 10+1.2656)$
+\result{$\vect r_W=(1019.238,\ 2016.105,\ 11.266)$ m.}
+\end{worked}
+
+\begin{improve}
+The seminar's version of this example applied only the yaw rotation and stated that roll and pitch ``would adjust this by centimeters.'' Doing the full rotation shows the height is actually \textbf{31 cm} higher (11.266 m versus 10.957 m): the 0.5° nose-up pitch lifts a point 24.7 m ahead by $24.7\times\sin0.5^\circ=0.216$ m, and the 1° roll adds $4.35\times\sin1^\circ=0.076$ m. Roll and pitch must never be ignored --- this is exactly why a leveled total station and an unleveled moving vehicle are different problems. (In this FLU convention a negative rotation about $y$ is nose up.) The boresight alone moved the point by about 1.9 cm, mostly vertically.
+\end{improve}
+
+\begin{tryit}
+\textbf{9.1} A lever-arm $d_z$ was entered as 0.850 m instead of 0.085 m. How big is the resulting error, and does it depend on range?\\
+\textbf{9.2} What residual boresight keeps errors under 2 cm at 60 m?\\
+\textbf{9.3} Repeat Step 4 of the worked example with roll $=$ pitch $=0$. What is $Z$?
+\end{tryit}
+
+\sources{Glennie, C.\ (2007), Rigorous 3D error analysis of kinematic scanning LIDAR systems, \emph{J.\ Applied Geodesy} 1; Skaloud, J.\ \& Lichti, D.\ (2006), Rigorous approach to bore-sight self-calibration in airborne laser scanning, \emph{ISPRS J.} 61; \emph{Mobile LiDAR Basics} seminar (2026), worked example (corrected here).}

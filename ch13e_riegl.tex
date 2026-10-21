@@ -1,0 +1,121 @@
+\chapter{Survey-Grade Case Study: RIEGL VUX-240\textsuperscript{24}}
+
+This module is a project-style case study with a survey-grade airborne scanner, the \textbf{RIEGL VUX-240\textsuperscript{24}} (datasheet dated 2026-08-17), flown on a crewed aircraft, helicopter or large UAS. Every laser and IMU error is pushed to the ground for a \textbf{500 ft (152.4 m) return} --- conveniently, almost exactly the 150 m range at which RIEGL specifies its accuracy and precision --- and the results are compared with an ASPRS accuracy class.
+
+\begin{kid}
+This scanner is like a super-fast, super-careful version of the ones we met before. It fires up to 2.4 million laser flashes a second from an airplane. To know exactly where each dot lands 500 feet below, we have to add up all the little mistakes: the laser's own wobble, the tiny tilt and turn errors of the motion sensor, and where the GPS thinks the airplane is. The surprise: with a scanner this good, the \emph{airplane's position} is the biggest mistake, not the laser.
+\end{kid}
+
+\section{The scanner in one table}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.18}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{4.8cm}X}\toprule
+\textbf{Specification (RIEGL datasheet)} & \textbf{VUX-240\textsuperscript{24}}\\\midrule
+Measuring principle & time of flight; echo digitization; online waveform processing; multiple-target and multiple-time-around (MTA) processing\\
+Pulse repetition rate (PRR) & 300, 600, 1200, 1800, 2400 kHz (up to 2.0 M meas./s at 2400 kHz, 75° FOV)\\
+Max.\ range, $\ge$20\% targets & 1200 m (300 kHz) \ldots\ 460 m (2400 kHz)\\
+Max.\ operating altitude AGL, $\ge$20\% & 2900 ft (300 kHz) \ldots\ 1100 ft (2400 kHz)\\
+Targets per pulse & up to 30 (300 kHz) \ldots\ 5 (2400 kHz)\\
+Minimum range & 5 m\\
+\textbf{Accuracy / precision} & \textbf{20 mm / 15 mm} (one sigma @ 150 m, RIEGL test conditions)\\
+Beam divergence; footprint & 0.35 mrad (1/$e^2$); 35 mm @ 100 m, 175 mm @ 500 m\\
+Scanner & rotating polygon mirror, parallel scan lines, FOV $\pm37.5^\circ$, 40--600 lines/s\\
+Angular step / angle resolution & 0.002°--0.18° / 0.001°\\
+Timing & GNSS 1PPS input; camera trigger and exposure interfaces (up to 4 cameras)\\
+Laser class & \textbf{Class 3R} (IEC 60825-1:2014); NOHD 0 m and ENOHD 0 m when flying faster than 1 kn; stationary: NOHD 0.3 m, ENOHD 3.5 m\\
+Size, weight, power & 292$\times$162$\times$185 mm; approx.\ 4.3 kg; typ.\ 77 W\\\bottomrule
+\end{tabularx}\end{center}
+
+\begin{center}\footnotesize
+\renewcommand{\arraystretch}{1.18}
+\begin{tabular}{lcccc}\toprule
+\textbf{IMU/GNSS (post-processed)} & \textbf{RiLOC-F} & \textbf{Applanix AP+30} & \textbf{AP+50} & \textbf{AP+60}\\\midrule
+Roll, pitch & 0.005° & 0.010° & 0.005° & 0.0025°*\\
+Heading & 0.005° & 0.025° & 0.010° & 0.005°\\
+IMU sampling & up to 700 Hz & 200 Hz & 200 Hz & 200 Hz\\
+Position (typ.) & 0.02--0.03 m & 0.02--0.05 m & 0.02--0.05 m & 0.02--0.05 m\\
+\quad in feet & 0.07--0.10 ft & 0.07--0.16 ft & 0.07--0.16 ft & 0.07--0.16 ft\\\bottomrule
+\end{tabular}\\[2pt]
+{\footnotesize *May require a local gravity model to achieve full accuracy (RIEGL datasheet).}
+\end{center}
+
+\section{The project}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{3.0cm}X}\toprule
+Client need & corridor topography for a highway widening; hard-surface vertical $\text{RMSE}_V\le5$ cm and horizontal $\text{RMSE}_H\le5$ cm (ASPRS Edition 2 classes), checkpoints $\le2.5$ cm\\
+Platform & helicopter or large UAS, 500 ft AGL, 60 kn (30.9 m/s); UAS alternative 10 m/s\\
+Scanner settings & 2400 kHz PRR, 75° FOV\\
+Trajectory & IMU/GNSS post-processed (PPK) against a nearby CORS or base; RiLOC-F as the baseline option\\
+Question & which laser and IMU errors matter, how big are they at 500 ft, and does the system meet the class?\\\bottomrule
+\end{tabularx}\end{center}
+
+\fig[1.0]{riegl_geometry}{The two returns we analyze: Case A straight down from 500 ft AGL; Case B a 500 ft slant return at the edge of the 75° field of view (aircraft at 397 ft AGL).}
+
+\section{Laser errors to consider}
+RIEGL states accuracy and precision in \textbf{millimeters}: 20 mm and 15 mm (one sigma at 150 m). The rest of this module works in \textbf{centimeters} so that laser, IMU and GNSS terms can be added on one scale, and gives feet for U.S. practice. The conversions are simply $10\text{ mm}=1\text{ cm}$ and $1\text{ ft}=304.8\text{ mm}$, so 20 mm $=$ 2.0 cm $=$ 0.066 ft and 15 mm $=$ 1.5 cm $=$ 0.049 ft. Because RIEGL specifies the values at 150 m and our return is at 152.4 m (500 ft), they apply essentially unchanged.
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{3.6cm}X>{\raggedright\arraybackslash}p{2.6cm}}\toprule
+\textbf{Laser error source} & \textbf{Why it matters} & \textbf{At 500 ft (152.4 m)}\\\midrule
+Range accuracy (bias) & systematic offset along the beam; removed only by calibration & 20 mm = 2.0 cm (0.066 ft)\\
+Range precision (noise) & random scatter; averages down over surfaces & 15 mm = 1.5 cm (0.049 ft)\\
+Combined range error & $\sqrt{20^2+15^2}=\sqrt{625}$ & \textbf{25 mm = 2.5 cm (0.082 ft)}\\
+Beam footprint & edge location and mixed returns on curbs, rails, wires & 53 mm (5.3 cm) spot $\Rightarrow\pm27$ mm edge uncertainty\\
+Angle encoder & 0.001° resolution $\Rightarrow$ quantization $0.001^\circ/\sqrt{12}$ & 0.8 mm = 0.08 cm --- negligible\\
+Polygon mirror facets & each facet needs its own angular calibration; a bad facet gives repeating stripes & checked in strip comparisons\\
+Range walk / incidence & strong or grazing echoes shift timing slightly; waveform processing reduces it & sub-cm to cm; check on targets\\
+MTA ambiguity & at high PRR several pulses are in the air; wrong zone $\Rightarrow$ gross blunder & see below\\
+Atmosphere & refractive index changes range by $\sim$300 ppm if uncorrected & 46 mm = 4.6 cm at 500 ft if ignored!\\\bottomrule
+\end{tabularx}\end{center}
+
+\begin{worked}{multiple-time-around (MTA) at 2400 kHz}
+\step{Unambiguous range} $c/(2\,f_{\text{PRR}})=2.997\times10^8/(2\times2.4\times10^6)=62.4$ m (Module 3)
+\step{Which zone?} $152.4/62.4=2.44$ $\Rightarrow$ zone 3: two newer pulses leave before this echo returns
+\result{the processor must assign every echo to the correct zone. A wrong assignment moves a point by a whole multiple of 62.4 m --- obvious ``ghost layers'' that are blunders, not noise. At 300 kHz the zone is 500 m deep and the problem disappears at this altitude.}
+\end{worked}
+\fig[0.85]{riegl_mta}{At 2.4 MHz the 500 ft echo belongs to the third pulse back.}
+
+\begin{worked}{atmospheric correction}
+\step{Refractive index of air} $n\approx1.0003$, i.e.\ 300 ppm
+\step{At 500 ft} $152.4\times300\times10^{-6}=0.046$ m
+\result{4.6 cm --- nearly twice the laser's whole error budget. Processing software applies the correction automatically from temperature and pressure; confirm it is on and the values are sensible (Module 3).}
+\end{worked}
+
+\section{IMU/GNSS errors and the 500 ft error budget}
+The post-processed IMU/GNSS options (table above) are carried through a full error budget for a 500 ft return in Module 14 (Section~\ref{sec:bud-riegl}). Summary (1$\sigma$, before ground control): RiLOC-F 3.7--3.9 cm H and 4.4--4.5 cm V (0.12--0.13 ft H, 0.15 ft V); AP+30 5.5--6.6 cm H and 5.8--5.9 cm V (0.18--0.22 ft H, 0.19 ft V). After ground control and strip adjustment the RiLOC-F reaches about 3.1 cm H and 3.1 cm V (0.10 ft), supporting a 5 cm class with margin. GNSS position --- not the laser --- is the largest term.
+
+\section{Point density at 500 ft}
+\begin{worked}{point density at 500 ft}
+\step{Swath} $2\times152.4\times\tan37.5^\circ=234$ m
+\step{At 60 kn (30.9 m/s), 2.0 M meas./s} $2.0\times10^6/(234\times30.9)=277$ points/m$^2$
+\step{UAS at 10 m/s} $2.0\times10^6/(234\times10)=855$ points/m$^2$
+\result{consistent with RIEGL's example of $\sim$126 pts/m$^2$ at 1,100 ft and 60 kn (density scales with $1/\text{altitude}$). At 277 pts/m$^2$ points are about 6 cm apart --- similar to the 5.3 cm footprint, so features are sampled about once per spot.}
+\end{worked}
+
+\section{Survey-grade checklist for this system}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.22}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{3.0cm}X}\toprule
+Laser & range calibration current; atmospheric correction on; MTA zones resolved (no ghost layers); facet calibration checked; minimum range 5 m respected\\
+IMU/GNSS & post-processed (PPK) trajectory with short baselines; IMU option matched to the class (heading drives swath-edge horizontal error); gravity model if using AP+60\\
+Calibration & lever arm measured to mm; boresight and facet calibration flown over a calibration site with opposite and cross strips\\
+Timing & 1PPS connected and logged; camera exposure events time-stamped\\
+Control & ground control for strip adjustment; independent checkpoints ($\ge$30), 2$\times$ more accurate than the product (Module 13)\\
+Safety & Class 3R: safe from the air ($>$1 kn), but on the ground the NOHD is 0.3 m and ENOHD 3.5 m --- never look into the aperture or test-fire toward people\\
+Reporting & ASPRS Edition 2 statement; swath-to-swath and within-swath precision results; client accuracy agreement (Appendix E)\\\bottomrule
+\end{tabularx}\end{center}
+
+\begin{bigidea}
+At 500 ft, a survey-grade laser is no longer the weak link: the RIEGL's own range error (2.5 cm) is comparable to the GNSS error, and the IMU's attitude error is 1--7 cm depending on the option. Survey-grade results come from the \emph{whole system} --- trajectory, calibration, control and checkpoints --- not from the laser alone.
+\end{bigidea}
+
+\begin{tryit}
+\textbf{17.1} What ground displacement does a 0.010° heading error cause at the swath edge for a 500 ft slant return?\\
+\textbf{17.2} At 1200 kHz PRR, which MTA zone does a 500 ft echo fall in?\\
+\textbf{17.3} If GNSS vertical error could be cut to 1.0 cm, what is the RiLOC-F nadir vertical total (range 2.5 cm, lever 0.5 cm)?\\
+\textbf{17.4} (Simple) Why is the RIEGL safe to fly over people but not safe to stare into on the ground?
+\end{tryit}
+
+\sources{RIEGL, \emph{VUX-240\textsuperscript{24} datasheet} (2026-08-17), including RiLOC-F and Applanix AP+30/50/60 IMU/GNSS options; Glennie (2007) for airborne error geometry; Module 3 for MTA ranging.}

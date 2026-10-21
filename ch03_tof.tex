@@ -1,0 +1,111 @@
+\chapter{Measuring Distance with Light}
+
+\section{Time of flight}
+\fig[0.85]{tof}{A pulse travels out to the wall and back. The clock measures the whole round trip.}
+
+\begin{kid}
+Light is the fastest thing there is. In the time it takes you to blink, light could go around the world more than 2 times! The LiDAR starts a stopwatch when it flashes, and stops it when the flash bounces back. Because the light went \emph{to} the wall and \emph{back}, the wall is only half as far as the light traveled. So we cut the answer in half.
+\end{kid}
+
+\begin{keyeq}{Time-of-flight range}
+\[ \rho=\frac{c\,\Delta t}{2},\qquad c=\frac{c_0}{n} \]
+\begin{symbols}
+$\rho$ & range (one-way distance from sensor to surface). Greek ``rho.'' & m\\
+$\Delta t$ & measured round-trip time of flight & s\\
+$c$ & speed of light \emph{in air} & m/s\\
+$c_0$ & speed of light in vacuum, exactly 299\,792\,458 & m/s\\
+$n$ & refractive index of air, about 1.0003 at sea level (depends on temperature, pressure, humidity) & ---\\
+2 & the light travels the distance twice (out and back) & ---\\
+\end{symbols}
+\end{keyeq}
+
+\begin{worked}{range from a 400 ns echo}
+\textbf{Given:} $\Delta t = 400$ ns; standard air with $n=1.000300$.
+\step{Step 1 --- speed of light in air} $c = 299\,792\,458/1.000300 = 299\,702\,547$ m/s
+\step{Step 2 --- time in seconds} $400\text{ ns}=400\times10^{-9}=4.00\times10^{-7}$ s
+\step{Step 3 --- round-trip path} $c\,\Delta t = 299\,702\,547\times4.00\times10^{-7}=119.881$ m
+\step{Step 4 --- halve it} $\rho=119.881/2 = 59.941$ m
+\result{$\rho\approx59.94$ m.}
+\end{worked}
+
+\begin{improve}
+The seminar used $c\approx2.997\times10^8$ m/s and got 59.94 m. That value is right, but the reason matters: it is the \emph{vacuum} speed (2.9979$\times10^8$) divided by the refractive index of air. Using the vacuum value instead would give 59.958 m --- an 18 mm difference at 60 m, i.e.\ about 300 parts per million. Survey-grade processing applies an atmospheric correction for this, exactly as you set temperature and pressure on a total station's EDM.
+\end{improve}
+
+\section{How precise must the clock be?}
+Rearranging the key equation for a small timing error $\delta t$:
+\begin{keyeq}{Range error from timing error}
+\[ \delta\rho = \frac{c\,\delta t}{2} \approx 0.15\ \text{m per nanosecond} \]
+\begin{symbols}
+$\delta\rho$ & error in the computed range & m\\
+$\delta t$ & error in the measured time of flight & s\\
+\end{symbols}
+\end{keyeq}
+\fig[0.72]{timing_error}{Range error grows in a straight line with timing error.}
+
+So a 1 ns timing error ruins the range by 15 cm, and \emph{millimeter} ranging needs timing to about 7 picoseconds. Real sensors do not count clock ticks that finely; they digitize the returning pulse shape and interpolate its center, which is why waveform quality and signal strength matter so much.
+
+\begin{tryit}
+\textbf{3.1} An echo returns after 166.8 ns. What is the range (use $c=2.997\times10^8$ m/s)?\\
+\textbf{3.2} What timing precision is needed for 1 cm range precision?
+\end{tryit}
+
+\section{Pulse rate and range ambiguity}
+\begin{kid}
+Imagine shouting ``Hello!'' every second in a giant canyon. If an echo takes 3 seconds, you won't know which ``Hello'' it belongs to. A LiDAR has the same problem if it fires the next flash before the last echo has come home.
+\end{kid}
+
+\fig[0.85]{ambiguity}{If the pulse repetition interval is shorter than the round-trip time, echoes get mixed up.}
+
+\begin{keyeq}{Maximum unambiguous range}
+\[ \rho_{\max}=\frac{c}{2\,f_{\text{PRF}}} \]
+\begin{symbols}
+$\rho_{\max}$ & farthest range that can be measured without confusion & m\\
+$f_{\text{PRF}}$ & pulse repetition frequency: pulses fired per second & Hz (1/s)\\
+\end{symbols}
+\end{keyeq}
+
+\begin{worked}{how fast can we fire?}
+\textbf{Given:} $f_{\text{PRF}}=1$ MHz $=10^6$ pulses/s, $c=2.997\times10^8$ m/s.
+\step{Step 1} time between pulses $=1/10^6=1\ \mu$s
+\step{Step 2} $\rho_{\max}=2.997\times10^8/(2\times10^6)=149.9$ m
+\step{Step 3 --- double the rate} at 2 MHz, $\rho_{\max}=74.9$ m
+\result{faster firing = denser points but a shorter safe range. Modern sensors use ``multiple pulses in the air'' (MPiA) coding to beat this limit.}
+\end{worked}
+
+\section{Phase-shift (continuous-wave) ranging}
+Some scanners send a continuous light wave whose brightness is modulated, and measure how far the returning wave has slid relative to the outgoing one.
+\fig[0.75]{phase}{The returned wave is shifted by a fraction of a wavelength.}
+
+\begin{keyeq}{Phase-shift range}
+\[ \rho=\frac{\lambda_m}{2}\left(N+\frac{\Delta\varphi}{2\pi}\right),\qquad \lambda_m=\frac{c}{f_m} \]
+\begin{symbols}
+$\lambda_m$ & modulation wavelength (not the laser color!) & m\\
+$f_m$ & modulation frequency & Hz\\
+$\Delta\varphi$ & measured phase difference & rad\\
+$N$ & whole number of half-wavelengths (the ``ambiguity''); solved by using several frequencies & ---\\
+\end{symbols}
+\end{keyeq}
+
+\begin{worked}{phase measurement}
+\textbf{Given:} $f_m=10$ MHz, $\Delta\varphi=90^\circ$, $c=2.997\times10^8$ m/s, $N=0$.
+\step{Step 1} $\lambda_m=2.997\times10^8/10^7=29.97$ m; half-wavelength $=14.985$ m
+\step{Step 2} $\Delta\varphi/2\pi = 90/360=0.25$
+\step{Step 3} $\rho=14.985\times0.25=3.746$ m
+\result{3.746 m --- or 18.731 m, or 33.716 m\ldots\ (add multiples of 14.985 m). A second, lower frequency decides which.}
+\end{worked}
+
+This is the same principle as most total-station EDMs. Phase scanners are very precise at short range (terrestrial scanners), while pulsed time-of-flight dominates long-range and mobile systems.
+
+\section{Multiple returns}
+\fig[0.92]{multireturn}{One wide pulse can hit leaves, a branch and the ground. The receiver sees several peaks.}
+
+\begin{eng}
+Because the beam has a finite width (Module 4), one pulse can partially hit several surfaces at different ranges. A \emph{discrete-return} sensor reports the first, intermediate and last peaks; a \emph{full-waveform} sensor records the whole curve. Each return gets its own range from its own time, $\rho_k=c\,t_k/2$. Last returns are the ones most likely to reach bare ground under vegetation --- the basis of terrain models in forests. Two surfaces closer together than about $c\,\tau/2$ (with $\tau$ the pulse width, e.g.\ 4 ns $\to$ 0.6 m) merge into a single peak.
+\end{eng}
+
+\begin{tip}
+Edges of poles, curbs and building corners produce ``mixed pixels'': part of the beam hits the near object and part the far background, and the reported range can land in empty air between them. These show up as ghost points trailing behind edges and are removed in cleaning (Module 18).
+\end{tip}
+
+\sources{BIPM, \emph{The International System of Units} (speed of light $c_0=299\,792\,458$ m/s, exact); Ciddor, P.\ E.\ (1996), refractive index of air, \emph{Applied Optics} 35(9); Baltsavias, E.\ P.\ (1999), Airborne laser scanning: basic relations and formulas, \emph{ISPRS J.\ Photogramm.\ Remote Sens.} 54; RIEGL VUX-240\textsuperscript{24} datasheet (MTA processing).}

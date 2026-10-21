@@ -1,0 +1,389 @@
+\chapter{Error Propagation and Error Budgets}
+
+Module 2 introduced the root-sum-square rule for independent errors. This module shows \emph{where} each term comes from, how to handle errors that are \emph{not} independent, how errors spread through the full georeferencing equation, and how to check the math with a simulation. It then collects \textbf{every error budget in the course} in one place (Sections~\ref{sec:budgets} and following): a general job budget and the budgets for the OS0 backpack, the GX5/GQ7 IMUs, the RIEGL airborne system and the capstone corridor.
+
+\section{Three kinds of error}
+\begin{kid}
+Imagine throwing darts. If your darts land all over the board, that is \textbf{random error} --- your hand shakes a little differently every time. If all your darts land in a tight group, but always 5 cm to the left of the bullseye, that is \textbf{systematic error} --- maybe the board is crooked. If one dart hits the wall, that is a \textbf{blunder}. You fix each one in a different way: practice to shrink random error, straighten the board to remove systematic error, and throw out the dart that hit the wall.
+\end{kid}
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\linewidth}{>{\bfseries}lXXX}\toprule
+Type & What it looks like & LiDAR examples & How to handle it\\\midrule
+Random & scatter around the true value; different every time & range noise, angle-encoder jitter, IMU white noise & average it, weight it, propagate it with $\sigma$\\
+Systematic & same offset (or same pattern) every time & range bias, boresight residual, wrong lever arm, wrong geoid, clock offset & calibrate it, model it, or cancel it by differencing; averaging does \emph{not} help\\
+Blunder & a single large, impossible value & wrong antenna height, mixed pixel, multipath jump, wrong datum & detect it (residual tests, checkpoints), then remove it\\\bottomrule
+\end{tabularx}\end{center}
+
+\begin{eng}
+\textbf{Precision} describes random error (spread). \textbf{Accuracy} describes total closeness to the truth (spread \emph{and} bias). A sensor datasheet usually quotes both separately --- the Ouster OS0 in Module 15 lists ``range precision'' (1$\sigma$ of 100 repeated shots) and ``range accuracy'' (error of their mean). Propagation formulas work on standard deviations and covariances; a bias must be carried separately or converted to an equivalent standard deviation with a stated assumption.
+\end{eng}
+
+\section{The law of propagation of variances (one output)}
+\fig[0.68]{ep_linear}{Near the operating point the model is almost a straight line. Its slope converts input spread into output spread.}
+
+\begin{keyeq}{Propagation for one output and independent inputs}
+\[ y=f(x_1,x_2,\ldots,x_n)\qquad\Longrightarrow\qquad \sigma_y^2=\sum_{i=1}^{n}\left(\frac{\partial f}{\partial x_i}\right)^{2}\sigma_{x_i}^2 \]
+\begin{symbols}
+$y$ & the computed result (a coordinate, a height, a distance\ldots) & varies\\
+$f$ & the formula that computes it & ---\\
+$x_i$ & the measured inputs (range, angles, pose\ldots) & varies\\
+$\partial f/\partial x_i$ & partial derivative: how much $y$ changes when only $x_i$ changes by one unit (the ``sensitivity'' or ``slope'') & units of $y$ per unit of $x_i$\\
+$\sigma_{x_i}$ & standard deviation of input $i$ & units of $x_i$\\
+$\sigma_y$ & standard deviation of the result & units of $y$\\
+\end{symbols}
+\end{keyeq}
+
+\begin{eng}
+\textbf{Where it comes from.} Expand $f$ in a first-order Taylor series about the measured values: $y\approx f(\bar{\vect x})+\sum_i\frac{\partial f}{\partial x_i}\delta x_i$. The error in $y$ is a weighted sum of the input errors, $\delta y=\sum a_i\delta x_i$ with $a_i=\partial f/\partial x_i$. For a weighted sum of independent zero-mean errors, $E[\delta y^2]=\sum a_i^2E[\delta x_i^2]$ because all cross terms $E[\delta x_i\delta x_j]$ vanish. That is the formula. It is exact for linear models and an excellent approximation when the errors are small compared with the curvature of $f$ --- true for almost everything in surveying.
+
+\textbf{Two special cases you already know.} If $y=x_1+x_2$, both slopes are 1 and $\sigma_y=\sqrt{\sigma_1^2+\sigma_2^2}$ (root-sum-square). If $y=kx$, then $\sigma_y=|k|\sigma_x$ --- e.g.\ $\rho=c\,\Delta t/2$ gives $\sigma_\rho=(c/2)\sigma_t$ (Module 3).
+\end{eng}
+
+\begin{worked}{height of a ground point seen by a scanner}
+\textbf{Given:} scanner 2.00 m above a flat road; a road point 20.00 m away horizontally. Range precision $\sigma_\rho=0.35$ cm (dark asphalt at 20 m); vertical-angle accuracy $\sigma_V=0.01^\circ$. Model: $z=\rho\sin V$.
+\step{Step 1 --- geometry} $\rho=\sqrt{20^2+2^2}=20.100$ m;\ $V=-\arctan(2/20)=-5.711^\circ$; $\sin V=-0.09950$, $\cos V=0.99504$
+\step{Step 2 --- sensitivities} $\partial z/\partial\rho=\sin V=-0.0995$;\quad $\partial z/\partial V=\rho\cos V=20.000$ m/rad
+\step{Step 3 --- convert angle to radians} $\sigma_V=0.01\times\pi/180=1.745\times10^{-4}$ rad
+\step{Step 4 --- each contribution} range: $0.0995\times0.35=0.035$ cm;\quad angle: $20.000\times1.745\times10^{-4}=0.00349$ m $=0.349$ cm
+\step{Step 5 --- combine} $\sigma_z=\sqrt{0.035^2+0.349^2}=0.351$ cm
+\result{3.5 mm. Notice that on a grazing road surface the \emph{angle} error, not the range error, controls the height --- range noise points almost horizontally and barely moves $z$. On a wall straight ahead, the opposite is true.}
+\end{worked}
+
+\section{When errors are correlated}
+\begin{keyeq}{Propagation with covariance}
+\[ \sigma_y^2=\sum_i a_i^2\sigma_i^2+2\sum_{i<j}a_ia_j\,\sigma_{ij},\qquad \sigma_{ij}=r_{ij}\,\sigma_i\sigma_j \]
+\begin{symbols}
+$a_i$ & sensitivity $\partial f/\partial x_i$ & ---\\
+$\sigma_{ij}$ & covariance of inputs $i$ and $j$ (how much they move together) & product of units\\
+$r_{ij}$ & correlation coefficient, from $-1$ (always opposite) through 0 (independent) to $+1$ (always together) & ---\\
+\end{symbols}
+\end{keyeq}
+
+\fig[0.95]{ep_corr}{A bias shared by both points shifts absolute heights but disappears from a height \emph{difference}.}
+
+\begin{worked}{curb height from one sensor --- correlation helps}
+\textbf{Given:} top of curb $z_1$ and gutter $z_2$ measured in the same sweep at about 10 m. Each has random error $\sigma=0.25$ cm and the same range bias of 1.25 cm (fully correlated, $r=1$ for the bias part). Curb height $h=z_1-z_2$, so $a_1=+1$, $a_2=-1$.
+\step{Step 1 --- random part} $\sigma_h^2=(1)^2(0.25)^2+(-1)^2(0.25)^2+0=0.125$ cm$^2$ $\Rightarrow$ 0.35 cm
+\step{Step 2 --- bias part} $\sigma_h^2=(1.25)^2+(1.25)^2+2(1)(-1)(1)(1.25)(1.25)=0$
+\step{Step 3 --- total} $\sigma_h=0.35$ cm
+\result{the curb height is good to 3.5 mm even though each \emph{absolute} height is only good to about 1.3 cm. Relative measurements from the same sensor and moment are much better than absolute ones --- which is why cross-sections, curb reveals and pavement cracks can be mapped more precisely than the datasheet accuracy suggests.}
+\end{worked}
+
+\begin{eng}
+Correlation can also \emph{hurt}. If you add two quantities that share an error ($a_1=a_2=+1$, $r=+1$) the errors add linearly instead of in quadrature: two 1.25 cm shared biases give 2.5 cm, not 1.77 cm. Typical correlated errors in mobile LiDAR: a trajectory error that shifts every point in a stretch of road together; a boresight error that rotates every point from one sensor; a geoid error that moves a whole project. Never treat these as independent between neighboring points.
+\end{eng}
+
+\section{Many outputs at once: the covariance matrix}
+\fig[1.0]{ep_chain}{The general propagation recipe.}
+
+\begin{keyeq}{General law of propagation (matrix form)}
+\[ \vect y=f(\vect x)\qquad\Longrightarrow\qquad \boldsymbol\Sigma_{y}=\vect J\,\boldsymbol\Sigma_{x}\,\vect J^{\mathsf T},\qquad J_{ki}=\frac{\partial y_k}{\partial x_i} \]
+\begin{symbols}
+$\vect x$ & vector of all inputs (e.g.\ $\rho,H,V$) & mixed\\
+$\vect y$ & vector of all outputs (e.g.\ $x,y,z$) & mixed\\
+$\boldsymbol\Sigma_x$ & input covariance matrix: variances on the diagonal, covariances off it & ---\\
+$\vect J$ & Jacobian: row $k$ = how output $k$ responds to each input & ---\\
+$\boldsymbol\Sigma_y$ & output covariance: variances of $x,y,z$ and how they are correlated & m$^2$\\
+\end{symbols}
+\end{keyeq}
+
+This single line is the same equation used for the EKF prediction ($\vect G\vect P\vect G^{\mathsf T}$, Module 10) and for adjustment results. Everything in this module is an application of it.
+
+\begin{worked}{the error ellipsoid of one laser point}
+\textbf{Given:} OS0-class sensor 2 m above the road, a dark (10\%) target at $\rho=30.00$ m, $H=30^\circ$, $V=-3.823^\circ$. $\sigma_\rho=1.0$ cm (datasheet precision at 30 m), $\sigma_H=\sigma_V=0.01^\circ=1.745\times10^{-4}$ rad. Point: $(25.923,\ 14.967,\ -2.000)$ m.
+\step{Step 1 --- Jacobian of the polar-to-Cartesian equations (Module 5)}
+\[ \vect J=\begin{pmatrix}\cos V\cos H&-\rho\cos V\sin H&-\rho\sin V\cos H\\\cos V\sin H&\rho\cos V\cos H&-\rho\sin V\sin H\\\sin V&0&\rho\cos V\end{pmatrix}
+=\begin{pmatrix}0.8641&-14.967&1.732\\0.4989&25.923&1.000\\-0.0667&0&29.933\end{pmatrix} \]
+\step{Step 2 --- input covariance (mm, rad)} $\boldsymbol\Sigma_x=\operatorname{diag}(10^2,\ (1.745\times10^{-4})^2,\ (1.745\times10^{-4})^2)$
+\step{Step 3 --- one entry by hand} $\Sigma_{xx}=(0.8641\cdot10)^2+(14.967\cdot0.1745)^2+(1.732\cdot0.1745)^2=74.67+6.82+0.09=81.58$ mm$^2$ (the 0.1745 is $1.745\times10^{-4}$ rad $\times1000$ mm/m)
+\step{Step 4 --- full result}
+$\boldsymbol\Sigma_y=\begin{pmatrix}81.58&31.34&-4.18\\31.34&45.39&-2.41\\-4.18&-2.41&27.74\end{pmatrix}$ mm$^2$ $\Rightarrow$ $\sigma_x=9.0$, $\sigma_y=6.7$, $\sigma_z=5.3$ mm
+\step{Step 5 --- principal axes (eigenvalues)} $\sqrt{\lambda}=10.0$ mm \emph{along the beam}, 5.2 mm and 5.2 mm across it ($=\rho\sigma_H$ and $\rho\sigma_V$)
+\result{the point's uncertainty is a cigar pointing back at the scanner. The off-diagonal 31.34 mm$^2$ is not a mistake: because the beam runs diagonally (30°), $x$ and $y$ errors are correlated.}
+\end{worked}
+
+\fig[0.62]{ep_ellipse}{Horizontal error ellipse of the worked example. The 95\% ellipse is 2.448 times the 1$\sigma$ ellipse.}
+
+\begin{keyeq}{From $\sigma$ to a confidence region}
+\[ \text{95\% regions:}\qquad\text{1-D: }\pm1.960\,\sigma\qquad\text{2-D: }2.448\times\text{semi-axes}\qquad\text{3-D: }2.796\times\text{semi-axes} \]
+\begin{symbols}
+1.960, 2.448, 2.796 & square roots of the 95th percentile of the chi-square distribution with 1, 2 and 3 degrees of freedom & ---\\
+semi-axes & square roots of the eigenvalues of the covariance matrix & m\\
+\end{symbols}
+\end{keyeq}
+For the worked example: 95\% horizontal ellipse semi-axes $2.448\times10.0=24.4$ mm along the beam and $2.448\times5.2=12.8$ mm across it. Notice that the 95\% factor grows with the number of dimensions --- a point is less likely to be inside a 1.96$\sigma$ box in 3-D than on a 1.96$\sigma$ line.
+
+\section{Propagating through the full georeferencing equation}\label{sec:fullbudget}
+Now combine everything from Modules 5--9. The direct georeferencing equation (Module 9) has fifteen uncertain inputs:
+\[ \vect r_W=\vect p_W+\vect R^W_B(\phi,\theta,\psi)\big(\vect R^B_S(\delta\phi,\delta\theta,\delta\psi)\,\vect r_S(\rho,H,V)+\vect l^B\big) \]
+three positions, three attitude angles, three boresight angles, three lever-arm components, and the range and two angles of the laser. The Jacobian is $3\times15$; it is computed by software (numerically or analytically), but every column has a simple meaning:
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\linewidth}{lXl}\toprule
+\textbf{Input group} & \textbf{Sensitivity (first-order)} & \textbf{Grows with range?}\\\midrule
+trajectory position & 1 (moves the point one-for-one) & no\\
+attitude (roll, pitch, yaw) & $\rho$ (small-angle rule) & yes, linearly\\
+boresight & $\rho$ & yes, linearly\\
+lever arm & 1 (rotated by attitude) & no\\
+range & 1 along the beam & only via precision vs.\ range\\
+angle encoders & $\rho$ across the beam & yes, linearly\\\bottomrule
+\end{tabularx}\end{center}
+
+\begin{worked}{full error budget of a backpack point at 20 m}
+\textbf{Given (1$\sigma$):} trajectory position 1.5 cm E, 1.5 cm N, 2.0 cm U (SLAM + control); roll and pitch 0.02°, yaw 0.05°; boresight 0.01° per axis; lever arm 2 mm per axis; OS0 range accuracy 1.25 cm combined with precision 0.40 cm; angle encoders 0.01°. The point is on a wall 20 m to the side, at sensor height.
+\step{Step 1 --- position} horizontal $\sqrt{1.5^2+1.5^2}=2.12$ cm; vertical 2.00 cm
+\step{Step 2 --- attitude} yaw swings the point sideways: $20\times0.05^\circ\text{ in rad}=20\times8.73\times10^{-4}=1.75$ cm (horizontal); roll tips it up/down: $20\times3.49\times10^{-4}=0.70$ cm (vertical)
+\step{Step 3 --- boresight} $20\times1.745\times10^{-4}=0.35$ cm horizontal (yaw part) and 0.35 cm vertical (roll part)
+\step{Step 4 --- lever arm} 0.28 cm horizontal, 0.20 cm vertical (fixed size)
+\step{Step 5 --- range} $\sqrt{1.25^2+0.40^2}=1.31$ cm, all horizontal (the beam is level)
+\step{Step 6 --- angle encoders} $20\times1.745\times10^{-4}=0.35$ cm horizontal and 0.35 cm vertical
+\step{Step 7 --- combine (RSS)} horizontal $\sqrt{2.12^2+1.75^2+0.35^2+0.28^2+1.31^2+0.35^2}=\sqrt{9.60}=3.10$ cm;\ vertical $\sqrt{2.00^2+0.70^2+0.35^2+0.20^2+0.35^2}=\sqrt{4.78}=2.18$ cm
+\result{3.1 cm horizontal and 2.2 cm vertical (1$\sigma$). The trajectory and the heading are the two biggest terms --- the laser itself is third.}
+\end{worked}
+
+\fig[0.85]{ep_budget_range}{Contributions versus range for the same backpack. Fixed terms dominate close in; angle terms take over far out.}
+
+\begin{tip}
+Use the curve to set your \textbf{maximum useful range}. With this system, a 3 cm horizontal spec is met only out to about 18 m; beyond that, either filter points by range in processing or improve the heading (more loop closures, better IMU, control along the route).
+\end{tip}
+
+\section{Checking with Monte Carlo simulation}
+\begin{kid}
+Instead of doing hard math, you can just \emph{pretend} thousands of times. Roll dice to make up small random errors for every input, compute the point, and write it down. Do it 100,000 times on a computer and look at how spread out the answers are. If the spread matches the formula, you know the formula was right.
+\end{kid}
+
+\begin{eng}
+\textbf{Monte Carlo propagation:} (1) draw each input from its distribution (e.g.\ $\rho_k=\bar\rho+\sigma_\rho\varepsilon_k$, $\varepsilon_k\sim N(0,1)$); (2) evaluate the full non-linear model; (3) repeat $N$ times; (4) compute the sample covariance of the outputs. It needs no derivatives, handles strong non-linearity and non-Gaussian inputs (for example a uniform quantization error), and is the standard cross-check for an analytic error budget. Its own precision improves as $1/\sqrt N$: 100\,000 samples estimate $\sigma$ to about 0.2\%.
+\end{eng}
+
+\fig[0.78]{ep_mc}{Vertical error of the 20 m point: 100\,000 simulated georeferencings (bars) versus the linear-propagation Gaussian (line).}
+
+\begin{worked}{Monte Carlo check of the 20 m budget}
+\step{Run} 100\,000 draws of all fifteen inputs through the full equation (rotation matrices, no approximations)
+\step{Result} horizontal $\sigma=3.09$ cm (linear: 3.10); vertical $\sigma=2.18$ cm (linear: 2.18)
+\result{agreement to better than 1\%. For angles of a few hundredths of a degree the linear method is essentially exact.}
+\end{worked}
+
+\section{Averaging, and the floor set by bias}
+\fig[0.78]{ep_avg}{Averaging $n$ points shrinks random error as $1/\sqrt n$ but cannot go below the systematic bias.}
+
+\begin{keyeq}{Accuracy of an average}
+\[ \sigma_{\bar x}=\frac{\sigma}{\sqrt n}\qquad\qquad \text{RMSE}_{\bar x}=\sqrt{b^2+\frac{\sigma^2}{n}} \]
+\begin{symbols}
+$n$ & number of independent measurements averaged & ---\\
+$\sigma$ & random error of one measurement & m\\
+$\sigma_{\bar x}$ & random error of the average & m\\
+$b$ & systematic bias common to all measurements & m\\
+\end{symbols}
+\end{keyeq}
+
+\begin{worked}{fitting a plane to a target}
+\textbf{Given:} 400 OS0 returns on a flat 90\% target at 10 m: $\sigma=0.25$ cm each, bias $b=1.25$ cm.
+\step{Random part} $0.25/\sqrt{400}=0.25/20=0.0125$ cm
+\step{Total} $\sqrt{1.25^2+0.0125^2}=1.2501$ cm
+\result{averaging made the noise 20 times smaller and changed the accuracy by almost nothing. Only calibration against known distances removes the 1.25 cm. Also note that the 400 points are only independent if they came from different pulses; points from overlapping beams (Module 15) are partly correlated and average less well.}
+\end{worked}
+
+\section{Errors that grow with time}
+\begin{eng}
+White noise on a gyro integrates into a \textbf{random walk} in heading: the error grows with the \emph{square root} of time, $\sigma_\psi(t)=\text{ARW}\sqrt t$, where ARW (angle random walk, °/$\sqrt{\text{h}}$) is on the IMU datasheet. A constant bias grows \emph{linearly} ($b_g t$, Module 7). So over short times noise dominates and over long times bias dominates.
+
+\textit{Example (assumed MEMS values):} ARW $=0.2^\circ/\sqrt{\text{h}}$. After 60 s $=1/60$ h: $\sigma_\psi=0.2\times\sqrt{1/60}=0.026^\circ$. A 2°/h bias over the same minute adds $2/60=0.033^\circ$. The two are comparable at one minute; at ten minutes the bias term is four times larger. This is why SLAM loop closures and control every few minutes keep heading --- the biggest term in the budget above --- under control.
+\end{eng}
+
+\section{Errors in derived products}
+\begin{worked}{stockpile volume}
+\textbf{Given:} pile footprint 2\,000 m$^2$; surface built from many points; a vertical bias of 1.25 cm across the whole pile; random height noise averages out over thousands of points.
+\step{Systematic part} $\delta V=A\,b=2\,000\times0.0125=25$ m$^3$
+\step{Random part} with 2\,000 one-meter cells each averaging $\sim$100 points of $\sigma=0.4$ cm: per cell $0.04$ cm; total $\sigma_V=1\,\text{m}^2\times0.0004\text{ m}\times\sqrt{2\,000}=0.018$ m$^3$
+\result{25 m$^3$ of possible error comes from the bias and essentially none from noise. For volumes, \textbf{vertical bias is everything}: check it on hard surfaces next to the pile.}
+\end{worked}
+
+\section{Error budgets: from sources to a total}\label{sec:budgets}
+This section and the next hold every error budget in the course. The case-study modules (15--17) and the capstone (Module 21) point back here.
+
+
+\begin{kid}
+If you pack a backpack, every item takes up some room, and the bag can only hold so much. An error budget is a list of every little thing that can make a dot land in the wrong place, and how much ``room'' each one takes, so we know the whole bag still closes.
+\end{kid}
+
+\fig[0.8]{budget}{Independent 1$\sigma$ contributions combine by root-sum-square, not by simple addition.}
+
+\begin{worked}{RSS budget for a 5 cm (0.16 ft, 1$\sigma$) job}
+\textbf{Given (1$\sigma$, cm):} range + angle 2.0; lever arm + boresight 1.5; trajectory 3.0; timing 0.5; control/georeferencing 1.5.
+\step{Step 1 --- squares} $4.00+2.25+9.00+0.25+2.25=17.75$
+\step{Step 2 --- root} $\sqrt{17.75}=4.21$ cm (0.138 ft) $<5$ cm \checkmark
+\step{Step 3 --- what if} a long featureless stretch raises the trajectory term to 5.0 cm: $\sqrt{4+2.25+25+0.25+2.25}=\sqrt{33.75}=5.81$ cm (0.191 ft) \textbf{fails}
+\result{the trajectory term dominates. To fix it: add control in the weak stretch, slow down, add a return pass for loop closures --- not buy a better laser.}
+\end{worked}
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{Xl}\toprule
+\textbf{Error source (computed in Modules 3--9)} & \textbf{Size}\\\midrule
+Range noise, good unit, hard target, near & 1--3 cm (0.03--0.10 ft)\\
+Range noise, long range / dark target & 5--15 cm (0.16--0.49 ft)\\
+Beam footprint at 50 m (164 ft), 0.3 mrad & 2.0 cm (0.07 ft) spot\\
+1 ms timing at 20 m/s (45 mph) & 2.0 cm (0.07 ft) along-track\\
+0.05° boresight residual at 80 m (262 ft) & 7.0 cm (0.23 ft) lateral\\
+Tactical gyro bias 1°/h, 60 s unaided at 15 m/s & 13 cm (0.43 ft) lateral\\
+Tactical accel bias 0.5 m$g$, 30 s unaided & 2.2 m (7.2 ft)\\
+Consumer MEMS IMU & 10--100$\times$ worse\\\bottomrule
+\end{tabularx}\end{center}
+
+\subsection{Other error sources to plan around}
+\begin{itemize}
+\item \textbf{GNSS multipath} near buildings and under bridges: biased positions that look precise. Watch trajectory standard deviations and check against control.
+\item \textbf{Dynamic occlusions}: traffic hides the curb and creates moving ``ghost'' objects; collect at low-traffic times or make two passes.
+\item \textbf{Hallway effect}: weak along-track constraint (Module 11).
+\item \textbf{Thermal drift}: IMU biases and mount geometry change as the system warms; warm up and do an initial calibration loop.
+\item \textbf{Systematic errors} (wrong geoid, datum, lever-arm typo) do not shrink with RSS or with more data --- they shift everything. Only independent checks catch them.
+\end{itemize}
+
+
+\section{Error budgets for the case-study systems}
+The same recipe --- list the terms, convert each to a ground distance, root-sum-square --- applied to the four systems in this course. Specifications come from the case-study modules cited in each subsection.
+
+\subsection{Ouster OS0 backpack (Module 15)}\label{sec:bud-os0}
+The backpack point at 20 m worked earlier in this module (Section~\ref{sec:fullbudget}) uses the OS0's range terms. Repeating it at other ranges:
+
+\begin{worked}{what accuracy can an OS0 backpack deliver?}
+\textbf{Given:} the backpack budget of Section~\ref{sec:fullbudget} (trajectory 1.5/1.5/2.0 cm; roll/pitch 0.02°, yaw 0.05°; boresight 0.01°; lever arm 2 mm) with the OS0 sensor terms of Module 15 (range accuracy 1.25 cm, precision by range, encoders 0.01°).
+\step{5 m (16 ft)} horizontal 2.5 cm (0.08 ft), vertical 2.0 cm (0.07 ft)
+\step{10 m (33 ft)} horizontal 2.7 cm (0.09 ft), vertical 2.1 cm (0.07 ft)
+\step{20 m (66 ft)} horizontal 3.1 cm (0.10 ft), vertical 2.2 cm (0.07 ft)
+\step{35 m (115 ft)} horizontal 4.3 cm (0.14 ft), vertical 2.5 cm (0.08 ft)
+\result{with good SLAM and control, an OS0 system supports roughly 2--3 cm (1$\sigma$) mapping within 15--20 m. The sensor's own range bias (1.25 cm) is a floor no amount of processing removes without calibration; the trajectory, not the sensor, is the biggest term.}
+\end{worked}
+
+
+\subsection{IMU attitude: GX5-25, GX5-45 and GQ7 (Module 16)}\label{sec:bud-imu}
+
+\fig[0.8]{gx5_point}{Sideways and vertical point error caused by each sensor's attitude accuracy, versus range. The GQ7 heading line coincides with the GX5 roll/pitch line, and the GQ7 roll/pitch line with SLAM-aided heading.}
+
+\begin{center}\footnotesize
+\setlength{\tabcolsep}{3pt}\begin{tabular}{lrrrr}\toprule
+\textbf{Attitude error source} & \textbf{5 m / 16 ft} & \textbf{10 m / 33 ft} & \textbf{20 m / 66 ft} & \textbf{35 m / 115 ft}\\\midrule
+Heading 0.8° RMS (GX5 EKF) & 7.0 cm / 0.23 ft & 14.0 cm / 0.46 ft & 27.9 cm / 0.92 ft & 48.9 cm / 1.60 ft\\
+Heading 0.5° (GX5-45, GNSS, moving) & 4.4 cm / 0.14 ft & 8.7 cm / 0.29 ft & 17.5 cm / 0.57 ft & 30.5 cm / 1.00 ft\\
+Heading 0.25° (GQ7, 1.5 m baseline) & 2.2 cm / 0.07 ft & 4.4 cm / 0.14 ft & 8.7 cm / 0.29 ft & 15.3 cm / 0.50 ft\\
+Roll/pitch 0.25° RMS (GX5) & 2.2 cm / 0.07 ft & 4.4 cm / 0.14 ft & 8.7 cm / 0.29 ft & 15.3 cm / 0.50 ft\\
+Roll/pitch 0.05° (GQ7) & 0.4 cm / 0.01 ft & 0.9 cm / 0.03 ft & 1.7 cm / 0.06 ft & 3.1 cm / 0.10 ft\\
+SLAM-aided heading 0.05° & 0.4 cm / 0.01 ft & 0.9 cm / 0.03 ft & 1.7 cm / 0.06 ft & 3.1 cm / 0.10 ft\\\bottomrule
+\end{tabular}\end{center}
+
+\begin{worked}{georeferencing an OS0 point with the GX5-45 alone}
+\textbf{Given:} a point 20 m to the side; GX5-45 position $\pm2$ m H, $\pm5$ m V; heading 0.8°; roll/pitch 0.25°; OS0 range error 1.31 cm.
+\step{Horizontal} $\sqrt{2.00^2+(20\times0.01396)^2+0.0131^2}=\sqrt{4+0.078+0.0002}=2.02$ m
+\step{Vertical} $\sqrt{5.00^2+(20\times0.00436)^2}=5.00$ m
+\step{Relative (inside one scan)} position error cancels between neighboring points; heading still shears the scan by 28 cm at 20 m
+\result{2 m horizontal and 5 m vertical. Without SLAM and control, a GX5-45 + OS0 rig is a mapping toy; with them, it can be a survey tool.}
+\end{worked}
+
+\begin{worked}{the same point with the GQ7 and RTK}
+\textbf{Given:} point 20 m to the side; GQ7 RTK 2 cm H and V; heading 0.25°; roll/pitch 0.05°; OS0 range error 1.31 cm.
+\step{Horizontal} $\sqrt{2.0^2+(20\times4.36\times10^{-3}\times100)^2+1.31^2}=\sqrt{4+76.2+1.7}=9.0$ cm
+\step{Vertical} $\sqrt{2.0^2+(20\times8.73\times10^{-4}\times100)^2}=\sqrt{4+3.0}=2.7$ cm
+\result{vertical already meets a 3 cm spec; horizontal is held back almost entirely by heading (8.7 of the 9.0 cm). Inside SLAM, LiDAR matching tightens heading toward 0.05°, which brings the horizontal to about 3 cm (Module 14). Position from RTK plus heading from LiDAR is the winning combination.}
+\end{worked}
+
+
+\subsection{RIEGL VUX-240\textsuperscript{24} at 500 ft (Module 17)}\label{sec:bud-riegl}
+Geometry (Case A nadir, Case B 37.5° edge) and specifications are in Module 17.
+
+\fig[0.82]{riegl_imu}{Each IMU option's post-processed attitude accuracy projected to the ground at 500 ft (small-angle rule, Module 2).}
+
+\begin{keyeq}{Attitude error to ground error at 500 ft}
+\[ \delta=\rho\,\delta\alpha\ (\text{rad}),\qquad \rho=152.4\text{ m} \]
+\[ 0.0025^\circ\to0.7\text{ cm},\quad 0.005^\circ\to1.3\text{ cm},\quad 0.010^\circ\to2.7\text{ cm},\quad 0.025^\circ\to6.6\text{ cm} \]
+\begin{symbols}
+$\rho$ & range to the point, 500 ft = 152.4 m & m\\
+$\delta\alpha$ & attitude (roll, pitch or heading) or boresight error & rad\\
+$\delta$ & displacement of the point on the ground & m\\
+\end{symbols}
+\end{keyeq}
+
+\begin{eng}
+\textbf{Where each angle pushes the point} (beam at scan angle $\theta$ from nadir, across track):
+\begin{itemize}
+\item \textbf{Roll} rotates the scan plane: horizontal $\rho\cos\theta\,\delta\phi$, vertical $\rho\sin\theta\,\delta\phi$. At nadir roll is purely horizontal; at the swath edge it starts to tilt heights.
+\item \textbf{Pitch} moves the point along track by $\rho\cos\theta\,\delta\theta$.
+\item \textbf{Heading} rotates the swath about the vertical: along-track $\rho\sin\theta\,\delta\psi$ --- zero at nadir, largest at the edges.
+\item \textbf{Range} error lies along the beam: vertical $\delta\rho\cos\theta$, horizontal $\delta\rho\sin\theta$.
+\item \textbf{GNSS position} moves every point one-for-one; vertical GNSS is typically about 1.5$\times$ horizontal (assumed here).
+\item \textbf{Boresight} residuals act like roll, pitch and heading errors (assumed 0.005° each after calibration); \textbf{lever arm} adds its own size (assumed 5 mm).
+\item \textbf{Timing:} 1PPS synchronization at the microsecond level makes timing negligible (10 $\mu$s at 60 kn = 0.3 mm); a 1 ms error would add 3.1 cm along track.
+\end{itemize}
+\end{eng}
+
+\subsubsection*{RMS budget at 500 ft}
+\begin{worked}{RiLOC-F, Case A --- nadir return from 500 ft AGL}
+\textbf{Assumptions:} GNSS 2.5 cm H, 3.75 cm V (mid-range of 2--3 cm, vertical 1.5$\times$); roll = pitch = heading = 0.005°; boresight 0.005° per axis; lever arm 5 mm; laser range 25 mm = 2.5 cm (RIEGL 20 mm accuracy and 15 mm precision combined).
+\step{Horizontal} GNSS 2.5;\ roll and pitch $\sqrt{1.33^2+1.33^2}=1.88$;\ heading 0 (nadir);\ boresight 1.88;\ lever arm 0.71;\ encoder 0.08\\
+$\sqrt{2.5^2+1.88^2+1.88^2+0.71^2+0.08^2}=\sqrt{13.84}=$ \textbf{3.7 cm (0.12 ft)}
+\step{Vertical} GNSS 3.75;\ range 2.5;\ lever arm 0.5;\ attitude $\approx0$ at nadir\\
+$\sqrt{3.75^2+2.5^2+0.5^2}=\sqrt{20.6}=$ \textbf{4.5 cm (0.15 ft)}
+\result{both under 5 cm, but the vertical has little margin. The largest single term is GNSS, then the laser range.}
+\end{worked}
+
+\begin{worked}{RiLOC-F, Case B --- 500 ft slant return at the 37.5° edge}
+\step{Horizontal} GNSS 2.5;\ roll/pitch 1.49;\ heading $152.4\times\sin37.5^\circ\times8.73\times10^{-5}=0.81$;\ range $2.5\sin37.5^\circ=1.52$;\ boresight 1.70;\ lever 0.71 $\Rightarrow$ \textbf{3.9 cm (0.13 ft)}
+\step{Vertical} GNSS 3.75;\ roll $152.4\sin37.5^\circ\times8.73\times10^{-5}=0.81$;\ range $2.5\cos37.5^\circ=1.98$;\ boresight 0.81;\ lever 0.5 $\Rightarrow$ \textbf{4.4 cm (0.15 ft)}
+\result{at the swath edge, attitude errors begin to tilt heights and heading starts to matter; the totals barely change because GNSS still dominates.}
+\end{worked}
+
+\fig[1.0]{riegl_budget}{Error contributions (1$\sigma$) for the RiLOC-F at 500 ft. The dashed line is the 5 cm class.}
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lcccc}\toprule
+\textbf{Option} & \textbf{H nadir} & \textbf{H edge} & \textbf{V nadir} & \textbf{V edge}\\\midrule
+RiLOC-F & 3.7 cm (0.12 ft) & 3.9 cm (0.13 ft) & 4.5 cm (0.15 ft) & 4.4 cm (0.15 ft)\\
+AP+30 & 5.5 cm (0.18 ft) & 6.6 cm (0.22 ft) & 5.8 cm (0.19 ft) & 5.9 cm (0.19 ft)\\
+AP+50 & 4.5 cm (0.15 ft) & 4.8 cm (0.16 ft) & 5.8 cm (0.19 ft) & 5.8 cm (0.19 ft)\\
+AP+60 & 4.1 cm (0.14 ft) & 4.4 cm (0.14 ft) & 5.8 cm (0.19 ft) & 5.7 cm (0.19 ft)\\\bottomrule
+\end{tabular}\\[2pt]
+{\footnotesize Direct georeferencing only, before ground control or strip adjustment. Applanix GNSS taken as 3.5 cm H / 5.25 cm V (mid-range of 2--5 cm); assumptions as in the worked examples.}
+\end{center}
+\fig[0.85]{riegl_totals}{Totals for each IMU/GNSS option. Better attitude helps horizontal; vertical is limited by GNSS and laser range.}
+
+\subsubsection*{From direct georeferencing to survey grade}
+\begin{worked}{what ground control and strip adjustment buy you}
+\textbf{Given:} after a strip (boresight/trajectory) adjustment tied to ground control, assume the remaining GNSS-related error drops to 1.5 cm H and 1.5 cm V; checkpoint survey RMSE 1.0 cm.
+\step{RiLOC-F, nadir, horizontal} $\sqrt{1.5^2+1.88^2+1.88^2+0.71^2}=3.1$ cm
+\step{RiLOC-F, nadir, vertical} $\sqrt{1.5^2+2.5^2+0.5^2}=3.0$ cm; with checkpoint error $\sqrt{3.0^2+1.0^2}=3.1$ cm
+\step{AP+30, edge, horizontal} $\sqrt{1.5^2+2.98^2+4.05^2+1.52^2+1.70^2+0.71^2}=5.8$ cm --- still over 5 cm, driven by the 0.025° heading
+\result{with control and adjustment, the RiLOC-F (or AP+50/60) system supports a \textbf{5 cm horizontal and 5 cm vertical class with margin}, and approaches a 3 cm vertical class. The AP+30 option needs a narrower swath (heading error grows toward the edges) to meet 5 cm horizontally.}
+\end{worked}
+
+
+\subsection{Capstone corridor (Module 21)}\label{sec:bud-cap}
+\begin{worked}{capstone vertical error budget, 3 cm (0.10 ft) specification}
+\textbf{1$\sigma$ terms (cm):} range noise on pavement 0.8; boresight 1.0; lever arm 0.3; trajectory 1.8 (open sky); control 1.0; timing 0.1.
+\step{Open sky} $\sqrt{0.64+1.00+0.09+3.24+1.00+0.01}=\sqrt{5.98}=2.45$ cm (0.080 ft) \checkmark
+\step{Underpass, trajectory 2.5} $\sqrt{8.99}=3.00$ cm (0.098 ft) --- right at the limit \texttimes
+\step{Underpass with mid-point control, trajectory 1.5} $\sqrt{4.99}=2.23$ cm (0.073 ft) \checkmark
+\result{the extra control target in the underpass is what makes the job pass.}
+\end{worked}
+
+\section{Rules of thumb}
+\begin{enumerate}
+\item Square, add, root --- but only for independent errors.
+\item Angle errors become length errors in proportion to range ($\rho\,\delta\alpha$).
+\item Biases do not average out; they cancel only in differences from the same source.
+\item The error of a point is an ellipsoid, longest along the beam when range noise dominates.
+\item 95\%: multiply by 1.96 (1-D), 2.448 (2-D), 2.796 (3-D).
+\item Verify a budget with Monte Carlo, and verify the Monte Carlo with checkpoints.
+\end{enumerate}
+
+\begin{tryit}
+\textbf{14.1} A point is 15 m straight ahead on a wall at sensor height. $\sigma_\rho=0.3$ cm, $\sigma_H=0.01^\circ$. What are the along-beam and across-beam errors?\\
+\textbf{14.2} Two independent errors of 2 cm and 3 cm are \emph{fully} correlated ($r=+1$) and added. What is the total?\\
+\textbf{14.3} How many points must be averaged to bring 0.5 cm of noise below 0.05 cm?\\
+\textbf{14.4} A 1-D error has $\sigma=1.5$ cm. What is the 95\% value?
+\end{tryit}
+
+\sources{Ghilani (2017), propagation of variances; JCGM 100:2008 (GUM) and JCGM 101:2008 (Monte Carlo propagation); Glennie (2007), kinematic LiDAR error analysis; Ouster OS0, MicroStrain 3DM-GX5/GQ7 and RIEGL VUX-240\textsuperscript{24} datasheets for every sensor term; budget assumptions (trajectory, boresight, lever arm, GNSS for the RIEGL) are stated where used.}

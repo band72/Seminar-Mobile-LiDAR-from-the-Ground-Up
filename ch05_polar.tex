@@ -1,0 +1,103 @@
+\chapter{From Angles and Distance to X, Y, Z}
+
+\section{The idea}
+\begin{kid}
+To tell a friend where a treasure is hidden, you could say: ``Face the big tree. Turn a little to the left. Look a little up. Now walk 25 steps that way.'' That is a \textbf{turn}, a \textbf{tilt} and a \textbf{distance}. A LiDAR records the same three things for every dot. Then it does some triangle math to change them into ``how far forward, how far sideways, how far up'' --- which we call X, Y and Z.
+\end{kid}
+
+\fig[0.6]{polar3d}{A range of 25 m with horizontal angle 40° and vertical angle 15° becomes a point at (18.50, 15.52, 6.47) m.}
+
+\begin{keyeq}{Polar (spherical) to Cartesian}
+\[ x_s=\rho\cos V\cos H,\qquad y_s=\rho\cos V\sin H,\qquad z_s=\rho\sin V \]
+\begin{symbols}
+$x_s,y_s,z_s$ & point coordinates in the \emph{sensor} frame (subscript $s$) & m\\
+$\rho$ & measured range & m\\
+$H$ & horizontal angle (azimuth in the sensor), measured from the sensor's $x$-axis toward its $y$-axis & deg/rad\\
+$V$ & vertical angle above the sensor's horizontal plane (elevation). Note: a total station's \emph{zenith} angle $Z_a$ is $90^\circ-V$ & deg/rad\\
+$\rho\cos V$ & the horizontal part of the range (its shadow on the floor) & m\\
+\end{symbols}
+\end{keyeq}
+
+\begin{eng}
+Read the equation in two moves. \textbf{First tilt:} the vertical angle splits the range into a horizontal part $\rho\cos V$ and a height $\rho\sin V$. \textbf{Then turn:} the horizontal angle splits the horizontal part into $x$ and $y$. That is why $\cos V$ appears in both $x$ and $y$. In a spinning scanner, $H$ comes from the motor's angle encoder at the instant of firing, and $V$ is the fixed elevation angle of the laser channel (``ring'') that fired. Conventions differ by manufacturer (some measure $H$ clockwise, some use zenith angles), so always check the sensor's documentation.
+\end{eng}
+
+\fig[0.95]{polar_steps}{The two moves: tilt (side view), then turn (top view).}
+
+\begin{worked}{one laser return to sensor coordinates}
+\textbf{Given:} $\rho=25.000$ m, $H=40.0^\circ$, $V=15.0^\circ$. Sensor frame: $x$ forward, $y$ left, $z$ up.
+\step{Step 1 --- trig values} $\cos15^\circ=0.96593$, $\sin15^\circ=0.25882$, $\cos40^\circ=0.76604$, $\sin40^\circ=0.64279$
+\step{Step 2 --- horizontal part} $\rho\cos V=25.000\times0.96593=24.148$ m
+\step{Step 3 --- split it} $x_s=24.148\times0.76604=18.499$ m;\quad $y_s=24.148\times0.64279=15.522$ m
+\step{Step 4 --- height} $z_s=25.000\times0.25882=6.470$ m
+\step{Step 5 --- check} $\sqrt{18.499^2+15.522^2+6.470^2}=\sqrt{342.21+240.93+41.86}=\sqrt{625.00}=25.000$ \checkmark
+\result{$(x_s,y_s,z_s)=(18.50,\ 15.52,\ 6.47)$ m.}
+\end{worked}
+
+\begin{improve}
+The seminar used ``$Y$ right'' with a counter-clockwise $H$. Those two choices are inconsistent for a right-handed frame with $Z$ up: with $X$ forward and $Z$ up, a right-handed $Y$ points \emph{left}. We use the robotics standard (ROS REP-103: $x$ forward, $y$ left, $z$ up) throughout this course, and we added the length check in Step 5 --- a habit worth keeping: the computed coordinates must reproduce the measured range.
+\end{improve}
+
+\section{Going backward: Cartesian to polar}
+\begin{keyeq}{Inverse conversion}
+\[ \rho=\sqrt{x^2+y^2+z^2},\qquad H=\operatorname{atan2}(y,x),\qquad V=\operatorname{atan2}\!\left(z,\sqrt{x^2+y^2}\right) \]
+\begin{symbols}
+$\operatorname{atan2}(a,b)$ & the angle whose tangent is $a/b$, placed in the correct quadrant using the signs of $a$ and $b$ & rad\\
+\end{symbols}
+\end{keyeq}
+This is what the SLAM software uses to \emph{predict} what range and bearing the sensor should see to a known object (Module 10).
+
+\section{Mechanical versus solid-state scanners}
+\fig[1.0]{patterns}{How three kinds of scanner sample the world (angles in degrees).}
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{lXX}\toprule
+ & \textbf{Mechanical (spinning)} & \textbf{Solid-state}\\\midrule
+How the beam moves & a motor spins a stack of 16--128 lasers & MEMS mirror, prisms (rosette), optical phased array, or flash (no motion)\\
+Field of view & 360° horizontal, 30--90° vertical & typically 60--120° wide, forward-looking\\
+Point pattern & regular rings & raster or non-repeating; coverage fills in over time\\
+Strengths & full surround view, mature, well-modeled & small, light, rugged, cheap, no large moving parts\\
+Watch-outs & motor wear, size, cost & narrower view; need several units or motion for full coverage; pattern-specific calibration\\\bottomrule
+\end{tabularx}\end{center}
+
+\section{How dense will my points be?}
+\begin{kid}
+Imagine painting a road with a paint-roller that only touches the road once every big step. If you walk faster, the stripes get further apart. If you roll faster, they get closer.
+\end{kid}
+
+\fig[0.85]{spacing}{Each sweep of the scanner lays a line of points across the road.}
+
+\begin{keyeq}{Point spacing and point rate}
+\[ \Delta_{\text{along}}=\frac{v}{f_{\text{rot}}},\qquad \Delta_{\text{across}}\approx\rho\,\Delta\theta,\qquad N_{\text{pts/s}}=N_{\text{ch}}\times N_{\text{az}}\times f_{\text{rot}} \]
+\begin{symbols}
+$\Delta_{\text{along}}$ & spacing between scan lines in the direction of travel & m\\
+$v$ & platform speed & m/s\\
+$f_{\text{rot}}$ & rotation (scan-line) rate & Hz\\
+$\Delta_{\text{across}}$ & spacing between neighboring points along one scan line & m\\
+$\Delta\theta$ & angular step between pulses & rad\\
+$N_{\text{ch}}$ & number of laser channels & ---\\
+$N_{\text{az}}$ & azimuth steps per revolution ($360^\circ/\Delta\theta$) & ---\\
+\end{symbols}
+\end{keyeq}
+
+\begin{worked}{planning a corridor survey}
+\textbf{Given:} 16-channel scanner, 0.2° horizontal step, 10 Hz, driving 15 m/s (54 km/h). Target 20 m away.
+\step{Step 1 --- along-track} $\Delta_{\text{along}}=15/10=1.5$ m between sweeps (for each channel)
+\step{Step 2 --- across-track} $0.2^\circ=0.003491$ rad; $\Delta_{\text{across}}=20\times0.003491=0.070$ m
+\step{Step 3 --- point rate} $N_{\text{az}}=360/0.2=1800$; $N=16\times1800\times10=288\,000$ points/s
+\step{Step 4 --- slow down} at 5 m/s the along-track spacing becomes 0.5 m
+\result{1.5 m between lines is fine for a pavement surface but too coarse for curb lines or small utilities --- drive slower, tilt the scanner, or use more channels.}
+\end{worked}
+
+\begin{tip}
+Mobile mapping heads for survey work are often mounted \emph{tilted} so the spinning plane slices the road at an angle; then several channels hit the same strip of road at different times and along-track gaps close up. Point-density specifications should be checked on the delivered data (points per m$^2$ on a test patch), not assumed from the brochure.
+\end{tip}
+
+\begin{tryit}
+\textbf{5.1} Convert $\rho=40.000$ m, $H=-30^\circ$, $V=5^\circ$ into $(x_s,y_s,z_s)$. Check the length.\\
+\textbf{5.2} A point is at $(3.0,\,4.0,\,12.0)$ m in the sensor frame. Find $\rho$, $H$ and $V$.\\
+\textbf{5.3} A 32-channel scanner spins at 20 Hz with 0.4° steps. How many points per second? What is the along-track spacing at 10 m/s?
+\end{tryit}
+
+\sources{ROS REP-103, \emph{Standard Units of Measure and Coordinate Conventions}; Ouster OS0 Rev8 datasheet (channels, columns, field of view).}

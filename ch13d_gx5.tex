@@ -1,0 +1,277 @@
+\chapter{Choosing an IMU: AHRS, GNSS/INS and Tactical GNSS/INS}
+
+Two small MicroStrain sensors are popular on backpack and robot LiDAR rigs: the \textbf{3DM-GX5-25}, an attitude and heading reference system (AHRS), and the \textbf{3DM-GX5-45}, a GNSS-aided inertial navigation system (GNSS/INS). They share the same MEMS inertial core, but one knows only which way it is pointing while the other also knows where it is. In this module we drive both around a city block --- the \emph{Block Loop Challenge} --- and watch their errors propagate into a traverse and into LiDAR points. Then we step up to a third, higher-grade sensor, the \textbf{3DM-GQ7}: a dual-antenna, RTK-capable GNSS/INS with a 1.5°/h gyro, and ask how much of the problem money can solve.
+
+\begin{kid}
+Imagine two friends walking around the block with their eyes closed. The first friend has a compass and counts steps. The second friend has the same compass and step-counter but also gets a phone message every second saying ``you are about here, give or take two meters.'' Who gets home closest? And who can tell you exactly which way the mailbox is? That is the whole story of this module.
+\end{kid}
+
+\section{Meet the two sensors}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.18}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{4.3cm}XX}\toprule
+\textbf{Specification (manufacturer datasheets)} & \textbf{3DM-GX5-25 AHRS} & \textbf{3DM-GX5-45 GNSS/INS}\\\midrule
+What it outputs & attitude (roll, pitch, heading), raw IMU & attitude, \emph{position}, \emph{velocity}, raw IMU, GNSS\\
+Heading reference & magnetometer & GNSS (when moving) + magnetometer\\
+Roll/pitch accuracy (EKF) & $\pm0.25^\circ$ RMS & $\pm0.25^\circ$ RMS\\
+Heading accuracy (EKF) & $\pm0.8^\circ$ RMS & $\pm0.8^\circ$ RMS (GNSS heading 0.5°)\\
+Position accuracy & none & $\pm2$ m (6.6 ft) RMS horizontal, $\pm5$ m (16.4 ft) RMS vertical\\
+Velocity accuracy & none & $\pm0.1$ m/s (0.33 ft/s) RMS\\
+GNSS receiver & --- & 72-channel, L1-band GPS/QZSS, GLONASS, BeiDou, Galileo, SBAS; 1--4 Hz\\
+RTK corrections & --- & not listed (single-frequency L1; SBAS only)\\
+Time pulse & --- & 30 ns RMS\\
+Gyro bias instability & 8°/h & 8°/h\\
+Gyro noise density & 0.005°/s/$\sqrt{\text{Hz}}$ & 0.005°/s/$\sqrt{\text{Hz}}$\\
+Gyro initial bias error & $\pm0.04^\circ$/s & ---\\
+Accel bias instability & $\pm0.04$ m$g$ & $\pm0.04$ m$g$\\
+Accel noise density & 25 $\mu g/\sqrt{\text{Hz}}$ & 20 $\mu g/\sqrt{\text{Hz}}$\\
+Accel initial bias error & $\pm0.002$ $g$ (2 m$g$) & ---\\
+Output rate & IMU to 1 kHz; EKF to 500 Hz & IMU to 1 kHz; EKF to 500 Hz\\
+Size, weight & 36$\times$36.6$\times$11 mm, 16.5 g & 44.2$\times$36.6$\times$11.1 mm, 20 g\\\bottomrule
+\end{tabularx}\end{center}
+{\footnotesize Values from the MicroStrain 3DM-GX5-25 datasheet (8400-0093) and the 3DM-GX5 GNSS/INS datasheet; ``---'' means not stated in the document we used. Check the current datasheet and manual for your unit's firmware.}
+
+\section{Turning datasheet noise into random walks}
+\begin{keyeq}{Noise density to angle and velocity random walk}
+\[ \text{ARW}\ [^\circ/\sqrt{\text{h}}]=N_g\ [^\circ/\text{s}/\sqrt{\text{Hz}}]\times60,\qquad
+\text{VRW}\ [\text{m/s}/\sqrt{\text{s}}]=N_a\ [g/\sqrt{\text{Hz}}]\times9.81 \]
+\[ \sigma_\psi(t)=\text{ARW}\sqrt{t},\qquad \sigma_v(t)=\text{VRW}\sqrt{t} \]
+\begin{symbols}
+$N_g$ & gyro noise density from the datasheet & °/s/$\sqrt{\text{Hz}}$\\
+$N_a$ & accelerometer noise density & $g/\sqrt{\text{Hz}}$\\
+ARW & angle random walk: heading wander from white noise & °/$\sqrt{\text{h}}$\\
+VRW & velocity random walk & m/s/$\sqrt{\text{s}}$\\
+60 & $\sqrt{3600}$: converts $\sqrt{\text{s}}$ to $\sqrt{\text{h}}$ & ---\\
+\end{symbols}
+\end{keyeq}
+
+\begin{worked}{the GX5's random walks}
+\step{ARW} $0.005\times60=0.30^\circ/\sqrt{\text{h}}$
+\step{Heading wander after one 70 s lap} $0.30\times\sqrt{70/3600}=0.30\times0.139=0.042^\circ$
+\step{VRW} $25\times10^{-6}\times9.81=2.45\times10^{-4}$ m/s/$\sqrt{\text{s}}$
+\step{Velocity wander after 70 s} $2.45\times10^{-4}\times\sqrt{70}=0.0021$ m/s
+\result{the white noise is small. The danger is in the \emph{biases}, the \emph{tilt} and the \emph{magnetometer}, as the Block Loop will show.}
+\end{worked}
+
+\section{Pros and cons}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{2.3cm}XX}\toprule
+ & 3DM-GX5-25 AHRS & 3DM-GX5-45 GNSS/INS\\\midrule
+Pros & tiny (16.5 g), low power ($\sim$0.5 W), low cost; good roll/pitch from gravity; high-rate IMU data for SLAM de-skew; works indoors and underground & absolute position (meter level) with no setup; heading from GNSS motion, not only magnetism; precise time pulse (30 ns) usable as a sync source; velocity output; bounded error over any distance\\
+Cons & heading depends on the magnetometer --- disturbed by vehicles, rebar, steel bridges, motors; no position at all; free-inertial position drifts to tens of meters in a minute & L1-band receiver with no RTK in its datasheet: $\pm2$ m H, $\pm5$ m V --- 100$\times$ too coarse for survey, and it cannot use network RTK such as FDOT's FPRN; needs open sky; heading weak at standstill; same MEMS core coasts poorly in tunnels\\
+Best role & IMU inside LiDAR SLAM (indoor, handheld) & IMU + coarse georeference for SLAM outdoors; GNSS factor and timing for a factor graph\\\bottomrule
+\end{tabularx}\end{center}
+
+\section{The Block Loop Challenge}
+We run a closed traverse around one city block, starting and ending at control point A, exactly like a four-sided compass-and-tape traverse.
+
+\begin{center}\small
+\begin{tabular}{cccccc}\toprule
+Leg & From--To & Distance & Azimuth & $\Delta E=L\sin\alpha$ (m) & $\Delta N=L\cos\alpha$ (m)\\\midrule
+1 & A--B & 200 m (656.17 ft) & 090° & +200.000 & 0.000\\
+2 & B--C & 150 m (492.13 ft) & 180° & 0.000 & $-150.000$\\
+3 & C--D & 200 m (656.17 ft) & 270° & $-200.000$ & 0.000\\
+4 & D--A & 150 m (492.13 ft) & 000° & 0.000 & +150.000\\\midrule
+ & & 700 m (2,296.59 ft) & & 0.000 & 0.000\\\bottomrule
+\end{tabular}\end{center}
+Control coordinates: A (1000, 1000), B (1200, 1000), C (1200, 850), D (1000, 850). The vehicle drives at 10 m/s, so one lap takes 70 s. A steel bridge carries leg B--C over a creek, and an underpass covers part of leg C--D.
+
+\subsection*{Run 1 --- AHRS heading + odometer, systematic errors only}
+\fig[0.82]{trav_ahrs}{Sketch of the traverse with the AHRS runs. Errors are drawn 8 times larger than computed so they can be seen.}
+
+\begin{worked}{a traverse that closes perfectly and is still wrong}
+\textbf{Given:} AHRS heading reads $0.8^\circ$ too high on every leg (uncorrected magnetic declination/hard-iron error, equal to the RMS spec); odometer reads 0.2\% long.
+\step{Leg 1} $L=200\times1.002=200.400$ m, $\alpha=90.8^\circ$: $\Delta E=200.400\sin90.8^\circ=+200.380$, $\Delta N=200.400\cos90.8^\circ=-2.798$ $\Rightarrow$ B$'$ = (1200.380, 997.202)
+\step{Legs 2--4} computed the same way; every leg is turned by $+0.8^\circ$ and stretched by 0.2\%
+\step{Closure} $\sum\Delta E=0.000$, $\sum\Delta N=0.000$ --- \textbf{perfect closure}
+\step{But} B$'$ is $\sqrt{0.380^2+2.798^2}=2.82$ m from the true B; C$'$ is 3.53 m from C
+\result{a closed loop hides any error that rotates or scales the whole figure. The misclosure is zero because a rotated, stretched rectangle still closes. Only a \emph{second} control point (or an azimuth mark) reveals it --- the same reason a surveyor checks into a second known point instead of trusting a loop.}
+\end{worked}
+
+\begin{bigidea}
+Closure tests catch errors that \emph{change} around the loop. They are blind to errors that are the \emph{same} on every leg.
+\end{bigidea}
+
+\subsection*{Run 2 --- add the steel bridge}
+\begin{worked}{a local magnetic disturbance}
+\textbf{Given:} Run 1, plus the steel bridge deflects the magnetometer by $-2.0^\circ$ on leg B--C (so that leg's total heading error is $0.8-2.0=-1.2^\circ$).
+\step{Recompute} B$'$ = (1200.380, 997.202);\ C$'$ = (1203.528, 846.935);\ D$'$ = (1003.148, 849.733);\ A$'$ = (1005.246, 1000.018)
+\step{Misclosure} $\sqrt{5.246^2+0.018^2}=5.25$ m over 700 m $\Rightarrow$ precision ratio 1:133
+\step{Compass-rule adjustment} distribute the misclosure in proportion to cumulative distance (200, 350, 550, 700 m): corrections $-1.50$, $-2.62$, $-4.12$ m in Easting at B, C, D
+\step{Adjusted errors vs.\ truth} B 3.02 m, C 3.20 m, D 1.01 m
+\result{the adjustment makes the traverse \emph{look} closed, but B and C are still about 3 m wrong because the constant 0.8° bias was never seen. A 1:133 traverse would fail any survey standard by a factor of 50 or more.}
+\end{worked}
+
+\subsection*{Run 3 --- random heading errors (Monte Carlo)}
+\begin{worked}{what does a typical lap look like?}
+\textbf{Given:} on each leg an independent heading error drawn from $N(0,\ 0.8^\circ)$ and an odometer scale error from $N(0,\ 0.2\%)$; 20\,000 simulated laps.
+\step{Result} mean misclosure 4.3 m; 95\% of laps below 8.6 m
+\step{Hand check (Module 14 propagation)} a heading error $\delta\alpha$ on a leg of length $L$ moves the end point by $L\,\delta\alpha$ sideways. With $\delta\alpha=0.8^\circ=0.01396$ rad: legs of 200 m give 2.79 m, legs of 150 m give 2.09 m. RSS of the four: $\sqrt{2(2.79^2)+2(2.09^2)}=4.93$ m (RMS radial misclosure) --- consistent with the simulation.
+\result{an AHRS-plus-odometer traverse is a meter-level tool. Heading error, multiplied by distance, is the whole story.}
+\end{worked}
+
+\subsection*{Run 4 --- pure inertial navigation with the GX5-25}
+\fig[0.82]{gx5_drift}{Each IMU error source, integrated with no aiding at all, over one 70 s lap.}
+
+\begin{worked}{could the IMU alone drive the loop?}
+\textbf{Given:} the GX5 IMU integrated with no odometer, no magnetometer, no GNSS, for one 70 s lap at 10 m/s.
+\step{Tilt error} $0.25^\circ$ roll/pitch error leaks $9.81\sin0.25^\circ=0.0428$ m/s$^2$ of gravity: $\tfrac12(0.0428)(70^2)=105$ m
+\step{Uncalibrated accel bias} $2$ m$g=0.0196$ m/s$^2$: $\tfrac12(0.0196)(70^2)=48$ m
+\step{Uncalibrated gyro bias} $0.04^\circ$/s $\Rightarrow$ heading off by $2.8^\circ$ after the lap; sideways error $\tfrac12\times10\times6.98\times10^{-4}\times70^2=17$ m
+\step{Best case, biases estimated at start} accel bias instability 0.04 m$g$: $\tfrac12(3.92\times10^{-4})(70^2)=0.96$ m; gyro 8°/h: 0.95 m
+\result{tens to hundreds of meters in one minute. A MEMS IMU is a superb \emph{short-term} motion sensor (milliseconds to seconds) and a hopeless \emph{navigator}. This is not a defect of the GX5 --- it is the nature of every MEMS IMU (Module 7).}
+\end{worked}
+
+\subsection*{Run 5 --- the 3DM-GX5-45 GNSS/INS}
+\fig[0.82]{trav_ins}{The GNSS/INS keeps every position within a few meters; in the underpass it coasts on the IMU and drift begins to grow. Errors drawn 5 times actual size.}
+
+\begin{worked}{bounded, but meter-level}
+\textbf{Given:} the GX5-45 EKF with $\pm2$ m RMS horizontal and $\pm5$ m RMS vertical; a 20 s underpass on leg C--D.
+\step{Each control point} 95\% horizontal circle radius $=2.448\times(2/\sqrt2)=3.46$ m (Module 14: split 2 m radial RMS into 1.41 m per axis, scale by 2.448)
+\step{Misclosure} start and end are independent fixes: $\sigma=\sqrt{2}\times2=2.8$ m RMS --- \emph{no growth with distance}
+\step{Underpass coast (20 s)} if the filter has the tilt to 0.05° and the accel bias to 0.04 m$g$: $\tfrac12(9.81\sin0.05^\circ+3.9\times10^{-4})(20^2)=1.8$ m; at the full 0.25° tilt spec it would be 8.6 m
+\step{Time pulse} 30 ns RMS at 10 m/s is 0.3 $\mu$m --- timing is no longer an error source
+\result{the GNSS/INS never gets lost, but its errors are meters, not centimeters. It answers ``which street am I on?'', not ``where is this curb?''}
+\end{worked}
+
+\section{Stepping up: the 3DM-GQ7 dual-antenna RTK GNSS/INS}
+\begin{kid}
+Now give the second friend a much better step-counter, a pair of ears far apart that hear exactly which way the street runs, and phone messages that say ``you are here, give or take two centimeters'' instead of two meters. That friend can walk the block and point to the mailbox almost perfectly --- as long as the phone has a signal.
+\end{kid}
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.18}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{4.2cm}XX}\toprule
+\textbf{Specification} & \textbf{3DM-GX5-45} & \textbf{3DM-GQ7}\\\midrule
+Gyro bias instability & 8°/h & \textbf{1.5°/h}\\
+Angle random walk & 0.30°/$\sqrt{\text{h}}$ (from noise density) & \textbf{0.15°/$\sqrt{\text{h}}$}\\
+Accel bias instability & 40 $\mu g$ & \textbf{5 $\mu g$}\\
+Accel noise density & 20 $\mu g/\sqrt{\text{Hz}}$ & 20 $\mu g/\sqrt{\text{Hz}}$\\
+Roll / pitch & 0.25° RMS & \textbf{0.05°}\\
+Heading & 0.8° RMS (magnetometer/GNSS) & \textbf{0.25° RMS, dual antenna, 1.5 m (4.9 ft) baseline}\\
+GNSS & one L1-band receiver & \textbf{two multiband receivers} (L1/L2, E1/E5b, B1/B2), 184 channels\\
+Position & 2 m (6.6 ft) H, 5 m (16.4 ft) V & 1.25 m (4.1 ft) H, 2 m (6.6 ft) V standalone; \textbf{2 cm (0.07 ft) with RTK} (1 cm + 1 ppm)\\
+Velocity & 0.1 m/s (0.33 ft/s) & 0.05 m/s (0.16 ft/s)\\
+Output rate & up to 1 kHz (IMU) / 500 Hz (EKF) & up to 1 kHz (IMU and EKF)\\
+Size, weight, power & 44$\times$37$\times$11 mm, 20 g & 76$\times$69$\times$13 mm, \textbf{78 g}, 2.0 W typ.\\\bottomrule
+\end{tabularx}\end{center}
+{\footnotesize GQ7 values from the MicroStrain 3DM-GQ7 GNSS/INS datasheet. Marketing calls the GQ7 IMU ``tactical grade''; by the bias ranges in Module 7 its 1.5°/h gyro sits at the boundary between high-end industrial and entry tactical.}
+
+\subsection*{Why two antennas give heading}
+\begin{keyeq}{Dual-antenna heading accuracy}
+\[ \psi=\operatorname{atan2}(\Delta E,\ \Delta N)\ \text{ of the antenna-to-antenna vector},\qquad \sigma_\psi\approx\frac{\sigma_{\text{rel}}}{b} \]
+\begin{symbols}
+$b$ & baseline: distance between the two GNSS antennas & m\\
+$\sigma_{\text{rel}}$ & precision of the relative (carrier-phase) position between the antennas, across the baseline & m\\
+$\sigma_\psi$ & heading standard deviation (small-angle rule, Module 2) & rad\\
+\end{symbols}
+\end{keyeq}
+\fig[0.72]{gq7_baseline}{The same relative-position precision gives better heading over a longer baseline.}
+
+\begin{worked}{heading on a backpack versus a truck}
+\step{Back out $\sigma_{\text{rel}}$ from the datasheet} $0.25^\circ=4.36\times10^{-3}$ rad;\ $\sigma_{\text{rel}}=1.5\times4.36\times10^{-3}=6.5$ mm
+\step{Backpack, 0.5 m baseline} $\sigma_\psi=0.0065/0.5=0.013$ rad $=0.75^\circ$
+\step{Vehicle roof, 2.5 m baseline} $0.0065/2.5=0.0026$ rad $=0.15^\circ$
+\result{on a short backpack baseline the GQ7's GNSS heading is no better than the GX5's magnetometer. Dual-antenna heading shines on vehicles. Unlike a magnetometer it is immune to steel and works at standstill, but it needs open sky at both antennas.}
+\end{worked}
+
+\subsection*{Real-time corrections in Florida: the FDOT FPRN}
+\begin{kid}
+RTK is like having a friend standing on a spot whose location is known exactly. Your friend radios you, ``The satellites are fooling me by this much right now.'' You subtract the same mistake from your own reading and suddenly you know where you are to within a couple of centimeters. In Florida, the state runs over a hundred of these ``friends'' for free.
+\end{kid}
+
+\begin{eng}
+The \textbf{Florida Permanent Reference Network (FPRN)}, operated by FDOT, is a statewide network of 100+ continuously operating, dual-frequency geodetic GNSS reference stations (CORS). It is currently \textbf{free}; each rover needs its own account (register online; activation in 24--48 hours). Corrections are streamed over the internet by \textbf{NTRIP}:
+\begin{itemize}
+\item \textbf{Solutions:} single baseline (nearest station), VRS (virtual reference station), MAX and iMAX (network solutions), and FKP.
+\item \textbf{Formats:} RTCM 2.3, \textbf{RTCM 3.1}, CMR+, and RTCM 3.3 MSM4 (format availability varies by solution type).
+\item \textbf{Datum:} NAD 83(2011), epoch 2010.0, on the GRS 80 ellipsoid --- RTK heights are \emph{ellipsoid} heights until a geoid model (e.g.\ GEOID18) converts them to NAVD 88.
+\item \textbf{Typical RTK accuracy:} about 1--2 cm horizontal and 2--3 cm vertical with good sky, geometry and low multipath (FDOT).
+\end{itemize}
+\textbf{Connecting the GQ7.} The GQ7 accepts RTCM 3.1 corrections. MicroStrain's own 3DM-RTK cellular modem connects to its SensorCloud base network; to use FPRN instead, an \textbf{NTRIP client} (a field computer, data logger or cellular router) logs into the FPRN caster with the rover's account, selects a mountpoint (VRS or iMAX recommended), and forwards the RTCM stream to the GQ7's correction input. Many NTRIP mountpoints, including VRS, expect the rover to send its approximate position (an NMEA GGA message) back to the caster.
+
+\textbf{Why not the GX5-45?} Its datasheet lists a single-frequency L1 receiver with SBAS and does not list RTK or RTCM input, so it cannot produce a centimeter RTK fix from FPRN corrections. For FDOT-network RTK in this course's sensor lineup, use the GQ7 (or an external RTK receiver).
+\end{eng}
+
+\begin{worked}{single baseline versus VRS}
+\textbf{Given:} GQ7 RTK spec 1 cm + 1 ppm. The nearest FPRN station is 22 km away.
+\step{Single baseline} $1\text{ cm}+1\times10^{-6}\times22\,000\text{ m}=1\text{ cm}+2.2\text{ cm}=3.2$ cm horizontal --- exceeds the 2 cm budget used in Run 6
+\step{VRS / iMAX} the network models the errors and creates a virtual station a few km away, e.g.\ 3 km: $1+0.3=1.3$ cm
+\result{in rural Florida, choose a network (VRS or iMAX) mountpoint rather than the nearest single station, or the ppm term will dominate.}
+\end{worked}
+
+\begin{tip}
+\textbf{Standards of practice for network RTK.} Before and after each session, \emph{check in on a known control point} and record the difference; log the mountpoint, solution type (VRS/iMAX/single), fix status, PDOP and the number of satellites; record the network datum and epoch (NAD 83(2011) epoch 2010.0) and the geoid model used; and keep independent checkpoints out of the adjustment (Module 13). This is the documentation a reviewer will expect when the accuracy statement cites RTK positioning under Florida's Chapter 5J-17 and FDOT practice.
+\end{tip}
+
+\subsection*{Run 6 --- the Block Loop with the GQ7 and RTK}
+\begin{worked}{centimeters instead of meters}
+\textbf{Given:} RTK corrections from an FPRN VRS mountpoint (virtual station about 2 km away); RTK 1 cm + 1 ppm; dual-antenna heading on a 1.5 m roof baseline; the same 20 s underpass.
+\step{Each control point} $1\text{ cm}+1\text{ ppm}\times2\,000\text{ m}=1.2$ cm, within the 2 cm figure; 95\% circle $\approx2.448\times(2/\sqrt2)=3.5$ cm
+\step{Misclosure} independent fixes at start and end: $\sqrt2\times2=2.8$ cm RMS
+\step{Traverse precision} 2.8 cm in 700 m $\approx$ 1:25\,000 --- a respectable conventional traverse
+\step{Underpass coast} see below: 0.2--1.0 m after 20 s
+\result{with RTK, the Block Loop closes like a good total-station traverse in open sky. The underpass is still the weak link.}
+\end{worked}
+
+\subsection*{How coasting errors grow}
+\begin{keyeq}{Three-term coast error during a GNSS outage}
+\[ \delta x(t)\approx\sqrt{(\sigma_v t)^2+\left(\tfrac12 b_a t^2\right)^2+\left(\tfrac16 g\,b_g t^3\right)^2} \]
+\begin{symbols}
+$\sigma_v$ & velocity error at the moment GNSS is lost --- grows the error \emph{linearly} & m/s\\
+$b_a$ & accelerometer bias (instability) --- grows with $t^2$ & m/s$^2$\\
+$b_g$ & gyro bias: tilts the platform a little more every second, leaking gravity --- grows with $t^3$ & rad/s\\
+$g$ & gravity, 9.81 & m/s$^2$\\
+$t$ & time since GNSS was lost & s\\
+\end{symbols}
+\end{keyeq}
+\fig[0.82]{gq7_coast}{Coast error versus outage length. Velocity dominates first; the gyro's cubic term dominates later.}
+
+\begin{worked}{20 s and 60 s outages}
+\step{GX5-45, 20 s} $\sigma_vt=0.1\times20=2.0$;\ $\tfrac12(3.9\times10^{-4})(400)=0.08$;\ $\tfrac16(9.81)(3.88\times10^{-5})(8000)=0.51$ $\Rightarrow$ 2.07 m
+\step{GQ7 (datasheet velocity 0.05 m/s), 20 s} $1.00$;\ $0.01$;\ $\tfrac16(9.81)(7.27\times10^{-6})(8000)=0.095$ $\Rightarrow$ 1.00 m
+\step{GQ7 after RTK (velocity 0.01 m/s, assumed), 20 s} $0.20$;\ $0.01$;\ $0.095$ $\Rightarrow$ 0.22 m
+\step{60 s outage} GX5-45: 15.0 m;\quad GQ7 (RTK velocity): $\sqrt{0.6^2+0.09^2+2.57^2}=2.64$ m
+\result{the better gyro wins big on long outages (the $t^3$ term is 5$\times$ smaller), and RTK-quality velocity wins on short ones. Even so, no MEMS INS holds centimeters through a minute-long tunnel: that still takes LiDAR SLAM, control in the tunnel, or a navigation-grade INS.}
+\end{worked}
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{1.6cm}X}\toprule
+GQ7 pros & centimeter RTK position; dual-antenna heading that ignores magnetism and works at standstill; 5--6$\times$ better gyro and accelerometer biases than the GX5; multiband GNSS for faster, more robust RTK fixes; up to 1 kHz output for de-skewing\\
+GQ7 cons & needs RTK corrections (base station or network) and open sky at \emph{two} antennas; heading quality depends on the baseline you can physically mount; heavier, larger and more power-hungry; higher cost; still a MEMS INS --- long outages need other aiding\\\bottomrule
+\end{tabularx}\end{center}
+
+\fig[0.85]{imu_compare}{The three sensors side by side. For the AHRS, the ``20-s coast'' bar is free-inertial drift with an uncalibrated accelerometer bias; it has no absolute position.}
+
+\section{What these attitude errors do to LiDAR points}
+The attitude specs above are propagated into LiDAR point errors in Module 14 (Section~\ref{sec:bud-imu}). In short, at 20 m a 0.8° heading moves a point 27.9 cm (0.92 ft); the GX5-45 alone georeferences an OS0 point to about 2.0 m H / 5.0 m V (6.6 / 16.4 ft), while the GQ7 with RTK reaches about 9.0 cm H / 2.7 cm V (0.30 / 0.09 ft) --- limited by heading until SLAM tightens it.
+
+\section{The right job for each sensor: inside SLAM}
+\begin{eng}
+Inside a tightly-coupled SLAM system such as LIO-SAM (Module 12), the EKF attitude spec hardly matters. What matters is the \textbf{raw IMU} over the short gap between keyframes, because that is what preintegration uses:
+\[ \sigma_\theta(\Delta t)=N_g\sqrt{\Delta t},\qquad \sigma_v(\Delta t)=N_a\,g\,\sqrt{\Delta t} \]
+For a 0.1 s keyframe gap: $\sigma_\theta=0.005\times\sqrt{0.1}=0.0016^\circ$ and $\sigma_v=25\times10^{-6}\times9.81\times\sqrt{0.1}=7.8\times10^{-5}$ m/s. The 8°/h bias contributes $8/3600\times0.1=0.0002^\circ$. These are tiny: the LiDAR scan matching then pins heading to a few hundredths of a degree (the 0.05° of Module 14), and the biases are estimated online as graph variables. So:
+\begin{itemize}
+\item \textbf{Indoors, underground, under canopy:} the GX5-25 is enough. Its magnetometer heading should be \emph{down-weighted or ignored}; LiDAR supplies heading. Georeference with surveyed control targets.
+\item \textbf{Outdoors, open sky:} the GX5-45 adds a GNSS factor that removes long-term drift and ties the map to the datum at the meter level, plus a precise time pulse for synchronizing the LiDAR. Survey-grade absolute accuracy still requires RTK/PPK GNSS or ground control (Module 13).
+\item \textbf{Outdoors with RTK (in Florida, from FPRN):} the GQ7 supplies centimeter GNSS factors and steel-proof heading, turning the factor graph's absolute accuracy from meters into centimeters in open sky. It is the only one of the three that can georeference a survey-grade map without ground control --- but you should still check it with independent checkpoints (Module 13).
+\item \textbf{None of the three} replaces a navigation-grade or high-end tactical INS on a highway mobile-mapping vehicle, where GNSS outages of tens of seconds must be bridged with centimeter accuracy (Module 7).
+\end{itemize}
+\end{eng}
+
+\begin{tip}
+\textbf{Magnetometer hygiene.} Perform the hard- and soft-iron calibration with the sensor mounted on the final rig (the rig's own steel and motors are the biggest disturbance), keep the unit as far as practical from motors and batteries, and treat magnetic heading as suspect near vehicles, rebar, steel bridges and buried utilities --- Run 2's 2° bridge error is a conservative example.
+\end{tip}
+
+\begin{tryit}
+\textbf{16.1} A GX5-25 heading has a constant $+0.5^\circ$ bias around a closed 1 km square loop. What is the misclosure? How far off is the far corner (about 707 m away diagonally)?\\
+\textbf{16.2} Convert a gyro noise density of 0.01°/s/$\sqrt{\text{Hz}}$ to ARW in °/$\sqrt{\text{h}}$.\\
+\textbf{16.3} What roll/pitch error keeps vertical LiDAR error below 3 cm at 25 m?\\
+\textbf{16.4} (Simple) Why can a loop close perfectly and still be wrong?\\
+\textbf{16.5} With the GQ7's 6.5 mm relative precision, what antenna baseline gives 0.1° heading?\\
+\textbf{16.6} Estimate the GQ7 coast error after a 30 s outage with RTK-quality velocity (0.01 m/s).
+\end{tryit}
+
+\sources{MicroStrain/HBK \emph{3DM-GX5-25 datasheet} (8400-0093); \emph{3DM-GX5 GNSS/INS datasheet}; \emph{3DM-GQ7 GNSS/INS datasheet}; \emph{3DM-RTK} sheet; FDOT \emph{FPRN Frequently Asked Questions}. The Block Loop traverse and coast-error values are computed in this course from those specifications.}

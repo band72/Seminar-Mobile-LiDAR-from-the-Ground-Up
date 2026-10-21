@@ -1,0 +1,162 @@
+\chapter{Rotation, Pose and Frames}
+
+\section{Pose = where you are + which way you face}
+\begin{kid}
+Stand in the middle of a room. ``Where you are'' is your spot on the floor (and how tall you are). ``Which way you face'' is whether you look at the board or the window, whether you tilt your head, whether you lean. A LiDAR on a car needs to know both of these things, all the time, because the car bumps, turns and leans. Together they are called its \textbf{pose}.
+\end{kid}
+
+\begin{eng}
+Pose has six degrees of freedom: position $\vect p=(X,Y,Z)$ and orientation, usually written as three angles --- \textbf{roll} $\phi$, \textbf{pitch} $\theta$, \textbf{yaw} $\psi$ --- or as a $3\times3$ rotation matrix $\vect R$, or a unit quaternion. In LIO-SAM's notation the pose is a rigid-body transformation $\vect T=[\vect R\mid\vect p]\in SE(3)$, where $SE(3)$ (``special Euclidean group'') is simply the set of all rotations-plus-translations, and $\vect R\in SO(3)$ (``special orthogonal group'') the set of all proper rotation matrices.
+\end{eng}
+
+\fig[0.95]{rpy}{Roll, pitch and yaw on a mapping vehicle.}
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{lllX}\toprule
+\textbf{Angle} & \textbf{About axis} & \textbf{Everyday example} & \textbf{Effect of a residual error on the map}\\\midrule
+Roll $\phi$ & $x$ (forward) & banked curve & tilts points left/right of the drive line; heights wrong on one side\\
+Pitch $\theta$ & $y$ (sideways) & climbing a grade & far points too high/low ahead of and behind the vehicle\\
+Yaw $\psi$ & $z$ (vertical) & turning a corner & rotates the whole scan; lateral error grows with range\\\bottomrule
+\end{tabularx}\end{center}
+
+\section{The right-hand rule: naming X, Y, Z and roll, pitch, yaw}
+\begin{kid}
+Hold up your \textbf{right} hand. Point your \textbf{first (index) finger} straight ahead --- that is \textbf{X}. Point your \textbf{middle finger} to the left --- that is \textbf{Y}. Stick your \textbf{thumb} straight up --- that is \textbf{Z}. \textbf{The thumb is always Z.} Another way to say it: curl your fingers from X toward Y, and your thumb points to Z. Now make a thumbs-up: the way your curled fingers wrap around your thumb is the ``plus'' direction for turning around that thumb. Point your thumb along X and your fingers show plus \textbf{roll}; along Y, plus \textbf{pitch}; along Z (straight up), plus \textbf{yaw}.
+\end{kid}
+
+\fig[1.0]{righthand}{The right-hand rule. Left: index finger = X, middle finger = Y, and the thumb is always Z; equivalently, the fingers curl from X toward Y and the thumb points to Z. Right: with the thumb along an axis, the curled fingers show the positive rotation about it --- roll about X, pitch about Y, yaw about Z.}
+
+\begin{eng}
+\textbf{Rule 1 --- the axes form a right-handed set.} With the right hand: index finger $=+X$, middle finger $=+Y$, \textbf{thumb $=+Z$} --- the thumb is always Z. Equivalently, curl the fingers from $+X$ toward $+Y$ and the thumb points along $+Z$; mathematically $\hat{\vect x}\times\hat{\vect y}=\hat{\vect z}$ (Module 2). (Some textbooks label the fingers in a different order, e.g.\ thumb $=X$; any cyclic relabeling gives the same right-handed set, but this course keeps the thumb on Z throughout so that axis naming and the rotation rule below use the hand the same way.) Every coordinate frame in this course --- sensor, body, IMU, world (ENU) and map projection with height --- is right-handed. A left-handed frame (one axis flipped) is a mirror image, and no rotation can turn one into the other; mixing them is a classic cause of a ``mirrored'' point cloud.
+
+\textbf{Rule 2 --- positive rotations follow the curl.} Point the right thumb along the positive axis; the fingers curl in the direction of a \emph{positive} angle. Seen from the arrow tip looking back toward the origin, positive is \textbf{counter-clockwise}.
+\begin{itemize}
+\item \textbf{Roll} $\phi$ = rotation about $+X$
+\item \textbf{Pitch} $\theta$ = rotation about $+Y$
+\item \textbf{Yaw} $\psi$ = rotation about $+Z$
+\end{itemize}
+Because the \emph{direction} of each axis decides the sign, the same physical motion can be $+$ in one convention and $-$ in another. The two conventions you will meet most:
+\end{eng}
+
+\fig[0.95]{rhr_vehicle}{The same vehicle in the two common right-handed body frames.}
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{2.2cm}XX}\toprule
+ & FLU: X forward, Y left, Z up & FRD: X forward, Y right, Z down\\\midrule
+Used by & ROS (REP-103), LIO-SAM, most LiDAR drivers, this course & aircraft, many INS/IMU products (NED world frame)\\
++ roll (about X) & left side \emph{up}, right side down & right side \emph{down}\\
++ pitch (about Y) & nose \emph{down} & nose \emph{up}\\
++ yaw (about Z) & nose turns \emph{left} (counter-clockwise from above) & nose turns \emph{right} (clockwise from above, like azimuth)\\
+World frame & ENU: East, North, Up & NED: North, East, Down\\\bottomrule
+\end{tabularx}\end{center}
+
+\begin{worked}{checking a frame with your hand (and with the cross product)}
+\textbf{Given:} a datasheet says a sensor's axes are ``X forward, Y right, Z up.''
+\step{Hand test} right index finger forward (X), middle finger right (Y) --- the thumb (Z) now points \emph{down}, not up.
+\step{Cross-product test} forward $\times$ right $=(1,0,0)\times(0,-1,0)=(0,0,-1)$ = down in a frame where $(0,1,0)$ is left.
+\result{``X forward, Y right, Z up'' is \textbf{left-handed}. Either the datasheet means Z down (FRD) or one axis is mislabeled. Resolve it with the manufacturer before computing a single lever arm or boresight; a sign error here mirrors or tilts the entire cloud.}
+\end{worked}
+
+\begin{tip}
+When setting up a rig, stand behind the vehicle, hold up your right hand in the way the manual defines the axes, and \emph{physically} roll, pitch and yaw the IMU a few degrees while watching the live output. Each angle should increase in the direction your fingers curl. Write the verified convention in the calibration record (Appendix E).
+\end{tip}
+
+\section{Rotating a point in 2-D}
+\fig[0.42]{rot2d}{Rotating $\vect p=(3,4)$ by 30° counter-clockwise.}
+
+\begin{keyeq}{2-D rotation}
+\[ \begin{pmatrix}x'\\y'\end{pmatrix}=\underbrace{\begin{pmatrix}\cos\psi&-\sin\psi\\\sin\psi&\cos\psi\end{pmatrix}}_{\vect R(\psi)}\begin{pmatrix}x\\y\end{pmatrix} \]
+\begin{symbols}
+$(x,y)$ & original point & m\\
+$(x',y')$ & point after rotation & m\\
+$\psi$ & rotation angle, positive counter-clockwise (``psi'') & rad\\
+$\vect R(\psi)$ & the rotation matrix; its columns are where the $x$- and $y$-axes end up & ---\\
+\end{symbols}
+\end{keyeq}
+
+\begin{worked}{rotate (3, 4) by 30°}
+\step{Step 1} $\cos30^\circ=0.86603$, $\sin30^\circ=0.50000$
+\step{Step 2} $x'=0.86603\times3-0.5\times4=2.59808-2.00000=0.598$
+\step{Step 3} $y'=0.5\times3+0.86603\times4=1.50000+3.46410=4.964$
+\step{Step 4 --- check} length before $=\sqrt{9+16}=5$; after $=\sqrt{0.598^2+4.964^2}=\sqrt{0.358+24.642}=5.000$ \checkmark
+\result{$(0.598,\ 4.964)$. A rotation never changes lengths --- a great error check.}
+\end{worked}
+
+\section{Rotations in 3-D}
+\begin{keyeq}{The three elementary rotations}
+\[ \vect R_x(\phi)=\begin{pmatrix}1&0&0\\0&\cos\phi&-\sin\phi\\0&\sin\phi&\cos\phi\end{pmatrix}\!,\
+\vect R_y(\theta)=\begin{pmatrix}\cos\theta&0&\sin\theta\\0&1&0\\-\sin\theta&0&\cos\theta\end{pmatrix}\!,\
+\vect R_z(\psi)=\begin{pmatrix}\cos\psi&-\sin\psi&0\\\sin\psi&\cos\psi&0\\0&0&1\end{pmatrix} \]
+\[ \vect R=\vect R_z(\psi)\,\vect R_y(\theta)\,\vect R_x(\phi) \qquad(\text{``ZYX'' or yaw--pitch--roll order}) \]
+\begin{symbols}
+$\phi,\theta,\psi$ & roll, pitch, yaw (``phi, theta, psi'') & rad\\
+$\vect R_x$ etc. & rotation about one axis only; the axis's own row and column hold 1 and 0s & ---\\
+$\vect R$ & the full body-to-world rotation; applied right-to-left: roll first, then pitch, then yaw & ---\\
+\end{symbols}
+\end{keyeq}
+
+\begin{eng}
+\textbf{Order matters.} Rotating 90° about $x$ then 90° about $z$ ends somewhere different than the reverse order --- try it with a book. Every software package documents its order and sign convention; a large share of real-world georeferencing bugs are convention mismatches. Two other important facts:
+\begin{itemize}
+\item $\vect R^\mathsf{T}\vect R=\vect I$ and $\det\vect R=+1$. So the inverse rotation (world-to-body) is just $\vect R^\mathsf{T}$. LIO-SAM writes $\vect R_t=\vect R^{\mathsf{WB}}_t={\vect R^{\mathsf{BW}}_t}^{\mathsf T}$ for exactly this reason.
+\item In the FLU frame used here ($x$ forward, $y$ left, $z$ up), a \emph{positive} rotation about $y$ tips the nose \emph{down}. Many INS products use FRD ($x$ forward, $y$ right, $z$ down) where positive pitch is nose up. Always confirm.
+\end{itemize}
+\end{eng}
+
+\begin{tip}
+\textbf{Yaw is not azimuth.} Surveyors measure azimuth clockwise from grid north. ROS/ENU systems measure yaw counter-clockwise from east. Convert with $\psi=90^\circ-\alpha_{\text{az}}$. A vehicle heading due north has $\alpha_{\text{az}}=0^\circ$ but $\psi=90^\circ$. Grid north also differs from true north by the \emph{convergence angle} of your map projection --- another place a heading can quietly go wrong.
+\end{tip}
+
+\section{Homogeneous transforms: rotation and shift in one matrix}
+\begin{keyeq}{Rigid-body transformation}
+\[ \vect r_W=\vect R\,\vect r_B+\vect p
+\quad\Longleftrightarrow\quad
+\begin{pmatrix}\vect r_W\\1\end{pmatrix}=\underbrace{\begin{pmatrix}\vect R&\vect p\\\vect 0^{\mathsf T}&1\end{pmatrix}}_{\vect T}\begin{pmatrix}\vect r_B\\1\end{pmatrix} \]
+\begin{symbols}
+$\vect r_B$ & a point expressed in the body (vehicle/IMU) frame B & m\\
+$\vect r_W$ & the same point expressed in the world frame W & m\\
+$\vect R$ & body-to-world rotation & ---\\
+$\vect p$ & position of the body origin in W & m\\
+$\vect T$ & $4\times4$ transform; chaining frames = multiplying $\vect T$'s & ---\\
+\end{symbols}
+\end{keyeq}
+The relative motion between two poses is $\Delta\vect T_{i,j}=\vect T_i^{-1}\vect T_j$. That is LIO-SAM's equation (12), which defines the \emph{lidar odometry factor} (Module 12). (The paper prints it as $\vect T_i^{\mathsf T}\vect T_{i+1}$; for the full $4\times4$ matrix the correct operation is the inverse, which equals the transpose only for the rotation block.)
+
+\section{Rotation from a turning rate: the exponential map}
+Gyroscopes give angular \emph{rates}. Over a short time $\Delta t$ the body turns through a rotation vector $\boldsymbol\omega\Delta t$ (direction = axis, length = angle). LIO-SAM's equation (6) converts that small turn into a rotation matrix with the exponential map:
+\begin{keyeq}{Rotation update (Rodrigues' formula)}
+\[ \vect R_{t+\Delta t}=\vect R_t\exp\!\big([\boldsymbol\omega\Delta t]_\times\big),\qquad
+\exp([\vect a]_\times)=\vect I+\frac{\sin\alpha}{\alpha}[\vect a]_\times+\frac{1-\cos\alpha}{\alpha^2}[\vect a]_\times^2 \]
+\begin{symbols}
+$\boldsymbol\omega$ & angular-rate vector from the gyros (bias-corrected) & rad/s\\
+$\vect a$ & rotation vector $\boldsymbol\omega\Delta t$; $\alpha=\|\vect a\|$ is the turn angle & rad\\
+$[\vect a]_\times$ & skew-symmetric matrix $\begin{psmallmatrix}0&-a_z&a_y\\a_z&0&-a_x\\-a_y&a_x&0\end{psmallmatrix}$; $[\vect a]_\times\vect b=\vect a\times\vect b$ & rad\\
+\end{symbols}
+\end{keyeq}
+
+\begin{worked}{one gyro step}
+\textbf{Given:} yaw rate $\omega_z=0.0842$ rad/s (from a real IMU message in the seminar), $\Delta t=0.005$ s (200 Hz). Start level, heading $\psi=0$.
+\step{Step 1} $\alpha=0.0842\times0.005=0.000421$ rad $=0.0241^\circ$, all about $z$
+\step{Step 2} For rotation purely about $z$, Rodrigues reduces to $\vect R_z(\alpha)$: $\cos\alpha=0.99999991$, $\sin\alpha=0.000421$
+\step{Step 3} New heading $\psi=0.0241^\circ$. If the rate stays constant, 200 such steps (1 s) add up to $200\times0.000421=0.0842$ rad $=4.82^\circ$
+\result{the strapdown computer repeats this tiny multiplication 200 times per second to track attitude.}
+\end{worked}
+
+\section{Why tiny angle errors matter}
+\fig[0.72]{smallangle}{Lateral error versus range for three residual angle errors.}
+
+\begin{worked}{0.05° heading error at 80 m}
+\step{Step 1 --- radians} $0.05\times\pi/180=0.0008727$ rad
+\step{Step 2 --- small-angle rule} $80\times0.0008727=0.0698$ m
+\result{7.0 cm. At 100 m: 8.7 cm. A 0.1° error at 100 m: 17.5 cm --- bigger than most engineering tolerances.}
+\end{worked}
+
+\begin{tryit}
+\textbf{6.1} Rotate $(10,0)$ by $90^\circ$; then rotate $(0,10)$ by $-90^\circ$. What do you notice?\\
+\textbf{6.2} A vehicle drives with azimuth 135° (southeast). What is its ENU yaw?\\
+\textbf{6.3} What heading error produces 2 cm lateral error at 40 m?
+\end{tryit}
+
+\sources{ROS REP-103 (FLU body frame, ENU world frame); Groves, P.\ D.\ (2013), \emph{Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems}, 2nd ed.\ (rotations, FRD/NED conventions); Shan \emph{et al.}\ (2020), eq.\ (6), (12).}

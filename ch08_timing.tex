@@ -1,0 +1,94 @@
+\chapter{Timing, GNSS and Motion Compensation}
+
+\section{One clock to rule them all}
+\begin{kid}
+Imagine you and a friend take photos of a race. If your camera's clock is one second slow, your photo of the runner crossing the line will be labeled at the wrong time --- and the runner will seem to be in the wrong place. Every sensor on a mapping car must use the \emph{same} clock, set perfectly, so every laser dot gets matched to exactly where the car was at that instant.
+\end{kid}
+
+\fig[0.85]{pps}{GNSS PPS, LiDAR and IMU events all share one time base.}
+
+\begin{eng}
+A GNSS receiver outputs a \textbf{PPS} (pulse-per-second) electrical edge aligned to GNSS time to within tens of nanoseconds, plus a serial/NMEA message saying \emph{which} second that edge was. The LiDAR and IMU discipline their internal clocks to this edge (hardware synchronization), or the system uses the IEEE~1588 Precision Time Protocol (PTP) over Ethernet. Every point then carries a timestamp in one common time base. If the LiDAR's driver instead stamps packets when the computer \emph{receives} them (software time), latency and jitter of milliseconds are common --- unacceptable for survey work.
+\end{eng}
+
+\section{How far does a timing error move a point?}
+\begin{keyeq}{Timing-error displacement}
+\[ \delta_{\text{along}}=v\,\delta t\qquad\qquad \delta_{\text{lat}}\approx\rho\,\dot\psi\,\delta t \]
+\begin{symbols}
+$\delta t$ & time offset between LiDAR and trajectory clocks & s\\
+$v$ & platform speed & m/s\\
+$\delta_{\text{along}}$ & resulting shift along the direction of travel & m\\
+$\dot\psi$ & turning (yaw) rate --- the dot means ``rate of change'' & rad/s\\
+$\rho$ & range to the point & m\\
+$\delta_{\text{lat}}$ & sideways shift caused by the rotation that happened during $\delta t$ & m\\
+\end{symbols}
+\end{keyeq}
+
+\begin{worked}{a 1 ms clock offset}
+\textbf{Given:} $\delta t=1$ ms $=0.001$ s; driving 20 m/s (72 km/h); turning a corner at 30°/s; point 50 m away.
+\step{Step 1 --- along-track} $20\times0.001=0.020$ m $=2.0$ cm
+\step{Step 2 --- rotation during the offset} $30^\circ/\text{s}\times0.001$ s $=0.03^\circ=0.000524$ rad
+\step{Step 3 --- sideways at 50 m} $50\times0.000524=0.026$ m $=2.6$ cm
+\result{2 cm along-track on straights, plus 2.6 cm sideways in turns. Because the second term depends on turning, the error shows up as ``corners look smeared but straights look fine'' --- a classic timing-error signature.}
+\end{worked}
+
+\begin{improve}
+The seminar computed only the along-track term. In practice the rotational term is often larger (scanner heads on vehicles turn fast and points are far away), and it is the one that makes buildings ``double'' at intersections. Both terms are included here.
+\end{improve}
+
+\section{GNSS and IMU: a perfect partnership}
+\fig[0.82]{gnssimu}{The IMU drifts but never stops; GNSS never drifts but can disappear. Together they are far better than either.}
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{lXX}\toprule
+ & \textbf{GNSS} & \textbf{IMU}\\\midrule
+Measures & absolute position (cm-level with RTK/PPK), velocity & angular rate, specific force\\
+Rate & 1--20 Hz & 100--1000 Hz\\
+Long-term & no drift (bounded error) & unbounded drift\\
+Short-term & noisy, multipath, outages & smooth, precise\\
+Fails in & tunnels, canopy, urban canyons, indoors & never ``fails'' --- just drifts\\
+Attitude & weak (needs two antennas for heading) & full roll, pitch, yaw\\\bottomrule
+\end{tabularx}\end{center}
+
+\begin{eng}
+\textbf{Loosely coupled} fusion feeds GNSS position solutions into a Kalman filter that corrects the INS. \textbf{Tightly coupled} fusion feeds raw pseudoranges/carrier phases, so even 2--3 visible satellites still help in an urban canyon. Survey trajectories are usually post-processed with a forward-and-backward \emph{smoother} (PPK), which uses future data to improve past estimates --- the same ``smoothing'' idea that LIO-SAM's name refers to.
+\end{eng}
+
+\section{Motion compensation (de-skewing)}
+\begin{kid}
+Take a photo of a fast car with a slow camera and the car looks stretched and blurry. A spinning LiDAR takes 1/10 of a second to sweep all the way around, and the vehicle moves during that time. If the computer pretends the whole sweep happened at one instant, straight walls come out bent. De-skewing fixes the blur by moving each dot back to where it really was.
+\end{kid}
+
+\fig[0.95]{deskew}{A wall scanned while driving toward it at 15 m/s. Left: raw sweep. Right: after de-skewing each point with its own pose.}
+
+\begin{keyeq}{Per-point de-skew}
+\[ \vect r_W^{(k)}=\vect T(t_0+\tau_k)\,\vect r_s^{(k)}\qquad\text{or, in the scan's start frame:}\qquad \vect r_{s_0}^{(k)}=\vect T(t_0)^{-1}\,\vect T(t_0+\tau_k)\,\vect r_s^{(k)} \]
+\begin{symbols}
+$k$ & index of the point inside one sweep & ---\\
+$\tau_k$ & the point's time offset within the sweep (the per-point ``time'' field in the LiDAR message) & s\\
+$t_0$ & the sweep's reference time (start or middle) & s\\
+$\vect T(t)$ & sensor pose at time $t$, interpolated from the high-rate IMU trajectory & ---\\
+$\vect r_s^{(k)}$ & the point as measured, in the sensor frame & m\\
+\end{symbols}
+\end{keyeq}
+
+\begin{worked}{how big is the skew?}
+\textbf{Given:} 10 Hz sweep (0.1 s), vehicle at 15 m/s; a point fired at $\tau=0.075$ s into the sweep; reference $t_0$ = sweep start.
+\step{Step 1 --- distance moved} $15\times0.075=1.125$ m
+\step{Step 2 --- whole sweep} first-to-last difference $=15\times0.1=1.5$ m
+\step{Step 3 --- correction} shift this point by 1.125 m in the direction of travel (expressed in the start frame)
+\result{without de-skewing, points within one sweep are up to 1.5 m inconsistent --- orders of magnitude beyond tolerance. LIO-SAM uses its IMU-predicted motion for exactly this step before any matching is done.}
+\end{worked}
+
+\begin{tip}
+A practical QA check before processing: confirm that (1) the IMU stream is present at its nominal rate with no gaps, (2) every LiDAR point has a per-point time field, (3) LiDAR and IMU timestamps overlap and are in the same time base, and (4) the static lever-arm/boresight transform is loaded. If any of these is missing, stop --- no amount of processing will fix it later.
+\end{tip}
+
+\begin{tryit}
+\textbf{8.1} At highway speed (30 m/s), what along-track error does a 0.5 ms offset cause?\\
+\textbf{8.2} A backpack operator turns their body at 90°/s. With a 2 ms offset, what is the sideways error at 15 m?\\
+\textbf{8.3} (Simple) Why does a photo of a fast-moving car look stretched?
+\end{tryit}
+
+\sources{Ouster OS0 Rev8 datasheet (PTP/PPS sync $<1$ ms, timestamp $<1\ \mu$s); IEEE 1588 Precision Time Protocol; Groves (2013), GNSS/INS integration; Shan \emph{et al.}\ (2020), de-skewing.}

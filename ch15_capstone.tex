@@ -1,0 +1,192 @@
+\chapter{Capstone and Sample Project Dataset}
+
+This module walks through a complete mobile-LiDAR project, using a tool from every earlier module. Work through it with a calculator.
+
+\begin{kid}
+This is the ``big game'' at the end of the season. You use every skill you practiced: measuring with light, turning angles into dots, keeping track of the car, fixing mistakes with landmarks, and checking your work with secret checkpoints. If every step is done carefully, the final map can be trusted to build a real road.
+\end{kid}
+
+\section{The assignment}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{>{\bfseries}lX}\toprule
+Project & topographic survey of a 2.0 km (6,562 ft) urban road for resurfacing design\\
+Specification & hard-surface vertical $\text{RMSE}_z\le3$ cm (0.10 ft); horizontal $\text{RMSE}_H\le5$ cm (0.16 ft) (ASPRS Ed.\ 2 style)\\
+Features & curbs, edges of pavement, striping, manholes, signs; along-track point spacing $\le0.25$ m (0.82 ft) on pavement\\
+Complication & a 300 m (984 ft) underpass with no GNSS\\
+System & tilted survey-grade head, 32 channels, 20 Hz, 4 channels effectively sweep the road per rotation; tactical IMU (gyro 1°/h, accel 0.5 m$g$); PTP time sync; dual-frequency GNSS\\\bottomrule
+\end{tabularx}\end{center}
+
+\section{Step-by-step plan}
+\begin{worked}{1 --- drive speed from point spacing (Module 5)}
+\step{Requirement} $\Delta_{\text{along}}=\dfrac{v}{f_{\text{rot}}\times N_{\text{eff}}}\le0.25$ m
+\step{Solve for $v$} $v\le0.25\times20\times4=20$ m/s
+\step{Choose} 13 m/s ($\approx$30 mph) for traffic and margin: $\Delta_{\text{along}}=13/80=0.16$ m \checkmark
+\end{worked}
+
+\begin{worked}{2 --- the underpass: how bad is an unaided IMU? (Module 7)}
+\step{Outage time} $300/13=23.1$ s
+\step{Accelerometer drift} $\tfrac12\times0.0049\times23.1^2=1.31$ m along-track
+\step{Gyro drift} $\tfrac12\times13\times4.85\times10^{-6}\times23.1^2=0.017$ m lateral
+\result{lateral is fine; along-track is not. LiDAR SLAM helps but an underpass is a corridor (Module 11) with weak along-track constraint. \textbf{Plan:} chevron targets at the entrance, midpoint and exit as control, plus a return pass for loop closures.}
+\end{worked}
+
+\begin{worked}{3 --- timing and calibration checks (Modules 8--9)}
+\step{Timing} PTP sync to $\pm0.1$ ms: $13\times0.0001=1.3$ mm --- negligible
+\step{Boresight} after the morning calibration loop the residual is 0.02°; at the longest useful range (30 m): $30\times0.000349=1.0$ cm
+\end{worked}
+
+\begin{worked}{4 --- vertical error budget (Section~\ref{sec:bud-cap})}
+\step{Open sky} 2.45 cm (0.080 ft) $\le$ 3 cm \checkmark
+\step{Underpass, trajectory 2.5 cm} 3.00 cm (0.098 ft) --- at the limit \texttimes
+\step{Underpass with mid-point control} 2.23 cm (0.073 ft) \checkmark
+\result{the extra control target in the underpass is what makes the job pass. The full budget is in Module 14.}
+\end{worked}
+
+\begin{worked}{5 --- control and checkpoint layout (Module 13)}
+\step{Checkpoints} ASPRS minimum 30 over 2.0 km: about one every 67 m, alternating sides of the road and including the underpass
+\step{Control} every $\sim$250 m plus the three underpass targets; never reused as checkpoints
+\step{Survey accuracy} RTK/total station at $\le1.5$ cm vertical, i.e.\ at least $2\times$ better than the 3 cm product
+\end{worked}
+
+\section{Collecting and processing}
+\begin{enumerate}
+\item Morning: power and storage checks, PPS/PTP lock, calibration file loaded, 5-minute static IMU alignment, short loop past known features.
+\item Collect northbound and southbound at 13 m/s, log traffic and GNSS outages.
+\item Office: PPK trajectory; SLAM with loop closures; inspect trajectory $\sigma$ (expect a bump in the underpass); georeference; de-skew; strip-to-strip check.
+\item Clean noise and traffic; classify ground; adjust to control.
+\item Measure the 30 checkpoints \emph{last}, without changing anything afterwards.
+\end{enumerate}
+
+\begin{worked}{6 --- the accuracy results}
+\textbf{Measured from 30 checkpoints:} vertical $\text{RMSE}_{z,\text{data}}=1.9$ cm (mean $+0.3$ cm); horizontal $\text{RMSE}_x=2.0$, $\text{RMSE}_y=1.7$ cm. Checkpoint survey RMSE: 0.8 cm vertical, 1.0 cm horizontal.
+\step{Vertical} $\sqrt{1.9^2+0.8^2}=\sqrt{3.61+0.64}=2.06$ cm $\le3$ cm \checkmark
+\step{Horizontal} $\text{RMSE}_H=\sqrt{2.0^2+1.7^2}=2.62$ cm; with survey error $\sqrt{2.62^2+1.0^2}=2.81$ cm $\le5$ cm \checkmark
+\step{Cloud-to-cloud} northbound vs southbound on pavement: mean 0.2 cm, spread 0.9 cm; one 2.5 cm patch at the underpass exit flagged, re-checked against an extra shot, within tolerance
+\result{the data meet specification. Write it down.}
+\end{worked}
+
+\begin{tip}
+\textbf{Sample accuracy statement.} ``This dataset was tested for vertical accuracy at 30 independent checkpoints on hard surfaces and found to have $\text{RMSE}_z$ = 2.1 cm, including checkpoint survey uncertainty, and $\text{RMSE}_H$ = 2.8 cm horizontally, in accordance with the ASPRS Positional Accuracy Standards, Edition 2. Horizontal datum: [NAD83(2011) State Plane Florida East, US ft]; vertical datum: [NAVD88, GEOID18].'' Fill in the datums your project actually used, and comply with the content requirements of the governing standards of practice (in Florida, Ch.\ 5J-17 F.A.C.).
+\end{tip}
+
+
+\section{Sample project dataset: trajectory, checkpoints and accuracy report}\label{sec:dataset}
+The following dataset is \textbf{realistic but simulated}: it was generated to match the Main Street plan above (coordinates are fictitious). It is supplied with the course as two CSV files, so participants can recompute every number:
+\begin{itemize}
+\item \texttt{sample\_trajectory.csv}: time, station, position, heading, trajectory standard deviations, GNSS status;
+\item \texttt{sample\_checkpoints.csv}: 30 checkpoints with survey and LiDAR elevations and residuals (cm and ft).
+\end{itemize}
+
+\fig[1.0]{sample_trajectory}{Top: the 2.0 km (6,562 ft) trajectory with 10 control points and 30 checkpoints; the red stretch is the GNSS outage under the underpass. Bottom: the trajectory's own 1$\sigma$ estimates rise in the underpass and are pulled back down by the mid-underpass control target.}
+
+\begin{bigidea}
+Read the trajectory before reading the point cloud. The bottom plot shows exactly where accuracy is strong (open sky, 1.4 cm / 0.05 ft) and where it is weak (underpass, up to 3.6 cm / 0.12 ft) --- which is where extra checkpoints belong.
+\end{bigidea}
+
+\subsection*{Checkpoint table}
+{\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{longtable}{lcccccc}\toprule
+\textbf{ID} & \textbf{Station m / ft} & \textbf{Side} & \textbf{Survey elev.\ m / ft} & \textbf{dZ cm / ft} & \textbf{dE cm} & \textbf{dN cm}\\\midrule
+\endfirsthead
+\textbf{ID} & \textbf{Station m / ft} & \textbf{Side} & \textbf{Survey elev.\ m / ft} & \textbf{dZ cm / ft} & \textbf{dE cm} & \textbf{dN cm}\\\midrule
+\endhead
+CP01 & 33 / 108 & R & 6.207 / 20.365 & -0.9 / -0.030 & -3.0 & -1.6\\
+CP02 & 100 / 327 & L & 6.421 / 21.066 & +0.1 / +0.003 & -0.8 & -1.6\\
+CP03 & 166 / 546 & R & 6.627 / 21.742 & +0.4 / +0.013 & +3.8 & +2.1\\
+CP04 & 233 / 765 & L & 6.821 / 22.377 & -0.3 / -0.010 & -0.9 & -1.3\\
+CP05 & 300 / 983 & R & 6.999 / 22.963 & +2.8 / +0.092 & -0.1 & -2.3\\
+CP06 & 366 / 1202 & L & 7.161 / 23.494 & -3.6 / -0.118 & +1.4 & -2.7\\
+CP07 & 433 / 1421 & R & 7.307 / 23.973 & -1.0 / -0.033 & +0.9 & -1.1\\
+CP08 & 500 / 1640 & L & 7.439 / 24.408 & +1.7 / +0.056 & -0.8 & +1.5\\
+CP09 & 567 / 1859 & R & 7.562 / 24.809 & -0.5 / -0.016 & -1.0 & +1.5\\
+CP10 & 633 / 2077 & L & 7.679 / 25.195 & -0.4 / -0.013 & +3.2 & +0.5\\
+CP11 & 700 / 2296 & R & 7.797 / 25.581 & -0.6 / -0.020 & -2.7 & -1.5\\
+CP12 & 767 / 2515 & L & 7.921 / 25.987 & +2.4 / +0.079 & -3.7 & +0.9\\
+CP13 & 833 / 2734 & R & 8.055 / 26.427 & +1.8 / +0.059 & +2.2 & -0.7\\
+CP14 & 900 / 2953 & L & 8.203 / 26.914 & -3.0 / -0.098 & +2.5 & +0.6\\
+CP15 & 967 / 3171 & R & 8.368 / 27.453 & -2.5 / -0.082 & -2.8 & +3.0\\
+CP16 & 1033 / 3390 & L & 8.549 / 28.047 & -0.8 / -0.026 & +1.6 & -0.7\\
+CP17 & 1100 / 3609 & R & 8.744 / 28.689 & -0.2 / -0.007 & +0.4 & -2.5\\
+CP18 & 1167 / 3828 & L & 8.952 / 29.369 & +2.3 / +0.075 & -0.7 & +2.6\\
+CP19 & 1233 / 4047 & R & 9.166 / 30.073 & -0.1 / -0.003 & -0.2 & -0.6\\
+CP20 & 1300 / 4265 & L & 9.383 / 30.783 & +3.2 / +0.105 & +4.0 & -0.6\\
+CP21 & 1367 / 4484 & R & 9.595 / 31.481 & +4.5 / +0.148 & +1.4 & -2.9\\
+CP22 & 1433 / 4703 & L & 9.800 / 32.151 & -1.9 / -0.062 & +1.0 & +0.8\\
+CP23 & 1500 / 4922 & R & 9.991 / 32.779 & +0.5 / +0.016 & +0.8 & +1.3\\
+CP24 & 1567 / 5141 & L & 10.167 / 33.357 & +2.6 / +0.085 & -1.8 & +0.0\\
+CP25 & 1634 / 5359 & R & 10.327 / 33.880 & +0.7 / +0.023 & -1.1 & +1.3\\
+CP26 & 1700 / 5578 & L & 10.470 / 34.351 & +1.0 / +0.033 & -0.7 & -1.0\\
+CP27 & 1767 / 5797 & R & 10.601 / 34.780 & -0.9 / -0.030 & -2.5 & +1.7\\
+CP28 & 1834 / 6016 & L & 10.722 / 35.178 & -1.1 / -0.036 & +0.9 & +0.9\\
+CP29 & 1900 / 6235 & R & 10.839 / 35.562 & +0.6 / +0.020 & +2.3 & +2.4\\
+CP30 & 1967 / 6453 & L & 10.958 / 35.950 & +2.5 / +0.082 & -0.6 & -2.9\\
+\midrule
+\multicolumn{4}{l}{\textbf{Mean} (bias)} & +0.31 / +0.010 & & \\
+\multicolumn{4}{l}{\textbf{RMSE}} & \textbf{1.90 / 0.062} & 2.00 & 1.71\\\bottomrule
+\end{longtable}}
+{\footnotesize dZ = LiDAR $-$ survey on hard surfaces (NVA). dE, dN measured on painted chevrons and curb corners. Checkpoint survey accuracy: 0.8 cm (0.026 ft) vertical, 1.0 cm (0.033 ft) horizontal.}
+
+\fig[0.92]{sample_residuals}{Vertical residuals at the 30 checkpoints. No residual exceeds 3$\times$RMSE (5.7 cm), so none is flagged as a blunder.}
+
+\subsection*{Computations}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{5.2cm}X}\toprule
+Vertical, data fit & sum of squares 107.99 cm$^2$; $\text{RMSE}_z=\sqrt{107.99/30}=1.90$ cm (0.062 ft); mean +0.31 cm\\
+Vertical, with checkpoint error & $\sqrt{1.90^2+0.8^2}=2.06$ cm (0.068 ft)\\
+Horizontal, data fit & $\text{RMSE}_x=2.00$, $\text{RMSE}_y=1.71$; $\text{RMSE}_H=\sqrt{2.00^2+1.71^2}=2.63$ cm (0.086 ft)\\
+Horizontal, with checkpoint error & $\sqrt{2.634^2+1.0^2}=2.82$ cm (0.092 ft), using unrounded $\text{RMSE}_H$\\
+Largest residual & 4.5 cm (0.148 ft) $<3\times\text{RMSE}$ --- no blunders\\\bottomrule
+\end{tabularx}\end{center}
+
+\subsection*{Filled-in accuracy report (sample)}
+\begin{tcolorbox}[base,colback=white,colframe=navy,title={SURVEY AND MAP REPORT --- ACCURACY SECTION (sample, simulated data)}]
+\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{4.3cm}X}
+Project & Main Street corridor topographic survey (Module 21 sample), 2.0 km / 6,562 ft\\
+Survey type and purpose & Topographic survey by terrestrial mobile LiDAR, for roadway resurfacing design\\
+Survey date & last date of data acquisition: \_\_\_\_\_\_ (5J-17.051(3)(d))\\
+Horizontal datum & NAD 83(2011), epoch 2010.0; SPCS 83 Florida East zone; units: international foot (stated per contract)\\
+Vertical datum & NAVD 88 via GEOID18\\
+Control & 10 control points (RTK/static GNSS and digital leveling); FPRN VRS for rover RTK; mid-underpass control target\\
+Equipment & tilted survey-grade mobile scanner; tactical IMU; dual-frequency GNSS; PTP timing\\
+Trajectory & PPK GNSS/INS with LiDAR SLAM and loop closures; 300 m GNSS outage bridged by SLAM and control\\
+Accuracy agreement & 3 cm RMSE$_V$ (NVA) and 5 cm RMSE$_H$ classes (Appendix E)\\
+NVA test & 30 independent hard-surface checkpoints: \textbf{RMSE$_V$ = 2.06 cm (0.068 ft)} incl.\ checkpoint error --- \textbf{pass}\\
+Horizontal test & 30 well-defined points: \textbf{RMSE$_H$ = 2.82 cm (0.092 ft)} incl.\ checkpoint error --- \textbf{pass}\\
+VVA & 30 vegetated checkpoints: RMSE$_V$ = 5.6 cm (0.18 ft), reported as found\\
+Data internal precision & within-swath smooth-surface max diff 1.4 cm ($\le$1.8); swath-to-swath RMSD$_z$ 0.9 cm ($\le$2.4), max 3.1 cm ($\le$4.8) --- pass\\
+Point density & median 620 points/m$^2$ (58 points/ft$^2$) on pavement within 20 m\\
+Limitations & no data beneath vehicles parked during collection (re-shot by total station); underground utilities not mapped; points beyond 25 m excluded from design surface\\
+Accuracy statement & ``This data set was tested to meet ASPRS Positional Accuracy Standards for Digital Geospatial Data, Edition 2, Version 2 (2024) for a 3 cm RMSE$_V$ Vertical Accuracy Class and a 5 cm RMSE$_H$ Horizontal Accuracy Class. NVA was found to be RMSE$_V$ = 2.06 cm and horizontal accuracy RMSE$_H$ = 2.82 cm, including checkpoint survey uncertainty. VVA was found to be RMSE$_V$ = 5.6 cm.''\\
+Records & raw data, trajectory, calibration, control/checkpoint data and processing logs archived (5J-17.051(2)(d))\\
+Signature and seal & PSM in responsible charge; digital deliverables sealed by signature file (5J-17.062(4))\\
+\end{tabularx}
+\end{tcolorbox}
+
+\section{One pulse, one more time: the master checklist}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\linewidth}{>{\bfseries}lXl}\toprule
+\# & Operation & Module\\\midrule
+1 & Range from time of flight $\rho=c\Delta t/2$ (with atmospheric correction) & 3\\
+2 & Polar to sensor $x,y,z$ & 5\\
+3 & De-skew: assign each point its own pose time & 8\\
+4 & Boresight rotation $\vect R^B_S$ & 9\\
+5 & Add lever arm $\vect l^B$ & 9\\
+6 & Rotate by attitude $\vect R^W_B(t)$ (roll, pitch \emph{and} yaw) & 6, 9\\
+7 & Add trajectory position $\vect p_W(t)$ & 9\\
+8 & Trajectory from IMU + GNSS + scan matching + loop closures in a factor graph & 7, 10--12\\
+9 & Tie to control; propagate errors; test on independent checkpoints; report RMSE & 13, 14\\
+10 & Clean, classify, extract, deliver, archive & 18\\\bottomrule
+\end{tabularx}\end{center}
+
+\begin{bigidea}
+Measure carefully, control what you can, check what you must, and document what you did. That is how survey-grade work is produced with any instrument --- including a laser that never stands still.
+\end{bigidea}
+
+\sources{ASPRS Edition 2, Version 2 (2024); Fla.\ Admin.\ Code R.\ 5J-17.051 and 5J-17.062; Appendix E (SOP and client agreement). The sample dataset is simulated for this course; its CSV files reproduce every number in the checkpoint table and report.}

@@ -1,0 +1,83 @@
+\chapter{What Is LiDAR?}
+
+\begin{kid}
+Close your eyes and clap your hands in a big gym. You hear an echo. If the wall is far away, the echo takes longer to come back. If it is close, the echo comes back fast. A bat flies in the dark this way!
+
+A LiDAR does the same thing --- but instead of a clap it uses a tiny flash of laser light, and instead of ears it has a super-fast light catcher. It does this hundreds of thousands of times every second, in every direction, so it can ``see'' the shape of everything around it: roads, trees, buildings, people. Each echo becomes one dot. Millions of dots together make a 3-D picture called a \textbf{point cloud}.
+\end{kid}
+
+\section{The name}
+\textbf{LiDAR} stands for \textbf{Li}ght \textbf{D}etection \textbf{A}nd \textbf{R}anging. ``Ranging'' is the surveyor's word for measuring distance. A LiDAR is, at heart, an electronic distance meter (EDM) --- the same physics as the EDM inside a total station --- that fires extremely fast and sweeps its beam in many directions.
+
+\fig[0.95]{pointcloud}{A synthetic mobile-LiDAR point cloud of a street, colored by height: road, curbs, poles, trees and building faces. Every dot is one laser echo.}
+
+\section{The four families of LiDAR}
+\fig[1.0]{family}{The same measuring idea mounted four ways.}
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{lXXl}
+\toprule
+\textbf{Platform} & \textbf{How it moves} & \textbf{Where the position comes from} & \textbf{Typical use}\\ \midrule
+Airborne & aircraft / drone & GNSS + IMU (very open sky) & terrain, floodplains \\
+Terrestrial (TLS) & stands still on a tripod & surveyed setups, targets & buildings, plants, forensics\\
+Mobile (MLS) & car, train, boat & GNSS + IMU + LiDAR SLAM & corridors, roads, rail\\
+Backpack / handheld & a walking person & IMU + LiDAR SLAM (+ control) & indoors, tunnels, under canopy\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+This course concentrates on the two moving families at the bottom of the table: \textbf{mobile} and \textbf{handheld} systems. They are the hardest, because the instrument never holds still --- and the most productive, because you can capture a kilometer of street in the time it takes to set up a total station a few times.
+
+\section{The one big problem: the instrument is moving}
+\begin{bigidea}
+A laser can only tell you \emph{``that wall is 25.000 m away in that direction from me.''} If you do not know exactly where ``me'' is --- and which way ``me'' was pointing --- at the \emph{exact instant} of each pulse, the measurement is useless. Most of this course is about knowing ``me'': the sensor's \textbf{pose}.
+\end{bigidea}
+
+\fig[0.95]{birdsnest}{Left: the same scans placed with a bad trajectory form the famous ``bird's nest.'' Right: with a correct high-rate trajectory every scan stacks into a crisp map.}
+
+\begin{eng}
+For a moving scanner each laser return must be placed in the project frame using the full six-degree-of-freedom pose (three positions $X,Y,Z$ and three angles roll, pitch, yaw) of the sensor at the time that particular pulse was fired. A spinning scanner at 10\,Hz fires up to a few million pulses per second, so the pose must be known at very high rate. That is achieved by combining:
+\begin{enumerate}
+\item an \textbf{inertial measurement unit (IMU)} for high-rate, short-term motion (Module 7);
+\item \textbf{precise time synchronization} so every measurement shares one clock (Module 8);
+\item measured \textbf{lever arm and boresight} between the sensors (Module 9);
+\item a \textbf{trajectory estimator} --- GNSS/INS fusion and/or LiDAR SLAM --- that keeps drift bounded (Modules 10--12);
+\item \textbf{ground control and independent checkpoints} that tie the result to a datum and prove its accuracy (Module 13).
+\end{enumerate}
+\end{eng}
+
+\section{Why surveyors already understand most of this}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{XX}
+\toprule
+\textbf{Mobile-LiDAR idea} & \textbf{Classical surveying equivalent}\\ \midrule
+Time-of-flight range & EDM distance\\
+Polar-to-Cartesian conversion & Total-station angle + distance $\to$ coordinates\\
+Pose (position + orientation) & Instrument station + backsight orientation\\
+IMU dead reckoning & An open traverse --- error accumulates\\
+Loop closure & Closing a traverse\\
+Factor-graph optimization & Least-squares network adjustment\\
+Control points vs checkpoints & Constrained points vs independent check shots\\
+Error budget (root-sum-square) & Traverse / level-network design\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{What you will be able to do at the end}
+\begin{itemize}
+\item Compute a range from a time of flight and explain why we divide by two.
+\item Turn a range and two angles into $X,Y,Z$ --- and then into project coordinates using lever arm, boresight, attitude and trajectory.
+\item Predict how fast an IMU of a given grade drifts, and how far a timing or boresight error moves a point.
+\item Explain, with numbers, what an extended Kalman filter, ICP, and a factor graph actually do.
+\item Read the LIO-SAM paper's equations and know what every symbol means.
+\item Build an error budget, compute RMSE from checkpoints, and report accuracy in the language of current standards.
+\end{itemize}
+
+\begin{tryit}
+\textbf{1.1} (Simple) If you clap and hear the echo after 1 second, and sound travels about 343 meters each second, how far away is the wall? (Hint: the sound went there \emph{and} back.)\\
+\textbf{1.2} (Engineer) List the five ingredients (besides the laser) needed to turn a moving scanner's ranges into a survey-grade map.
+\end{tryit}
+
+\sources{Shan, T.\ \emph{et al.} (2020), LIO-SAM, IEEE/RSJ IROS, arXiv:2007.00258; \emph{Mobile LiDAR Basics for Surveying and Mapping} seminar (2026); \emph{LiDAR Mobile Mapping with SLAM} course outline (2026).}

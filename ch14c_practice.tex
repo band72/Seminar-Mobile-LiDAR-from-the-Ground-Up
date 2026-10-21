@@ -1,0 +1,106 @@
+\chapter{Professional Practice for LiDAR Surveys}
+
+The technology modules explain how a LiDAR survey works. This module covers what a licensed surveyor must manage around it: responsible charge, sealing digital data, contract scope and liability, drone regulations, field safety, and records. It is professional guidance, \textbf{not legal advice}; consult counsel and the current rules for your situation.
+
+\begin{kid}
+Having a great camera does not make you a professional photographer. A professional also makes sure the right person is in charge, writes down what was promised, works safely, keeps the originals, and signs only what they have checked. The same is true for a laser scanner.
+\end{kid}
+
+\section{Responsible charge when the data come from a machine (and a vendor)}
+\begin{eng}
+Under Chapter 472, F.S.\ and 5J-17.050(13), a work product is made by or under the supervision of the \textbf{PSM in responsible charge}. With mobile LiDAR, parts of the work are often done by others --- a scanning vendor, a processing service, a trajectory specialist. Responsible charge means the PSM:
+\begin{itemize}
+\item sets the accuracy requirements and the method (the client agreement and SOP, Appendix E);
+\item directs the control and checkpoint survey and keeps the checkpoints \emph{independent} (5J-17.051(2));
+\item reviews calibration, trajectory quality and the accuracy test before sealing --- not just the final CAD file;
+\item states responsibility for any merged data from others (5J-17.051(3)(i)).
+\end{itemize}
+Sealing a vendor's point cloud without directing or verifying the work is not responsible charge.
+\end{eng}
+
+\section{What gets sealed}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.22}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{3.4cm}X}\toprule
+Survey and Map Report & always signed and sealed; carries datums, accuracy statement, methods, limitations\\
+Maps and CAD sheets & signed and sealed (electronically or on hard copy) per 5J-17.051(3)(e) and 5J-17.062\\
+Point clouds, surfaces, trajectory & sealed through an electronic signature or a sealed signature file of hashes (5J-17.062(4), Module 19)\\
+Data delivered ``for information only'' & state clearly that it is not a sealed survey product and what it may not be used for\\\bottomrule
+\end{tabularx}\end{center}
+
+\section{Contract scope and liability}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.22}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{3.4cm}X}\toprule
+Scope & limits of work, features to be mapped, deliverables and formats, schedule; reference the signed client accuracy agreement (Appendix E)\\
+Accuracy & horizontal and vertical classes (RMSE, ASPRS Edition 2), which surfaces are tested, checkpoint count and accuracy\\
+Limitations & LiDAR does not see through solid objects, under dense vegetation, below water (near-infrared) or underground (Module 4); occluded areas and utilities need other methods; state them in the report\\
+Intended use & e.g.\ design topography, not boundary; prohibit reuse for other purposes without review\\
+Third-party data & control or base data supplied by others: identify it and its accuracy; state reliance\\
+Datums and units & datum, realization, epoch, geoid, foot (Module 19); who pays for later transformation to NATRF2022\\
+Changes & how added scope, recollection after construction changes, or new accuracy demands are handled\\
+Data license & who owns raw and processed data; reuse, resale and retention terms\\
+Insurance & professional liability coverage appropriate to the project and contract requirements\\\bottomrule
+\end{tabularx}\end{center}
+
+\section{Drone LiDAR and FAA Part 107}
+\begin{eng}
+UAS LiDAR flown for compensation in the U.S.\ falls under \textbf{14 CFR Part 107} (small UAS under 55 lb), unless another authorization applies. Key operating limits as published by the FAA:
+\begin{itemize}
+\item maximum altitude \textbf{400 ft above ground level}, higher only within 400 ft of a structure; maximum speed 100 mph (87 kn);
+\item keep the aircraft within \textbf{visual line of sight} (a visual observer is needed with first-person view);
+\item no flight over people not directly participating, unless the operation qualifies under the operations-over-people rules or a waiver;
+\item controlled airspace (Class B, C, D, E) requires FAA authorization, usually through \textbf{LAANC};
+\item a Remote Pilot Certificate is required; operations outside the rules require a \textbf{waiver} (FAA generally responds within about 90 days).
+\end{itemize}
+Later amendments added night operations with anti-collision lighting and recurrent training, operations over people by category, and \textbf{Remote ID} (14 CFR Part 89). Check the current FAA rules before every project.
+\end{eng}
+
+\begin{worked}{can the RIEGL case study be flown by drone?}
+\textbf{Given:} Module 17 plans 500 ft AGL; the VUX-240\textsuperscript{24} weighs about 4.3 kg (9.5 lb) without IMU, 4.6--6.8 kg (10--15 lb) with an IMU/GNSS option.
+\step{Weight} a large UAS carrying it can stay under 55 lb --- Part 107 can apply
+\step{Altitude} 500 ft AGL exceeds the 400 ft limit (no structure nearby) $\Rightarrow$ needs a \textbf{waiver}, or fly at 400 ft or lower, or use a crewed helicopter/airplane
+\step{At 400 ft AGL instead} nadir range 121.9 m: attitude terms shrink by 20\%; swath 187 m (614 ft); density at 10 m/s $\approx2.0\times10^6/(187\times10)=1\,070$ pts/m$^2$
+\result{flying at 400 ft is both legal without an altitude waiver and slightly more accurate. Regulatory limits belong in the error budget and the flight plan from day one.}
+\end{worked}
+
+\section{Field safety and maintenance of traffic}
+\begin{itemize}
+\item \textbf{Traffic:} mobile mapping on public roads needs a maintenance-of-traffic plan consistent with the MUTCD (Part 6, temporary traffic control) and, on FDOT roads, the FDOT Standard Plans for temporary traffic control and any permit conditions. Plan speeds, shoulders, shadow vehicles and stops for control and checkpoint shots.
+\item \textbf{People on foot:} high-visibility apparel; never set targets or checkpoints in live lanes without protection.
+\item \textbf{Laser safety:} street and handheld scanners are typically Class 1; airborne scanners such as the RIEGL VUX-240\textsuperscript{24} are \textbf{Class 3R} with a ground nominal ocular hazard distance (Module 17). Follow the manufacturer's limits and a written laser-safety procedure.
+\item \textbf{Railroads and restricted sites:} obtain right-of-entry and follow the owner's safety training and flagging requirements.
+\end{itemize}
+
+\section{Records, data management and retention}\label{sec:records}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.22}
+\begin{tabularx}{\linewidth}{>{\bfseries\raggedright\arraybackslash}p{3.6cm}X>{\raggedright\arraybackslash}p{3.0cm}}\toprule
+Record & Why & Typical size\\\midrule
+Raw LiDAR, IMU, GNSS, camera & measurement records that reconstruct the survey (5J-17.050(8), .051(2)(d)) & OS0 at full rate: $\sim$133 GB/hour\\
+Base station / CORS data and logs & reprocess the trajectory; prove the datum & small\\
+Trajectory (with standard deviations) & shows where accuracy is strong or weak & 0.1--1 GB\\
+Calibration file and calibration flight/drive & ties lever arm and boresight to the data & small\\
+Control and checkpoint survey & proves the accuracy statement & small\\
+Processing logs and settings (voxel, filters, classification) & reproducibility (Module 18 warning) & small\\
+Deliverables and sealed signature file & what the client received & tens to hundreds of GB\\\bottomrule
+\end{tabularx}\end{center}
+Keep records for the period required by contract, client policy and law (public agencies may also be subject to public-records retention schedules). Use checksums (the same hashes used for sealing) to prove archives are unchanged, keep two copies in different places, and record the software versions used.
+
+\section{Quality, competence and disclosure}
+\begin{itemize}
+\item Write and follow an SOP (Appendix E); have an independent reviewer run the accuracy test.
+\item Practice within competence: new sensors, platforms (UAS) or datums (NSRS 2022) deserve training and a pilot project before production work.
+\item Disclose limitations plainly in the report: occlusions, vegetation, water, range limits, GNSS outages, areas below the stated accuracy.
+\end{itemize}
+
+\begin{tryit}
+\textbf{20.1} (Concept) A vendor delivers a classified point cloud; you never saw the checkpoints. What must you do before sealing it?\\
+\textbf{20.2} (Concept) List three LiDAR limitations that belong in the report's limitations section.\\
+\textbf{20.3} (Concept) Why does flying the RIEGL at 400 ft instead of 500 ft help both legally and technically?
+\end{tryit}
+
+\begin{tcolorbox}[base,colback=gray!4,colframe=grayx,title={SOURCES FOR THIS MODULE}]
+\footnotesize
+Ch.\ 472, F.S.; Fla.\ Admin.\ Code R.\ 5J-17.050, 5J-17.051, 5J-17.062 (Cornell LII); FAA, ``Small Unmanned Aircraft Systems (UAS) Regulations (Part 107)'' newsroom summary, and 14 CFR Parts 89 and 107; RIEGL VUX-240\textsuperscript{24} datasheet (2026-08-17); Ouster OS0 Rev8 datasheet; FHWA \emph{Manual on Uniform Traffic Control Devices}, Part 6; FDOT Standard Plans (temporary traffic control). Legal and regulatory statements are summaries for teaching and must be confirmed against current official texts.
+\end{tcolorbox}

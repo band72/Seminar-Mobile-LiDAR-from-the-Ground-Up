@@ -1,0 +1,168 @@
+\chapter{SLAM: Mapping While Finding Yourself}
+
+\section{The chicken-and-egg problem}
+\begin{kid}
+You are blindfolded in a new house and must draw a map of it. To draw a wall in the right place, you need to know where you are standing. But to know where you are standing, you need a map! SLAM is the clever trick of doing both a little at a time: take a step, feel a wall, guess where you are, add the wall to your map, take another step\ldots\ and when you bump into a wall you already drew, you fix up your whole map.
+\end{kid}
+
+\fig[0.8]{chicken}{Simultaneous Localization And Mapping solves both questions together.}
+
+\begin{eng}
+SLAM estimates the trajectory $\vect x_{0:t}$ and the map $\vect m$ jointly from controls/odometry $\vect u_{1:t}$ and observations $\vect z_{1:t}$:
+\[ p(\vect x_{0:t},\vect m\mid\vect z_{1:t},\vect u_{1:t}). \]
+Surveyors know this problem as \emph{a traverse run through new terrain while simultaneously locating the detail points}; each new shot both extends the traverse and adds map points, and the whole network is adjusted at the end. This module builds the classical tools --- motion model, measurement model, Bayes filter, Kalman filters, particle filters --- following Claus Brenner's well-known SLAM lecture series. Modules 11 and 12 add scan matching and the modern factor-graph form used by LIO-SAM.
+\end{eng}
+
+\section{The motion model}
+\fig[0.6]{motionmodel}{A two-track (differential drive) platform: when one side travels farther, the platform turns.}
+
+\begin{keyeq}{Differential-drive motion model}
+\[ \alpha=\frac{R-L}{w},\qquad r=\frac{L}{\alpha},\qquad
+\begin{aligned}
+x'&=x+\left(r+\tfrac w2\right)\big(\sin(\theta+\alpha)-\sin\theta\big)\\
+y'&=y-\left(r+\tfrac w2\right)\big(\cos(\theta+\alpha)-\cos\theta\big)\\
+\theta'&=\theta+\alpha
+\end{aligned} \]
+\begin{symbols}
+$x,y,\theta$ & pose before the move (position and heading) & m, m, rad\\
+$L,R$ & distance traveled by the left and right tracks & m\\
+$w$ & track width (distance between the tracks) & m\\
+$\alpha$ & how much the platform turned & rad\\
+$r$ & turning radius of the \emph{left} track; $r+w/2$ is the radius of the center & m\\
+$x',y',\theta'$ & predicted pose after the move & m, m, rad\\
+\end{symbols}
+If $L=R$ the platform drives straight: $x'=x+L\cos\theta$, $y'=y+L\sin\theta$, $\theta'=\theta$.
+\end{keyeq}
+
+\begin{worked}{predicting the next pose}
+\textbf{Given:} pose $(10.00,\ 5.00,\ 0^\circ)$; $L=0.40$ m, $R=0.45$ m, $w=0.30$ m.
+\step{Step 1 --- turn angle} $\alpha=(0.45-0.40)/0.30=0.16667$ rad $=9.549^\circ$
+\step{Step 2 --- radius} $r=0.40/0.16667=2.400$ m; center radius $r+w/2=2.550$ m
+\step{Step 3 --- $x'$} $10+2.550(\sin9.549^\circ-\sin0^\circ)=10+2.550(0.16590)=10.4230$ m
+\step{Step 4 --- $y'$} $5-2.550(\cos9.549^\circ-1)=5-2.550(-0.01386)=5.0353$ m
+\step{Step 5 --- $\theta'$} $0+9.549^\circ=9.549^\circ$
+\result{new pose $(10.423,\ 5.035,\ 9.55^\circ)$: about 42 cm forward while turning 9.55° left.}
+\end{worked}
+On a mapping vehicle the same ``prediction'' role is played by IMU strapdown integration (Module 7) or wheel odometry.
+
+\section{Uncertainty grows when you move and shrinks when you look}
+\fig[0.95]{uncertainty}{Each prediction inflates the 2$\sigma$ uncertainty ellipse; one good landmark observation collapses it.}
+
+\begin{keyeq}{The Bayes filter --- predict, then correct}
+\[ \underbrace{\overline{bel}(\vect x_t)=\int p(\vect x_t\mid\vect u_t,\vect x_{t-1})\,bel(\vect x_{t-1})\,d\vect x_{t-1}}_{\text{PREDICT (move)}}\qquad
+\underbrace{bel(\vect x_t)=\eta\,p(\vect z_t\mid\vect x_t)\,\overline{bel}(\vect x_t)}_{\text{CORRECT (measure)}} \]
+\begin{symbols}
+$bel(\vect x_t)$ & ``belief'': probability distribution of where we are at time $t$ & ---\\
+$\overline{bel}$ & predicted belief, before using the new measurement & ---\\
+$p(\vect x_t\mid\vect u_t,\vect x_{t-1})$ & motion model with noise: where could I be after this control? & ---\\
+$p(\vect z_t\mid\vect x_t)$ & measurement model (likelihood): how probable is this observation if I'm at $\vect x_t$? & ---\\
+$\eta$ & normalizing constant so probabilities add to 1 & ---\\
+$\int\ldots d\vect x_{t-1}$ & add up over every place we might have started & ---\\
+\end{symbols}
+\end{keyeq}
+
+\section{The Kalman filter in one dimension}
+\begin{kid}
+Two friends guess how tall a tree is. One is a careful measurer; the other is just eyeballing. You trust the careful one more, so your final answer is \emph{between} their guesses but closer to the careful one. The Kalman filter does exactly that, with numbers that say \emph{how much} closer.
+\end{kid}
+
+\fig[0.78]{kalman1d}{A wide prediction and a sharp measurement combine into an even sharper estimate.}
+
+\begin{keyeq}{1-D Kalman update}
+\[ K=\frac{\bar\sigma^2}{\bar\sigma^2+\sigma_z^2},\qquad \mu=\bar\mu+K(z-\bar\mu),\qquad \sigma^2=(1-K)\,\bar\sigma^2 \]
+\begin{symbols}
+$\bar\mu,\bar\sigma^2$ & predicted value and its variance & m, m$^2$\\
+$z,\sigma_z^2$ & measurement and its variance & m, m$^2$\\
+$K$ & Kalman gain, between 0 (ignore the measurement) and 1 (believe it completely) & ---\\
+$z-\bar\mu$ & the \emph{innovation}: how surprised we are & m\\
+$\mu,\sigma^2$ & updated (posterior) value and variance --- always smaller than both inputs' variances & m, m$^2$\\
+\end{symbols}
+\end{keyeq}
+
+\begin{worked}{1-D Kalman update}
+\textbf{Given:} prediction $\bar\mu=100.0$ m, $\bar\sigma=0.50$ m; measurement $z=100.4$ m, $\sigma_z=0.20$ m.
+\step{Step 1 --- variances} $\bar\sigma^2=0.25$ m$^2$; $\sigma_z^2=0.04$ m$^2$
+\step{Step 2 --- gain} $K=0.25/(0.25+0.04)=0.8621$
+\step{Step 3 --- update} $\mu=100.0+0.8621\times0.4=100.345$ m
+\step{Step 4 --- new variance} $\sigma^2=(1-0.8621)\times0.25=0.03448$ m$^2$ $\Rightarrow\sigma=0.186$ m
+\result{100.345 $\pm$ 0.186 m. Note that 0.186 m beats even the measurement's 0.20 m.}
+\end{worked}
+
+\begin{eng}
+\textbf{Surveyor's equivalence.} The 1-D Kalman update is the weighted mean you already know. With weights $w=1/\sigma^2$: $\mu=(w_1\bar\mu+w_2z)/(w_1+w_2)=(4\times100.0+25\times100.4)/29=100.345$ m, and $\sigma^2=1/(w_1+w_2)=1/29=0.0345$ m$^2$. Same answer.
+\end{eng}
+
+\section{The extended Kalman filter (EKF)}
+Real motion and measurement models contain sines and cosines --- they are \emph{non-linear}. The EKF linearizes them at the current estimate using \textbf{Jacobians} (tables of partial derivatives: ``if I nudge this input, how much does each output change?'').
+
+\begin{keyeq}{EKF prediction}
+\[ \bar{\vect x}=g(\vect x,\vect u),\qquad \bar{\vect P}=\vect G\,\vect P\,\vect G^{\mathsf T}+\vect Q,\qquad \vect G=\frac{\partial g}{\partial\vect x} \]
+\begin{symbols}
+$g$ & the motion model (previous section) & ---\\
+$\vect P,\bar{\vect P}$ & covariance matrix of the state before and after prediction; its diagonal holds the variances & m$^2$, rad$^2$\\
+$\vect G$ & state-transition Jacobian & ---\\
+$\vect Q$ & process noise: extra uncertainty added by the motion itself & m$^2$, rad$^2$\\
+\end{symbols}
+\end{keyeq}
+
+\begin{worked}{EKF prediction for our motion}
+\textbf{Given:} the motion above; $\vect P=\operatorname{diag}(0.01,\,0.01,\,0.001)$, $\vect Q=\operatorname{diag}(0.002,\,0.002,\,0.0005)$.
+\step{Step 1 --- Jacobian} Differentiate $x'$ and $y'$ by $\theta$: $\partial x'/\partial\theta=2.55(\cos9.549^\circ-1)=-0.0353$, $\partial y'/\partial\theta=2.55\sin9.549^\circ=0.4230$:
+\[ \vect G=\begin{psmallmatrix}1&0&-0.0353\\0&1&0.4230\\0&0&1\end{psmallmatrix} \]
+\step{Step 2 --- $\vect G\vect P\vect G^{\mathsf T}$} $\begin{psmallmatrix}0.01000&-0.00001&-0.00004\\-0.00001&0.01018&0.00042\\-0.00004&0.00042&0.00100\end{psmallmatrix}$ (heading uncertainty leaks into $y$)
+\step{Step 3 --- add $\vect Q$} $\bar{\vect P}=\begin{psmallmatrix}0.01200&-0.00001&-0.00004\\-0.00001&0.01218&0.00042\\-0.00004&0.00042&0.00150\end{psmallmatrix}$
+\result{1$\sigma$: $x$ 11.0 cm, $y$ 11.0 cm, heading $\sqrt{0.0015}=0.0387$ rad $=2.22^\circ$. Uncertainty grew, as expected.}
+\end{worked}
+
+\subsection{Correcting with a landmark}
+\begin{keyeq}{Range--bearing measurement model and EKF correction}
+\[ \hat r=\sqrt{\Delta x^2+\Delta y^2},\quad \hat\beta=\operatorname{atan2}(\Delta y,\Delta x)-\theta;\qquad
+\vect S=\vect H\bar{\vect P}\vect H^{\mathsf T}+\vect R_z,\quad \vect K=\bar{\vect P}\vect H^{\mathsf T}\vect S^{-1} \]
+\[ \vect x=\bar{\vect x}+\vect K(\vect z-\hat{\vect z}),\qquad \vect P=(\vect I-\vect K\vect H)\bar{\vect P},\qquad
+\vect H=\begin{psmallmatrix}-\Delta x/\hat r&-\Delta y/\hat r&0\\\Delta y/\hat r^2&-\Delta x/\hat r^2&-1\end{psmallmatrix} \]
+\begin{symbols}
+$\Delta x,\Delta y$ & landmark position minus predicted vehicle position & m\\
+$\hat r,\hat\beta$ & predicted range and bearing to the landmark & m, rad\\
+$\vect z$ & actual measured range and bearing & m, rad\\
+$\vect H$ & measurement Jacobian & ---\\
+$\vect R_z$ & measurement noise covariance & m$^2$, rad$^2$\\
+$\vect S$ & innovation covariance & ---\\
+$\vect K$ & Kalman gain matrix ($3\times2$) & ---\\
+\end{symbols}
+\end{keyeq}
+
+\begin{worked}{EKF correction with a pole at (25, 8)}
+\textbf{Given:} predicted pose $(10.423,\ 5.035,\ 9.549^\circ)$ and $\bar{\vect P}$ from above. Measured $r=14.95$ m, $\beta=2.10^\circ$. $\vect R_z=\operatorname{diag}(0.05^2,\ (1^\circ)^2)$.
+\step{Step 1 --- predicted measurement} $\Delta x=14.577$, $\Delta y=2.965$; $\hat r=\sqrt{221.277}=14.875$ m; $\hat\beta=11.496^\circ-9.549^\circ=1.947^\circ$
+\step{Step 2 --- innovation} $\delta r=14.95-14.875=0.075$ m;\ $\delta\beta=2.10-1.947=0.153^\circ$
+\step{Step 3 --- Jacobian} $\vect H=\begin{psmallmatrix}-0.9799&-0.1993&0\\0.0134&-0.0659&-1\end{psmallmatrix}$
+\step{Step 4 --- gain} $\vect S=\begin{psmallmatrix}0.01450&0.00005\\0.00005&0.00192\end{psmallmatrix}$,\quad
+$\vect K=\begin{psmallmatrix}-0.811&0.124\\-0.164&-0.635\\-0.0006&-0.798\end{psmallmatrix}$
+\step{Step 5 --- update state} $\vect x=(10.423,5.035,9.549^\circ)+\vect K(0.075,\ 0.00267\text{ rad})=(10.363,\ 5.021,\ 9.424^\circ)$
+\step{Step 6 --- update covariance} 1$\sigma$: $x$ 4.9 cm, $y$ 10.5 cm, heading 0.96°
+\result{the pole pulled the pose 6 cm back and tightened $x$ from 11.0 to 4.9 cm. $y$ barely improved because the pole is almost straight ahead: a range measurement only constrains the direction it points.}
+\end{worked}
+\fig[0.6]{ekf}{The 2$\sigma$ ellipse before (orange) and after (teal) seeing the landmark.}
+
+\section{Particle filters and EKF-SLAM}
+\fig[0.78]{particles}{Particles can represent ``I'm in corridor A \emph{or} corridor B.''}
+\begin{eng}
+\textbf{Particle filters} represent the belief by many weighted samples: move each with the noisy motion model, re-weight each by the measurement likelihood, then resample (clone heavy particles, drop light ones). They handle multi-modal situations a single Gaussian cannot. \textbf{FastSLAM} gives each particle its own small Kalman filter per landmark.
+
+\textbf{EKF-SLAM} enlarges the state to hold the landmarks too: $\vect x=(x,y,\theta,m_{1x},m_{1y},\ldots)$. When a new landmark is seen, it is appended; when an old one is re-observed, the correlations update the pose \emph{and every correlated landmark}. That joint estimation is the meaning of ``simultaneous.'' Its cost grows with the square of the number of landmarks, which is why large-scale systems moved to sparse factor graphs (Module 12).
+\end{eng}
+
+\section{Drift and loop closure}
+\fig[0.8]{loop}{Odometry drifts like an open traverse; recognizing the start point closes the loop and distributes the misclosure.}
+
+\begin{tip}
+Plan routes like traverses: return to the start, cross earlier paths, and add cross-ties in long corridors. Every revisit is a free closure. A route that never revisits anything is an open traverse --- its end can be far off and nothing in the data will tell you.
+\end{tip}
+
+\begin{tryit}
+\textbf{10.1} Redo the motion-model example with $L=R=0.40$ m.\\
+\textbf{10.2} Prediction 50.00 $\pm$ 0.30 m; measurement 50.20 $\pm$ 0.30 m. Find $K$, $\mu$ and $\sigma$.\\
+\textbf{10.3} (Simple) Why does seeing a landmark make the robot more sure of where it is?
+\end{tryit}
+
+\sources{Thrun, S., Burgard, W.\ \& Fox, D.\ (2005), \emph{Probabilistic Robotics}, MIT Press; Brenner, C., SLAM lecture series (Units A--G), Leibniz University Hannover.}

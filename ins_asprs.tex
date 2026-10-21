@@ -1,0 +1,66 @@
+\section{ASPRS lidar data standards in detail}
+Two ASPRS documents govern almost every LiDAR deliverable in the United States: the \textbf{Positional Accuracy Standards for Digital Geospatial Data} (Edition 2, Version 2, 2024), which say how accurate the data are and how that is proven, and the \textbf{LAS Specification} (version 1.4), which says how the points are stored and labeled. Client specifications --- FDOT, USGS and others --- build on both.
+
+\begin{kid}
+One rulebook says \emph{how close to the truth} the dots must be and how to check them with secret checkpoints. The other rulebook says \emph{how to write the dots down} in a file, including a label on every dot: ground, building, tree, water, wire, noise\ldots{} so any software can read it.
+\end{kid}
+
+\subsection{Accuracy classes (Edition 2)}
+\begin{eng}
+Edition 2 defines accuracy classes directly by RMSE, in any size the project needs: a ``5 cm vertical accuracy class'' means $\text{RMSE}_V\le5$ cm; a ``3 cm horizontal accuracy class'' means $\text{RMSE}_H\le3$ cm.
+\begin{itemize}
+\item \textbf{NVA} (non-vegetated vertical accuracy), tested on open hard or bare surfaces, decides \textbf{acceptance}.
+\item \textbf{VVA} (vegetated vertical accuracy) is tested and \textbf{reported as found}, with no pass/fail threshold unless the client and producer agree otherwise.
+\item \textbf{Checkpoints:} at least 30 for NVA (up to 120 for large projects) and at least 30 for VVA, well distributed; independent of any control used for calibration or boresighting; at least \textbf{2$\times$ more accurate} than the product.
+\item \textbf{Control} for calibration should likewise be twice as accurate as the product (e.g.\ $\text{RMSE}_V(\text{control})\le\tfrac12\,\text{RMSE}_V(\text{product})$).
+\item \textbf{Product accuracy includes checkpoint error:} $\text{RMSE}_{\text{product}}=\sqrt{\text{RMSE}_{\text{fit}}^2+\text{RMSE}_{\text{survey}}^2}$ (Module 13 worked example).
+\item \textbf{Horizontal accuracy of lidar} is usually not tested point by point (points do not land on well-defined corners) but estimated from GNSS and IMU error and range/altitude, or tested on well-defined features when density allows. For mobile LiDAR, painted chevrons and building corners make horizontal testing practical.
+\end{itemize}
+\end{eng}
+
+\subsection{Data internal precision (relative accuracy)}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{lcccc}\toprule
+\textbf{Vertical class $X$} & \textbf{NVA $\text{RMSE}_V$} & \textbf{Within-swath} & \textbf{Swath-to-swath} & \textbf{Swath-to-swath}\\
+ & & \textbf{smooth-surface max diff.} & \textbf{RMSD$_z$} & \textbf{max diff.}\\\midrule
+General rule & $\le X$ & $\le0.6X$ & $\le0.8X$ & $\le1.6X$\\
+5 cm class & $\le5$ cm & $\le3$ cm & $\le4$ cm & $\le8$ cm\\
+10 cm class & $\le10$ cm & $\le6$ cm & $\le8$ cm & $\le16$ cm\\\bottomrule
+\end{tabular}\end{center}
+{\footnotesize Ratios as tabulated for lidar in the ASPRS standards' vertical-accuracy tables; confirm against the edition named in your contract.}
+
+These are \emph{precision} checks, not accuracy: \textbf{within-swath} tests how smooth a flat surface (a parking lot) is in a single pass --- range noise; \textbf{swath-to-swath} tests how well overlapping passes agree --- trajectory and calibration (the cloud-to-cloud check of Module 17). A project can pass NVA at the checkpoints and still fail swath-to-swath agreement between them.
+
+\subsection{Reporting statements}
+\begin{eng}
+Edition 2 prescribes the wording:
+\begin{itemize}
+\item \textbf{Tested (30 or more checkpoints):} ``This data set was tested to meet ASPRS Positional Accuracy Standards for Digital Geospatial Data, Edition 2, Version 2 (2024) for a \_\_ (cm) RMSE$_V$ Vertical Accuracy Class. NVA accuracy was found to be RMSE$_V$ = \_\_ cm.'' VVA is reported the same way, as found.
+\item \textbf{Fewer than 30 checkpoints:} the statement must say so: ``\ldots this test was performed using ONLY \_\_ checkpoints.''
+\item \textbf{Produced to meet (no independent test):} ``This data set was produced to meet ASPRS Positional Accuracy Standards\ldots'' --- a declaration by the producer only. Calibration control may not be reused as checkpoints.
+\end{itemize}
+\end{eng}
+
+\subsection{The LAS 1.4 file standard}
+\begin{eng}
+\begin{itemize}
+\item \textbf{Format:} LAS 1.4 (compressed LAZ is the common delivery form). Point data record formats 6--10 are the modern ones: 6 = base (x, y, z, intensity, return number, classification, scan angle, GPS time\ldots); 7 adds RGB; 8 adds RGB + NIR; 9 and 10 add waveform.
+\item \textbf{Time:} \emph{Adjusted Standard GPS Time} (GPS seconds minus $10^9$), so every point can be traced back to the trajectory.
+\item \textbf{Coordinate system:} stored in the header as OGC WKT, including the vertical datum; it must match the report.
+\item \textbf{Classification codes} (ASPRS standard): 
+\end{itemize}
+\begin{center}\small
+\begin{tabular}{rl@{\hspace{2em}}rl@{\hspace{2em}}rl}\toprule
+1&Unclassified & 7&Low point (noise) & 14&Wire --- conductor\\
+2&Ground & 9&Water & 15&Transmission tower\\
+3&Low vegetation & 10&Rail & 17&Bridge deck\\
+4&Medium vegetation & 11&Road surface & 18&High noise\\
+5&High vegetation & 13&Wire --- guard (shield) & 19&Overhead structure\\
+6&Building & & & 20/21/22&Ignored ground / snow / temporal exclusion\\\bottomrule
+\end{tabular}\end{center}
+\end{eng}
+
+\subsection{USGS quality levels (for context)}
+Clients often cite the \textbf{USGS Lidar Base Specification} for airborne elevation data: QL0 ($\ge$8 points/m$^2$, NVA RMSE$_z\le5$ cm), QL1 ($\ge$8 pts/m$^2$, $\le10$ cm), QL2 ($\ge$2 pts/m$^2$, $\le10$ cm). Mobile LiDAR easily exceeds these densities; its specifications are usually written project by project, which is why a signed client accuracy agreement (Appendix E) matters.
+

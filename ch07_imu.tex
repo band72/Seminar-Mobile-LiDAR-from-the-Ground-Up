@@ -1,0 +1,154 @@
+\chapter{The IMU: Feeling Motion}
+
+\section{What is inside an IMU?}
+\begin{kid}
+When a car speeds up, you get pushed back into your seat. When it turns, you lean to the side. Your body \emph{feels} the motion even with your eyes closed. An IMU is a little box that feels motion the same way. It has three ``push-feelers'' (accelerometers) --- forward, sideways, up --- and three ``spin-feelers'' (gyroscopes). By adding up all those feelings many times a second, the computer can guess where the car went, even inside a tunnel. But like walking with your eyes closed, the guess slowly gets worse.
+\end{kid}
+
+\fig[0.92]{imuparts}{An accelerometer is a mass on springs; a gyroscope senses turning rate.}
+
+\begin{eng}
+An \textbf{inertial measurement unit} contains a triad of accelerometers measuring \emph{specific force} $\vect f$ (acceleration minus gravity) and a triad of gyroscopes measuring \emph{angular rate} $\boldsymbol\omega$, both in the body frame, typically at 100--1000 Hz. The sensors are rigidly fixed (``strapped down'') to the platform; the computer --- not a gimbal --- keeps track of orientation. An at-rest, level accelerometer reads $+9.81$ m/s$^2$ upward (it feels the table pushing up), which is why an IMU message at rest shows $a_z\approx9.78$--$9.81$.
+\end{eng}
+
+\section{The IMU measurement model (LIO-SAM eqs.\ 2--3)}
+\begin{keyeq}{What the IMU actually reports}
+\[ \hat{\boldsymbol\omega}_t=\boldsymbol\omega_t+\vect b^{\omega}_t+\vect n^{\omega}_t \qquad\qquad
+\hat{\vect a}_t=\vect R^{\mathsf{BW}}_t(\vect a_t-\vect g)+\vect b^{a}_t+\vect n^{a}_t \]
+\begin{symbols}
+$\hat{\boldsymbol\omega}_t,\ \hat{\vect a}_t$ & raw gyro and accelerometer readings at time $t$ (the ``hat'' means \emph{measured}) & rad/s, m/s$^2$\\
+$\boldsymbol\omega_t$ & the true angular rate of the body & rad/s\\
+$\vect a_t$ & the true acceleration of the body, in the world frame W & m/s$^2$\\
+$\vect g$ & gravity vector in W, about $(0,0,-9.81)$ & m/s$^2$\\
+$\vect R^{\mathsf{BW}}_t$ & rotation from world to body: expresses the world vector in sensor axes & ---\\
+$\vect b^{\omega}_t,\vect b^{a}_t$ & \textbf{biases}: slowly drifting offsets (the big villains) & rad/s, m/s$^2$\\
+$\vect n^{\omega}_t,\vect n^{a}_t$ & white noise: fast random jitter & rad/s, m/s$^2$\\
+\end{symbols}
+\end{keyeq}
+In words: \emph{reading = truth + slow offset + fast jitter}. Note the accelerometer equation: subtracting $\vect g$ (which points down) \emph{adds} 9.81 upward --- that is the ``table pushing up'' reading at rest.
+
+\section{Strapdown integration (LIO-SAM eqs.\ 4--6)}
+\fig[0.78]{integrate}{Acceleration is summed into velocity; velocity is summed into position.}
+
+\begin{keyeq}{Dead-reckoning update over one IMU interval}
+\begin{align*}
+\vect v_{t+\Delta t}&=\vect v_t+\vect g\Delta t+\vect R_t(\hat{\vect a}_t-\vect b^a_t-\vect n^a_t)\Delta t\\
+\vect p_{t+\Delta t}&=\vect p_t+\vect v_t\Delta t+\tfrac12\vect g\Delta t^2+\tfrac12\vect R_t(\hat{\vect a}_t-\vect b^a_t-\vect n^a_t)\Delta t^2\\
+\vect R_{t+\Delta t}&=\vect R_t\exp\!\big((\hat{\boldsymbol\omega}_t-\vect b^{\omega}_t-\vect n^{\omega}_t)\Delta t\big)
+\end{align*}
+\begin{symbols}
+$\vect v_t,\vect p_t$ & velocity and position of the body in W & m/s, m\\
+$\vect R_t$ & body-to-world rotation (attitude) at time $t$ & ---\\
+$\Delta t$ & IMU sample interval (0.01 s at 100 Hz) & s\\
+$\hat{\vect a}_t-\vect b^a_t$ & the bias-corrected accelerometer reading (noise unknown, treated as zero mean) & m/s$^2$\\
+$\vect R_t(\cdot)$ & rotates the body-frame reading into world axes & ---\\
+$\vect g\Delta t$ & puts gravity back so a sensor at rest does not ``fly upward'' & m/s\\
+$\tfrac12(\cdot)\Delta t^2$ & the familiar $s=ut+\tfrac12at^2$ from school physics & m\\
+\end{symbols}
+\end{keyeq}
+
+\begin{worked}{one strapdown step along a road}
+\textbf{Given:} 100 Hz ($\Delta t=0.01$ s); level, heading straight along $x$ ($\vect R=\vect I$); $v=15.000$ m/s; position $x=100.000$ m; accelerometer reads $\hat a_x=0.80$ m/s$^2$, $\hat a_z=9.81$ m/s$^2$; biases already removed.
+\step{Step 1 --- vertical check} $v_z$: $\vect g\Delta t+\hat a_z\Delta t=(-9.81+9.81)\times0.01=0$ \checkmark{} (gravity cancels, the car stays on the road)
+\step{Step 2 --- forward velocity} $v_x=15.000+0.80\times0.01=15.008$ m/s
+\step{Step 3 --- forward position} $x=100.000+15.000\times0.01+\tfrac12\times0.80\times0.01^2=100.000+0.15000+0.00004=100.15004$ m
+\result{the vehicle moved 0.150 m and sped up by 8 mm/s. Repeat 100 times a second, in 3-D, with rotation.}
+\end{worked}
+
+\section{Why IMUs drift: biases integrate}
+\begin{kid}
+Imagine a scale that always reads 1 gram too heavy. Weigh one candy and the mistake is tiny. Weigh a thousand candies one by one and add them up --- now you are off by a whole kilogram! An IMU adds up its readings thousands of times, so even a tiny error grows and grows.
+\end{kid}
+
+\begin{keyeq}{Error growth from constant biases}
+\[ \delta\psi(t)=b_g\,t,\qquad \delta y(t)\approx\tfrac12\,v\,b_g\,t^2;\qquad\qquad \delta v(t)=b_a\,t,\qquad \delta x(t)=\tfrac12\,b_a\,t^2 \]
+\begin{symbols}
+$b_g$ & constant gyro bias & rad/s\\
+$\delta\psi$ & heading error (grows linearly) & rad\\
+$v$ & vehicle speed & m/s\\
+$\delta y$ & sideways position error from heading error (grows with $t^2$) & m\\
+$b_a$ & constant accelerometer bias & m/s$^2$\\
+$\delta v,\ \delta x$ & velocity and along-track position errors & m/s, m\\
+\end{symbols}
+\end{keyeq}
+
+\begin{eng}
+\textbf{Derivation of the sideways term.} Heading error at time $\tau$ is $b_g\tau$. Driving at speed $v$, the sideways velocity error is $v\sin(b_g\tau)\approx v\,b_g\tau$. Integrating from 0 to $t$: $\delta y=\int_0^t v\,b_g\tau\,d\tau=\tfrac12 v\,b_g t^2$.
+\end{eng}
+
+\begin{worked}{tactical IMU coasting through a tunnel}
+\textbf{Given:} gyro bias $1^\circ$/h, accel bias 0.5 m$g$, speed 15 m/s, 60 s with no GNSS or LiDAR aiding.
+\step{Step 1 --- gyro bias in rad/s} $1^\circ/\text{h}=\frac{1}{3600}\,^\circ/\text{s}\times\frac{\pi}{180}=4.848\times10^{-6}$ rad/s
+\step{Step 2 --- heading error} $4.848\times10^{-6}\times60=2.909\times10^{-4}$ rad $=0.0167^\circ$
+\step{Step 3 --- sideways error} $\tfrac12\times15\times4.848\times10^{-6}\times60^2=0.131$ m
+\step{Step 4 --- accel bias} $0.5\,\text{m}g=0.5\times10^{-3}\times9.80665=0.004903$ m/s$^2$
+\step{Step 5 --- along-track error} $\tfrac12\times0.004903\times60^2=8.83$ m
+\result{13 cm sideways from the gyro, but almost 9 m along-track from the accelerometer --- after only one minute! (After 30 s: 2.2 m.) This is why no survey system coasts on its IMU for long.}
+\end{worked}
+
+\begin{improve}
+The seminar computed the gyro-induced lateral error as $v\times t\times\delta\psi$ using the \emph{final} heading error for the whole interval (and an extra 60 s), giving 0.26 m. Because the heading error grows from zero, the correct integral is $\tfrac12 v\,b_g t^2=0.13$ m for 60 s. The two agree only if the heading error were already fully present at the start.
+\end{improve}
+
+\fig[1.0]{biasgrowth}{Position error versus unaided time for four IMU grades (log scale). Each grade is about ten times better than the one before.}
+
+\section{The hidden killer: tilt error leaks gravity}
+\fig[0.68]{tilt}{A small attitude error makes part of gravity look like acceleration.}
+
+\begin{worked}{0.1° tilt error}
+\step{Step 1} leaked acceleration $=g\sin0.1^\circ=9.80665\times0.001745=0.01712$ m/s$^2$ (that is 1.7 m$g$ --- worse than the accel bias above!)
+\step{Step 2} after 10 s: $\tfrac12\times0.01712\times10^2=0.86$ m
+\result{attitude must be known very well, or gravity itself becomes the biggest error. Good INS filters estimate roll and pitch continuously from the gravity direction while the vehicle is not accelerating.}
+\end{worked}
+
+\section{IMU grades}
+\fig[0.75]{grades}{Typical gyro bias-instability ranges (order of magnitude).}
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{lllX}\toprule
+\textbf{Grade} & \textbf{Gyro bias} & \textbf{Accel bias} & \textbf{Unaided drift and use}\\\midrule
+Consumer MEMS & 10--100+ °/h & several--tens m$g$ & meters in seconds; phones, games\\
+Industrial MEMS & 1--10 °/h & 0.1--1 m$g$ & dm--m in 30--60 s; many handheld SLAM units\\
+Tactical (FOG / high MEMS) & 0.1--1 °/h & 0.05--0.5 m$g$ & bridges short GNSS outages; survey vehicles\\
+Navigation & $\le$0.01 °/h & $\le$25 $\mu g$ & aircraft, ships; rarely needed for street mapping\\\bottomrule
+\end{tabularx}\end{center}
+
+\section{IMU preintegration (LIO-SAM eqs.\ 7--9)}
+\fig[0.92]{preint}{Between two keyframes, hundreds of IMU samples are summarized once into a relative motion.}
+
+\begin{kid}
+Imagine writing down every step you take on a walk: ``step, step, turn a little, step\ldots'' Instead of keeping that whole long list, you could write one note: ``from the door to the swing: 20 steps forward and a quarter turn.'' Preintegration is that short note.
+\end{kid}
+
+\begin{keyeq}{Preintegrated measurements between keyframes $i$ and $j$}
+\[ \Delta\vect v_{ij}=\vect R_i^{\mathsf T}(\vect v_j-\vect v_i-\vect g\Delta t_{ij}),\quad
+\Delta\vect p_{ij}=\vect R_i^{\mathsf T}\!\left(\vect p_j-\vect p_i-\vect v_i\Delta t_{ij}-\tfrac12\vect g\Delta t_{ij}^2\right),\quad
+\Delta\vect R_{ij}=\vect R_i^{\mathsf T}\vect R_j \]
+\begin{symbols}
+$i,j$ & two consecutive keyframe times & ---\\
+$\Delta t_{ij}$ & time between them & s\\
+$\vect R_i^{\mathsf T}$ & rotates world quantities into the body frame \emph{at time $i$}, so the result does not depend on where the vehicle was in the world & ---\\
+$\Delta\vect v_{ij}$,\newline$\Delta\vect p_{ij}$,\newline$\Delta\vect R_{ij}$ & change in velocity, position and attitude, with gravity and initial velocity removed --- computable from IMU readings alone & m/s, m, ---\\
+\end{symbols}
+\end{keyeq}
+
+\begin{eng}
+\textbf{Why this is clever.} The right-hand sides contain the unknown states (what the optimizer is solving for); the left-hand sides can be computed by summing raw IMU samples \emph{once}, in the body frame at $i$, without knowing $\vect R_i$ or $\vect v_i$. When the optimizer later adjusts the poses, it does not have to re-integrate the hundreds of samples --- it just compares the stored $\Delta$'s with the new state differences. If the bias estimate changes slightly, a first-order (Jacobian) correction is applied instead of re-integrating (Forster \emph{et al.}, 2017). The mismatch between stored and predicted $\Delta$'s is the \textbf{IMU preintegration factor} in the factor graph, and the IMU biases are estimated jointly with everything else.
+\end{eng}
+
+\begin{worked}{preintegration in one dimension}
+\textbf{Given:} level, straight road; between keyframes 10 IMU samples at 100 Hz ($\Delta t_{ij}=0.1$ s), each reading $\hat a=0.50$ m/s$^2$ forward (bias-corrected).
+\step{Step 1 --- sum velocity} $\Delta v_{ij}=\sum\hat a\,\delta t=10\times0.50\times0.01=0.050$ m/s
+\step{Step 2 --- sum position} $\Delta p_{ij}=\tfrac12\hat a\,\Delta t_{ij}^2=\tfrac12\times0.50\times0.1^2=0.0025$ m
+\step{Step 3 --- use it} if the optimizer says $v_i=12.000$ m/s, then it must find $v_j=12.050$ m/s and $p_j-p_i=12.000\times0.1+0.0025=1.2025$ m; any difference is a residual weighted by the IMU noise.
+\result{$\Delta v=0.050$ m/s, $\Delta p=2.5$ mm (beyond $v_i\Delta t$). Ten numbers became two.}
+\end{worked}
+
+\begin{tryit}
+\textbf{7.1} A consumer IMU has a 10 m$g$ accel bias. How far off is it after 10 s unaided?\\
+\textbf{7.2} An industrial gyro has a 10°/h bias. Find the sideways error after 30 s at 20 m/s.\\
+\textbf{7.3} An IMU at rest reads $\hat a_z=9.83$ m/s$^2$ while local gravity is 9.80 m/s$^2$. Estimate the $z$ accelerometer bias.
+\end{tryit}
+
+\sources{Shan \emph{et al.}\ (2020), eqs.\ (2)--(9); Forster, C.\ \emph{et al.}\ (2017), On-manifold preintegration, \emph{IEEE Trans.\ Robotics} 33(1); Groves (2013), IMU error models and grades; MicroStrain 3DM-GX5 and 3DM-GQ7 datasheets (example bias values).}

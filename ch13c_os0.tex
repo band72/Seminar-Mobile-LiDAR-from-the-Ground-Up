@@ -1,0 +1,208 @@
+\chapter{Ouster OS0 Case Study: Errors and Resolution}
+
+This module reads a real datasheet line by line --- the \textbf{Ouster OS0 Rev8} short-range imaging lidar (datasheet rev.\ 08/03/2026, model OS0-080) --- and turns every specification into numbers a surveyor can use. Datasheet values are quoted as published; where a value had to be read from a chart, or where we make an assumption, we say so. Always check the latest datasheet for your unit.
+
+\begin{kid}
+A datasheet is like the label on a box of crayons: it tells you how many colors, how sharp the tips are, and how long they last. But to know whether you can draw a tiny ant or only a big elephant, you have to do a little math with those numbers. That is what this module does for the OS0 laser scanner.
+\end{kid}
+
+\section{The specifications that matter for mapping}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.18}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{4.6cm}X}\toprule
+\textbf{Specification} & \textbf{OS0 Rev8 value (datasheet)}\\\midrule
+Range, 80\% target / 10\% target & 75 m (246 ft) / 35 m (115 ft) (100 klx sunlight, $>$90\% detection, 1024 @ 10 Hz)\\
+Minimum range & 0.0 m (0.3 m / 1.0 ft optional, 0.5 m / 1.6 ft default)\\
+Channels (vertical resolution) & 32, 64 or 128\\
+Field of view & 90° vertical ($+45^\circ$ to $-45^\circ$), 360° horizontal\\
+Horizontal resolution & 512, 1024, 2048 or 4096 columns per rotation\\
+Rotation rate & 5--40 Hz (modes: 512 and 1024 @ 10--40 Hz; 2048 @ 10/20 Hz; 4096 @ 5/10 Hz)\\
+Angular sampling accuracy & $\pm0.01^\circ$ vertical and horizontal\\
+Range resolution & 0.1 cm / 0.003 ft (0.8 cm / 0.026 ft in Low Data Rate profile)\\
+Range precision (1$\sigma$) & $\pm0.25$ cm (0.008 ft) min to $\pm1.5$ cm (0.049 ft) max (beyond 1 m / 3.3 ft, 1024 @ 10 Hz)\\
+Range accuracy & $\pm1.25$ cm (0.041 ft) Lambertian; $\pm2.5$ cm (0.082 ft) retroreflective\\
+Returns & up to 2\\
+Laser & 865 nm, Class 1; beam 5 mm (0.2 in) at exit; divergence 0.35° (FWHM)\\
+Points per second (max) & 10\,485\,760\\
+Timestamp resolution / latency & $<1\ \mu$s / $<10$ ms\\
+Time sync & PTP, gPTP, external PPS: $<1$ ms error; internal clock: $<20$ ppm\\
+Built-in IMU & 6-axis (InvenSense IAM-20685HP), 640 / 1280 / 2560 Hz (default)\\
+Data rate, 128 ch @ 1024$\times$10 Hz & 43--295 Mbps\\\bottomrule
+\end{tabularx}\end{center}
+
+\section{Angular resolution and point spacing}
+\begin{keyeq}{Angular steps of a spinning sensor}
+\[ \Delta\theta_H=\frac{360^\circ}{N_{\text{col}}},\qquad \Delta\theta_V\approx\frac{\text{vertical FOV}}{N_{\text{ch}}-1},\qquad s=\rho\,\Delta\theta\ (\text{rad}) \]
+\begin{symbols}
+$N_{\text{col}}$ & columns (firings per channel) per rotation: 512--4096 & ---\\
+$N_{\text{ch}}$ & number of channels: 32, 64, 128 & ---\\
+$\Delta\theta_H,\Delta\theta_V$ & horizontal and vertical angular step between samples & deg\\
+$s$ & spacing between neighboring points on a surface facing the sensor & m\\
+\end{symbols}
+(The OS0's actual beam elevation angles can be queried from the sensor's intrinsic calibration and need not be exactly evenly spaced; the formula gives the average.)
+\end{keyeq}
+
+\begin{center}\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrr}\toprule
+\textbf{Mode} & \textbf{Step} & \textbf{5 m / 16 ft} & \textbf{10 m / 33 ft} & \textbf{20 m / 66 ft} & \textbf{35 m / 115 ft}\\\midrule
+512 columns & 0.703° & 6.1 cm\,/\,0.20 ft & 12.3 cm\,/\,0.40 ft & 24.5 cm\,/\,0.80 ft & 43.0 cm\,/\,1.41 ft\\
+1024 columns & 0.352° & 3.1 cm\,/\,0.10 ft & 6.1 cm\,/\,0.20 ft & 12.3 cm\,/\,0.40 ft & 21.5 cm\,/\,0.71 ft\\
+2048 columns & 0.176° & 1.5 cm\,/\,0.05 ft & 3.1 cm\,/\,0.10 ft & 6.1 cm\,/\,0.20 ft & 10.7 cm\,/\,0.35 ft\\
+4096 columns & 0.088° & 0.8 cm\,/\,0.03 ft & 1.5 cm\,/\,0.05 ft & 3.1 cm\,/\,0.10 ft & 5.4 cm\,/\,0.18 ft\\\midrule
+Vertical, 128 ch & 0.709° & 6.2 cm\,/\,0.20 ft & 12.4 cm\,/\,0.41 ft & 24.7 cm\,/\,0.81 ft & 43.3 cm\,/\,1.42 ft\\
+Vertical, 64 ch & 1.43° & 12.5 cm\,/\,0.41 ft & 24.9 cm\,/\,0.82 ft & 49.9 cm\,/\,1.64 ft & 87.3 cm\,/\,2.86 ft\\
+Vertical, 32 ch & 2.90° & 25.3 cm\,/\,0.83 ft & 50.7 cm\,/\,1.66 ft & 101 cm\,/\,3.31 ft & 177 cm\,/\,5.81 ft\\\midrule
+Beam footprint (FWHM) & 0.35° & 3.6 cm\,/\,0.12 ft & 6.6 cm\,/\,0.22 ft & 12.7 cm\,/\,0.42 ft & 21.9 cm\,/\,0.72 ft\\\bottomrule
+\end{tabular}\end{center}
+
+\fig[0.85]{os0_spacing}{Point spacing for each OS0 mode, compared with the size of the laser spot.}
+
+\begin{worked}{spacing on a building face}
+\textbf{Given:} OS0-128 in 1024 @ 10 Hz mode; building face 20 m away, square to the beam.
+\step{Horizontal step} $360/1024=0.3516^\circ=0.006136$ rad
+\step{Horizontal spacing} $20\times0.006136=0.123$ m
+\step{Vertical step} $90/127=0.7087^\circ=0.01237$ rad $\Rightarrow$ $20\times0.01237=0.247$ m
+\result{12 cm $\times$ 25 cm grid in a single sweep. Motion (a walking operator sweeps the scan lines across the wall) fills the vertical gaps over time; that is why mobile clouds are denser than one sweep suggests.}
+\end{worked}
+
+\section{Beam footprint: the real resolution limit}
+\begin{keyeq}{Footprint from FWHM divergence}
+\[ D(\rho)\approx d_0+\rho\,\gamma_{\text{FWHM}},\qquad d_0=5\text{ mm},\quad \gamma_{\text{FWHM}}=0.35^\circ=6.11\times10^{-3}\text{ rad} \]
+\begin{symbols}
+$\gamma_{\text{FWHM}}$ & full-width-at-half-maximum divergence: the angle across which the beam's power is at least half its peak & rad\\
+$D$ & spot diameter at range $\rho$ (to half power; some light falls outside it) & m\\
+\end{symbols}
+\end{keyeq}
+
+\fig[0.92]{os0_beams}{At 20 m, the 1024 mode places spots edge to edge; the 4096 mode overlaps each spot with its neighbors.}
+
+\begin{worked}{does 4096 mode make the map sharper?}
+\step{Spot at 20 m} $0.005+20\times0.00611=0.127$ m
+\step{1024-mode spacing} 0.123 m --- about one spot per spot-width (contiguous coverage)
+\step{4096-mode spacing} 0.031 m --- four samples inside every spot
+\result{the 4096 mode gives \emph{more} points but not proportionally \emph{sharper} detail: each sample still averages a 12.7 cm spot. Edges (poles, curb lips) are located only to about $\pm$half a spot, $\pm$6 cm at 20 m. Fine features are best captured \emph{close} to the sensor, where the spot is small.}
+\end{worked}
+
+\begin{improve}
+The OS0's 0.35° divergence is about 12 times wider than the 0.3 mrad (0.017°) beam assumed in Module 4 for a survey-grade mapping head. That difference --- not the point count --- is the main reason short-range robotic lidars and survey scanners produce such different-looking edges. Read the divergence line of any datasheet before reading the point rate.
+\end{improve}
+
+\section{Range resolution versus precision versus accuracy}
+\begin{kid}
+Think of a ruler. \textbf{Resolution} is how small the marks are (millimeters). \textbf{Precision} is how much your answer wiggles if you measure the same thing ten times. \textbf{Accuracy} is whether the ruler itself is the right length. A ruler can have tiny marks and still be stretched!
+\end{kid}
+
+\subsection{Resolution (quantization)}
+\begin{keyeq}{Quantization error}
+\[ \sigma_q=\frac{q}{\sqrt{12}} \]
+\begin{symbols}
+$q$ & size of the smallest reported step (the ``resolution'') & m\\
+$\sigma_q$ & standard deviation of rounding to that step (a uniform error between $-q/2$ and $+q/2$) & m\\
+$\sqrt{12}$ & comes from the variance of a uniform distribution of width $q$: $q^2/12$ & ---\\
+\end{symbols}
+\end{keyeq}
+
+\begin{worked}{does the data profile matter?}
+\step{Standard profile, $q=0.1$ cm} $\sigma_q=0.1/3.464=0.029$ cm --- negligible against 0.25 cm precision
+\step{Low Data Rate profile, $q=0.8$ cm} $\sigma_q=0.8/3.464=0.23$ cm --- \emph{as large as the best precision}
+\step{Combined at short range} $\sqrt{0.25^2+0.23^2}=0.34$ cm instead of 0.25 cm
+\result{for survey work never use the Low Data Rate profile: it adds a 2.3 mm rounding error to every range, a 36\% increase in noise on bright targets.}
+\end{worked}
+
+\subsection{Precision and accuracy versus range and reflectivity}
+\fig[0.85]{os0_range}{Range precision (1$\sigma$) and accuracy for the OS0 Rev8. Curves for the 10\% target are read from the datasheet chart and are approximate.}
+
+\begin{center}\small
+\begin{tabular}{lrrrrrrr}\toprule
+Range (m) & 5 & 10 & 15 & 20 & 25 & 30 & 35\\
+Range (ft) & 16 & 33 & 49 & 66 & 82 & 98 & 115\\\midrule
+Precision, 10\% target (cm, read from chart) & 0.25 & 0.25 & 0.28 & 0.40 & 0.65 & 1.00 & 1.50\\
+Precision, 90\% target (cm) & 0.25 & 0.25 & 0.25 & 0.25 & 0.25 & 0.25 & 0.25\\
+Precision, retroreflector (cm) & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0 & 1.0\\
+Accuracy, Lambertian (cm) & 1.25 & 1.25 & 1.25 & 1.25 & 1.25 & 1.25 & 1.25\\\midrule
+Precision, 10\% target (ft) & 0.008 & 0.008 & 0.009 & 0.013 & 0.021 & 0.033 & 0.049\\
+Accuracy, Lambertian (ft) & 0.041 & 0.041 & 0.041 & 0.041 & 0.041 & 0.041 & 0.041\\\bottomrule
+\end{tabular}\end{center}
+
+\begin{keyeq}{Total range error from a datasheet}
+\[ \sigma_{\rho,\text{total}}\approx\sqrt{b^2+\sigma_p^2+\sigma_q^2} \]
+\begin{symbols}
+$b$ & range accuracy (bias) from the datasheet, treated here as a 1$\sigma$ systematic error (a conservative assumption; ``$\pm$'' values are not always 1$\sigma$) & m\\
+$\sigma_p$ & range precision at that range and reflectivity & m\\
+$\sigma_q$ & quantization (usually negligible) & m\\
+\end{symbols}
+\end{keyeq}
+
+\begin{worked}{total range error on dark asphalt}
+\step{At 10 m (10\% target)} $\sqrt{1.25^2+0.25^2+0.03^2}=1.27$ cm
+\step{At 20 m} $\sqrt{1.25^2+0.40^2}=1.31$ cm
+\step{At 30 m} $\sqrt{1.25^2+1.00^2}=1.60$ cm
+\step{At 35 m (maximum range for 10\%)} $\sqrt{1.25^2+1.50^2}=1.95$ cm
+\result{out to about 25 m the bias dominates and the total barely changes; beyond that, noise on dark surfaces takes over. Because bias is common to nearby points, relative measurements (curb height, cracks) are much better than these totals (Module 14).}
+\end{worked}
+
+\begin{tip}
+\textbf{Retroreflective targets are a trap.} The datasheet gives a 2.5 cm accuracy and 1.0 cm precision on retroreflectors --- worse than on ordinary surfaces --- because the very strong return distorts the pulse timing. Do not use retro-tape targets as checkpoints for absolute height unless the bias has been calibrated; use matte painted targets (Lambertian) and use retro targets for horizontal identification only.
+\end{tip}
+
+\section{Angular accuracy}
+\begin{worked}{the $\pm0.01^\circ$ encoder spec}
+\step{In radians} $0.01^\circ=1.745\times10^{-4}$ rad
+\step{At 10 / 20 / 35 m} $0.17$ / $0.35$ / $0.61$ cm across the beam (each axis)
+\result{smaller than the range error at every range the OS0 can reach --- the encoders are not the weak link. (We treat $\pm0.01^\circ$ as 1$\sigma$; if it is a maximum bound, the 1$\sigma$ is smaller.)}
+\end{worked}
+
+\section{Maximum range and detection}
+\begin{eng}
+The range figures (75 m at 80\% reflectance, 35 m at 10\%) are for $>$90\% \emph{detection probability} in 100 klx sunlight --- they say when points \emph{exist}, not when they are \emph{accurate}. Near the limit the 10\% precision is already 1.5 cm and the footprint is 22 cm. Typical asphalt is 5--20\% reflective, so on a sunny day expect road returns to thin out beyond roughly 30--35 m. The false-positive rate of 1 in 10\,000 means about 131 spurious points per second at 1.31 million points per second: outlier removal (Module 18) is mandatory. With a minimum range setting of 0.0 m, returns from the operator's own body or the vehicle will appear; mask them by azimuth or range.
+\end{eng}
+
+\section{Timing, synchronization and skew}
+\fig[0.78]{os0_clock}{Along-track error from timing for a free-running OS0 clock versus a PTP/PPS-synchronized one.}
+
+\begin{worked}{why the OS0 must be synchronized}
+\textbf{Given:} synced accuracy $<1$ ms (PTP or PPS); internal clock drift $<20$ ppm.
+\step{Synced, walking 1.5 m/s} $1.5\times0.001=0.15$ cm
+\step{Synced, driving 15 m/s} $15\times0.001=1.5$ cm
+\step{Synced, operator turning 90°/s, point at 20 m} $90^\circ/\text{s}\times0.001\text{ s}=0.09^\circ=1.57\times10^{-3}$ rad; $20\times1.57\times10^{-3}=3.1$ cm
+\step{Free-running 10 minutes} $600\times20\times10^{-6}=0.012$ s; at 15 m/s $\Rightarrow$ 18 cm
+\result{the $<1$ ms spec is fine for walking, marginal for driving, and poor for fast turns at range. For survey work, synchronize with PPS/PTP to the best your timing source can deliver, and verify with the turn-signature test of Module 8.}
+\end{worked}
+
+\begin{worked}{scan skew inside one rotation}
+\textbf{Given:} 1024 @ 10 Hz.
+\step{Time per rotation} $1/10=0.1$ s;\quad time per column $=0.1/1024=97.7\ \mu$s
+\step{Walking at 1.4 m/s} the sensor moves $1.4\times0.1=0.14$ m between the first and last column
+\step{Turning 60°/s} the head rotates $6^\circ$ in one sweep; a point at 20 m would smear $20\times0.105=2.1$ m if not de-skewed
+\result{per-column timestamps ($<1\ \mu$s resolution) plus IMU motion make de-skewing possible (Module 8). Raising the rotation rate to 20 Hz halves the skew but halves the columns available at each rate setting.}
+\end{worked}
+
+\section{Built-in IMU and data volume}
+\begin{eng}
+The OS0's internal 6-axis MEMS IMU (InvenSense IAM-20685HP) is sampled up to 2\,560 Hz ($\Delta t=0.39$ ms) and time-stamped on the same clock as the lidar --- exactly what tightly-coupled SLAM such as LIO-SAM needs for de-skewing and preintegration (Modules 7, 12). Its rigid offset to the lidar is reported through the queryable ``IMU pose correction matrix,'' a factory lever arm and boresight. Its bias and noise are those of an automotive/industrial MEMS part (read its own datasheet for values); expect it to need LiDAR and control aiding continuously, not to coast. Survey backpacks often add an external tactical IMU and GNSS.
+
+\textbf{Data volume.} At 128 channels, 1024 @ 10 Hz: $128\times1024\times10=1\,310\,720$ points/s; maximum data rate 295 Mbps $=36.9$ MB/s $\approx$ \textbf{133 GB per hour}. The quoted maximum 10\,485\,760 points/s equals $128\times2048\times20\times2$ --- consistent with the 2048 @ 20 Hz mode with both returns enabled (our interpretation).
+\end{eng}
+
+\section{Putting it together}
+In a complete backpack system the OS0's own range error is only one term. The full budget --- trajectory, attitude, boresight, lever arm, range and encoders --- is worked in Module 14 (Section~\ref{sec:bud-os0}): about \textbf{2.5 cm horizontal / 2.0 cm vertical at 5 m, 3.1 / 2.2 cm at 20 m and 4.3 / 2.5 cm at 35 m} (0.08/0.07, 0.10/0.07, 0.14/0.08 ft, 1$\sigma$).
+
+\section{Choosing a mode: a worked decision}
+\begin{worked}{interior as-built of a mechanical room}
+\textbf{Requirement:} 5 cm point spacing on walls up to 15 m; 2 cm (1$\sigma$) accuracy; walking survey.
+\step{Needed step} $0.05/15=0.00333$ rad $=0.19^\circ$ $\Rightarrow$ 2048 mode (0.176°) or finer
+\step{Rotation rate} 2048 mode allows 10 or 20 Hz; choose 10 Hz (more points per rotation, still low skew at walking speed)
+\step{Footprint check} at 15 m: $0.005+15\times0.00611=0.097$ m --- edges will be soft at $\pm5$ cm; capture pipe and valve details from closer than 5 m (spot 3.6 cm)
+\step{Range error} indoor bright walls: $\sqrt{1.25^2+0.25^2}=1.27$ cm; budget with indoor SLAM trajectory (assume 1.0 cm) and 0.03° heading: at 15 m $\sqrt{1.0^2+0.79^2+1.27^2+0.26^2\cdot2}=1.8$ cm \checkmark
+\step{Data} 2048 @ 10 Hz $\approx$ 2.6 M points/s, about 2$\times$ the 1024 data volume: plan $\sim$270 GB per hour
+\result{2048 @ 10 Hz, 128 channels, standard (not low-data-rate) profile, PTP sync, scan within 15 m and close up for fine detail. Control: at least three matte targets per room plus checkpoints.}
+\end{worked}
+
+\begin{tryit}
+\textbf{15.1} In 512 mode, what is the horizontal spacing at 8 m?\\
+\textbf{15.2} What is the OS0 spot diameter at 3 m?\\
+\textbf{15.3} Compute the total range error for a 10\% target at 25 m.\\
+\textbf{15.4} An unsynchronized OS0 runs for 30 minutes on a vehicle at 10 m/s. Estimate the worst-case along-track error from clock drift alone.
+\end{tryit}
+
+\sources{Ouster, \emph{OS0 Short-Range High-Resolution Imaging Lidar, Rev8 datasheet} (REV 08/03/2026); precision values for 10\% targets read from its precision chart.}

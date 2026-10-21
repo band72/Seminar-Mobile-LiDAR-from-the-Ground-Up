@@ -1,0 +1,69 @@
+TECHNICAL REVIEW LOG - Mobile LiDAR Survey Seminar
+Automated independent recomputation of key printed values (tech_review.py)
+Generated October 2026. 'CHECK' means the printed value differs from the recomputed value beyond rounding.
+
+Module  Item                                                             Printed      Recomputed  Unit    Result
+----------------------------------------------------------------------------------------------------------------
+M3      Range from 1 us round trip (m)                                     149.9        149.8962  m       PASS
+M3      Max unambiguous range at 1 MHz PRF (m)                             149.9        149.8962  m       PASS
+M2      Small-angle: 0.1 deg at 100 m (cm)                                  17.5         17.4533  cm      PASS
+M5      Quantization sigma for q=1 mm (mm)                                  0.29          0.2887  mm      PASS
+M15     OS0 horizontal step 512 cols (deg)                                 0.703          0.7031  deg     PASS
+M15     OS0 horizontal step 1024 cols (deg)                                0.352          0.3516  deg     PASS
+M15     OS0 horizontal step 2048 cols (deg)                                0.176          0.1758  deg     PASS
+M15     OS0 horizontal step 4096 cols (deg)                                0.088          0.0879  deg     PASS
+M15     OS0 1024-col spacing at 10 m (cm)                                    6.1          6.1359  cm      PASS
+M15     OS0 1024-col spacing at 35 m (cm)                                   21.5         21.4757  cm      PASS
+M15     OS0 128-ch vertical step (deg)                                     0.709          0.7087  deg     PASS
+M15     OS0 footprint 0.35 deg at 20 m incl. 5 mm exit (cm)                 12.7         12.7173  cm      PASS
+M15     75 m in ft                                                           246         246.063  ft      PASS
+M14/M17 500 ft in m                                                        152.4           152.4  m       PASS
+M14/M17 Attitude 0.0025 deg at 152.4 m (cm)                                  0.7           0.665  cm      PASS
+M14/M17 Attitude 0.0050 deg at 152.4 m (cm)                                  1.3          1.3299  cm      PASS
+M14/M17 Attitude 0.0100 deg at 152.4 m (cm)                                  2.7          2.6599  cm      PASS
+M14/M17 Attitude 0.0250 deg at 152.4 m (cm)                                  6.6          6.6497  cm      PASS
+M14     RiLOC-F nadir H RSS (cm)                                             3.7          3.7196  cm      PASS
+M14     RiLOC-F nadir V RSS (cm)                                             4.5          4.5346  cm      PASS
+M14     RiLOC-F edge H RSS (cm)                                              3.9          3.8515  cm      PASS
+M14     RiLOC-F edge V RSS (cm)                                              4.4          4.4224  cm      PASS
+M14     Timing 1 ms at 60 kn (cm)                                            3.1          3.0867  cm      PASS
+M20     Swath at 400 ft, +/-37.5 deg (m)                                     187         187.105  m       PASS
+M20     Swath 187 m in ft                                                    614        613.5171  ft      PASS
+M20     Density 2.0e6 pts/s, 187 m, 10 m/s (pts/m2)                         1070       1069.5187  pts/m2  PASS
+M21     Drive speed limit 0.25 m x 20 Hz x 4 ch (m/s)                         20            20.0  m/s     PASS
+M21     Outage time 300 m at 13 m/s (s)                                     23.1         23.0769  s       PASS
+M21     Accel drift 0.5 mg over 23.1 s (m)                                  1.31          1.3073  m       PASS
+M21     Gyro 1 deg/h lateral drift (m)                                     0.017          0.0168  m       PASS
+M21     Dataset RMSEz from CSV (cm)                                          1.9          1.8973  cm      PASS
+M21     Dataset mean dZ (cm)                                                0.31            0.31  cm      PASS
+M21     Final RMSEz incl. 0.8 cm checkpoint (cm)                            2.06          2.0616  cm      PASS
+M21     RMSE_H data (cm)                                                    2.63          2.6314  cm      PASS
+M21     Dataset RMSE_x from CSV (cm)                                         2.0          1.9997  cm      PASS
+M21     Dataset RMSE_y from CSV (cm)                                        1.71          1.7145  cm      PASS
+M21     Final RMSE_H incl. 1.0 cm, unrounded (cm)                           2.82          2.8175  cm      PASS
+M21     Final RMSE_H in ft                                                 0.092          0.0924  ft      PASS
+M13     ASPRS 95% vertical factor x RMSE 3 cm (cm)                          5.88            5.88  cm      PASS
+M13     ASPRS horizontal 95% factor (2-D)                                  2.448          2.4477          PASS
+M13     5 cm class swath-to-swath max (0.16 ft)                             0.26          0.2625  ft      PASS
+M19     650,000 ft: US vs intl foot difference (ft)                          1.3             1.3  ft      PASS
+M19     1,200,000 US ft in m                                         365760.7315     365760.7315  m       PASS
+M19     Difference 0.7315 m in ft                                            2.4          2.3999  ft      PASS
+
+44 of 44 values PASS.
+
+SCOPE AND LIMITS OF THIS REVIEW
+- This is an arithmetic/consistency review: each value is recomputed from the stated inputs and
+  from the manufacturer datasheets cited in each module's SOURCES box (Ouster OS0 Rev8, MicroStrain
+  3DM-GX5-25/-45 and 3DM-GQ7, RIEGL VUX-240^24 dated 2026-08-17).
+- Corrections made during review: Module 21 RMSE_H computation now shows the unrounded 2.634 cm;
+  Try It 19.4 (U.S. vs international foot) corrected to 0.7315 m = 2.40 ft; ASPRS Table 7.2 limits
+  (0.60X / 0.80X / 1.60X) verified against Edition 2, Version 2 (2024).
+- Values still labeled 'typical' or 'read from chart' are intentionally so: OS0 precision versus
+  range (read from the datasheet chart), ch.4 range-noise illustrations, and LiDAR reflectivity of
+  materials (vary with wavelength, wetness and incidence angle).
+- FDOT TML numeric tolerances (Handbook Sec. 39.6.2 / Appendix C) are left as a fill-in table; enter
+  them from the current FDOT Surveying and Mapping Handbook.
+- NOT DONE BY THE AUTHOR'S TOOLS: an independent review by a second Florida PSM. Module 19 contains a
+  reviewer sign-off block that must be completed before the seminar is offered for CE credit.
+
+Second PSM reviewer: ______________________  License No. ________  Date ___________

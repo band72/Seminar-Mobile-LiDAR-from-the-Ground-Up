@@ -1,0 +1,50 @@
+\item LiDAR finds distance by timing how long a light pulse takes to return. (T/F)
+\item The time-of-flight equation divides by two because light slows down in air. (T/F)
+\item Because light is so fast, even extremely small timing errors cause noticeable range errors. (T/F)
+\item A wider laser footprint makes the edges of poles and curbs appear sharper. (T/F)
+\item A dual-antenna GNSS heading is unaffected by nearby steel, unlike a magnetometer heading. (T/F)
+\item A near-infrared mobile LiDAR measures the bottom of a clear pond as easily as the surrounding ground. (T/F)
+\item Surveying azimuth and robotics yaw always share the same zero direction and turning sense. (T/F)
+\item LiDAR maps the ground under trees by passing through gaps between leaves, not through the leaves themselves. (T/F)
+\item A small tilt error causes part of gravity to be mistaken for acceleration. (T/F)
+\item Lever-arm errors grow larger as the range to the target increases. (T/F)
+\item Boresight errors grow larger as the range to the target increases. (T/F)
+\item De-skewing gives each point its own pose according to its own timestamp. (T/F)
+\item In the predict step of a Kalman filter, uncertainty usually shrinks. (T/F)
+\item ICP can converge to a wrong answer if its starting guess is poor. (T/F)
+\item In a long featureless corridor, scan matching is weakest along the corridor's length. (T/F)
+\item A factor graph lets a loop closure late in a survey correct poses from early in the survey. (T/F)
+\item Control points can also serve as the independent checkpoints used to report accuracy. (T/F)
+\item Averaging many measurements reduces random error but not systematic bias. (T/F)
+\item A closed traverse with the same heading bias on every leg can still show zero misclosure. (T/F)
+\item A MEMS IMU can navigate for many minutes with no aiding and stay within a few centimeters. (T/F)
+\item Which best describes \emph{precision}?\\[1pt] (A) the smallest step the sensor can report\\ (B) the spread of repeated measurements\\ (C) the maximum measurable range\\ (D) closeness of the average to the true value
+\item A datasheet's \emph{range resolution} describes:\\[1pt] (A) the bias of the range\\ (B) the smallest step by which a reported range can change\\ (C) the repeatability of the range\\ (D) the probability of detecting a target
+\item Why do angle errors matter more for distant points?\\[1pt] (A) the laser gets weaker with distance\\ (B) time of flight is longer\\ (C) they do not matter more\\ (D) the sideways error equals range times the angle error
+\item For a point on a flat road far from a low sensor, the height error is driven mainly by:\\[1pt] (A) the vertical angle error\\ (B) the range noise\\ (C) the intensity\\ (D) the point density
+\item When range noise dominates, a point's error ellipsoid is longest:\\[1pt] (A) across the beam\\ (B) vertically\\ (C) parallel to the road edge\\ (D) along the laser beam
+\item Two points measured in the same sweep share a range bias. In their height difference the bias:\\[1pt] (A) doubles\\ (B) cannot be determined\\ (C) cancels\\ (D) adds in quadrature
+\item Which method checks an error budget by simulating thousands of random inputs?\\[1pt] (A) the compass rule\\ (B) the Kalman gain\\ (C) Monte Carlo simulation\\ (D) voxel filtering
+\item A camera image in a mobile mapping system gets its position and orientation by:\\[1pt] (A) averaging all images in the project\\ (B) interpolating the trajectory at the image's exposure time\\ (C) reading the GNSS fix nearest in distance\\ (D) assuming the camera never moves
+\item Why may a finer horizontal mode on a short-range sensor not give proportionally sharper edges?\\[1pt] (A) the beam footprint is wider than the sample spacing\\ (B) the data rate drops to zero\\ (C) the IMU slows down\\ (D) the laser switches off
+\item If a sensor shows a larger bias on retroreflective targets, retro targets are best used for:\\[1pt] (A) measuring intensity only\\ (B) absolute height checkpoints\\ (C) horizontal identification, not uncalibrated heights\\ (D) nothing at all
+\item Dual-antenna GNSS heading becomes more accurate when:\\[1pt] (A) the antennas are mounted closer together\\ (B) the two antennas are mounted farther apart\\ (C) the vehicle drives faster\\ (D) the magnetometer is calibrated
+\item Why must a mobile LiDAR be time-synchronized with the trajectory?\\[1pt] (A) it raises intensity\\ (B) it shrinks the footprint\\ (C) a time offset turns platform motion into position error\\ (D) it saves storage
+\item The main weakness of magnetometer-based AHRS heading is:\\[1pt] (A) it measures only position\\ (B) it needs satellites\\ (C) nearby steel and motors distort it\\ (D) it grows with time squared
+\item Compared with an AHRS, a GNSS/INS mainly adds:\\[1pt] (A) immunity to magnetic disturbance indoors\\ (B) better roll and pitch\\ (C) centimeter accuracy without corrections\\ (D) absolute position with bounded error
+\item Inside tightly-coupled SLAM, the most important IMU property is:\\[1pt] (A) the short-term noise and bias behavior of the raw sensors\\ (B) the unit's weight\\ (C) the magnetometer range\\ (D) the published EKF heading accuracy
+\item Closure tests on a loop cannot detect errors that:\\[1pt] (A) are identical on every leg\\ (B) are blunders\\ (C) change from leg to leg\\ (D) affect only one leg
+\item Under Gaussian noise, solving a factor graph is equivalent to:\\[1pt] (A) building a histogram\\ (B) nearest-neighbor search\\ (C) weighted least squares\\ (D) a single filter step
+\item IMU preintegration in LIO-SAM exists so that:\\[1pt] (A) GPS is never needed\\ (B) points get colored\\ (C) raw IMU data need not be re-integrated whenever poses change\\ (D) loops are detected automatically
+\item Under ASPRS Edition 2, positional accuracy is reported as:\\[1pt] (A) standard deviation with bias removed\\ (B) the maximum error\\ (C) a 95\% confidence value only\\ (D) RMSE, including checkpoint survey error
+\item Which error is NOT reduced by collecting more data?\\[1pt] (A) a wrong geoid model\\ (B) random range noise\\ (C) angle-encoder jitter\\ (D) IMU white noise
+\item Under ASPRS Edition 2, a formal product accuracy assessment requires at least 30 checkpoints. (T/F)
+\item ASPRS Edition 2 still requires accuracy to be reported at the 95\% confidence level. (T/F)
+\item Under ASPRS Edition 2, ground control and checkpoints should be:\\[1pt] (A) exempt from any accuracy requirement\\ (B) at least two times more accurate than the product being tested\\ (C) four times less accurate than the product\\ (D) the same accuracy as the product
+\item Under ASPRS Edition 2, vegetated vertical accuracy (VVA) is:\\[1pt] (A) never tested\\ (B) used instead of non-vegetated accuracy\\ (C) a strict pass/fail criterion\\ (D) reported as found, with acceptance based on non-vegetated accuracy
+\item In Florida, surveys and maps must comply with the Standards of Practice in Chapter 5J-17, Florida Administrative Code. (T/F)
+\item A mobile LiDAR accuracy statement should include:\\[1pt] (A) only the vehicle speed\\ (B) the methods, horizontal and vertical datums, accuracy achieved, and how it was tested\\ (C) only the scanner model number\\ (D) only the number of points collected
+\item Using a geoid model that differs from the project's required vertical datum creates a systematic elevation error. (T/F)
+\item Mobile laser scanners driven through public streets are normally required to be:\\[1pt] (A) Class 1 eye-safe under IEC 60825-1\\ (B) any class, if the operator wears goggles\\ (C) Class 4\\ (D) Class 3B
+\item Under ASPRS Edition 2, the uncertainty of the checkpoint survey is ignored when computing final product accuracy. (T/F)
+\item Which practice best supports a professional audit of a LiDAR survey?\\[1pt] (A) deleting raw data after processing\\ (B) documenting control/checkpoint separation, calibration values and processing steps, and archiving raw data\\ (C) reporting only the mean error\\ (D) delivering only the final CAD file

@@ -1,0 +1,78 @@
+\chapter{Hands-On Labs}
+These five labs turn the modules into things you can do with your hands, a tape measure, a spreadsheet or a laptop. Labs 1--2 use the simple approach and need no math; Labs 3--5 are for engineers.
+
+\section*{Lab 1 --- Be a human LiDAR (Modules 3 and 5)}
+\begin{kid}
+\textbf{You need:} a protractor taped flat on a chair, a tape measure, graph paper, a friend.\\
+\textbf{Do it:} Sit at the chair --- you are the scanner. Point at a corner of the room, a door edge, a table leg. For each, read the angle on the protractor (that is $H$) and have your friend measure the distance (that is $\rho$). Write them in a table.\\
+\textbf{Then:} On graph paper, put yourself in the middle. For each object, turn your ruler to the angle and mark a dot at the distance (1 square = 50 cm). Join the dots --- you have drawn a \emph{point-cloud map} of your room!\\
+\textbf{Engineer's extension:} compute each dot with $x=\rho\cos H$, $y=\rho\sin H$ and compare with the drawing.
+\end{kid}
+
+\section*{Lab 2 --- The drifting blindfold walk (Modules 7 and 10)}
+\begin{kid}
+\textbf{Do it:} Put a cone at the start. Blindfolded, try to walk 10 steps forward, turn around, and walk 10 steps back to the cone. Mark where you stop. Repeat three times. You will miss the cone --- that is \emph{drift}. Now try again, but you may touch one wall halfway (a \emph{landmark}). Do you get closer?\\
+\textbf{What you learned:} counting steps is like an IMU: little mistakes add up. Touching something you know is like a LiDAR match or a loop closure: it fixes the mistakes.
+\end{kid}
+
+\section*{Lab 3 --- ICP in 30 lines of Python (Module 11)}
+Run this with Python 3 and NumPy. It builds an L-shaped ``room,'' makes a sparse, moved and turned copy (a new scan), and recovers the motion with ICP. Watch the RMS gap fall each iteration --- exactly Figure 11.1.
+\begin{tcolorbox}[base,colback=gray!4,colframe=grayx,title={icp\_lab.py}]
+\scriptsize
+\begin{verbatim}
+import numpy as np
+
+def best_fit(P, Q):
+    """Closed-form rigid fit (Module 11): returns R, t with Q ~ R P + t."""
+    pb, qb = P.mean(0), Q.mean(0)
+    W = (P - pb).T @ (Q - qb)
+    U, S, Vt = np.linalg.svd(W)
+    R = Vt.T @ U.T
+    if np.linalg.det(R) < 0:          # avoid a mirror image
+        Vt[-1] *= -1; R = Vt.T @ U.T
+    return R, qb - R @ pb
+
+def icp(P, Q, iters=30):
+    cur = P.copy()
+    for k in range(iters):
+        d = ((cur[:, None, :] - Q[None, :, :])**2).sum(-1)
+        match = Q[d.argmin(1)]                 # 1. nearest neighbors
+        R, t = best_fit(cur, match)            # 2. best rigid fit
+        cur = cur @ R.T + t                    # 3. apply
+        rms = np.sqrt(d.min(1).mean())
+        print(f"iter {k:2d}  RMS gap = {rms:.4f} m")
+        if rms < 1e-4: break                   # 4. repeat until stable
+    return best_fit(P, cur)                    # total transform
+
+def room(n):                        # an L-shaped wall plus a short wall
+    s = np.linspace(0, 1, n)
+    return np.vstack([np.c_[6*s, 0*s], np.c_[6+0*s, 3*s], np.c_[3.5+0*s, 3+1.5*s]])
+Q = room(600)                       # dense "map"
+th = np.radians(6); Rt = np.array([[np.cos(th), -np.sin(th)], [np.sin(th), np.cos(th)]])
+P = (room(40) - [0.25, -0.15]) @ Rt   # sparse new scan, moved and turned
+R, t = icp(P, Q)
+print("recovered angle (deg):", np.degrees(np.arctan2(R[1, 0], R[0, 0])).round(3))
+\end{verbatim}
+\end{tcolorbox}
+\textbf{Expected output:} RMS gap 0.18 m at iteration 0 falling to about 0.002 m; recovered angle $6.0^\circ$. \textbf{Experiments:} (a) increase the turn to 25° and watch ICP get stuck in a local minimum --- the reason it needs an IMU guess; (b) delete the short wall from \texttt{room()} and add a shift along $x$ only: the long walls let the scan slide --- the hallway effect.
+
+\section*{Lab 4 --- Field check of boresight from two passes (Module 9)}
+\begin{eng}
+\textbf{Procedure:} pick a sharp vertical feature beside the road --- a building corner or a pole. Drive past it in both directions in the same lane. In the cloud, measure the along-track offset $\Delta$ between the feature's position in the two passes, and the range $\rho$ from the drive line to the feature.
+
+\textbf{Why it works:} a yaw boresight error $\delta\psi$ shifts the feature by $\rho\,\delta\psi$ forward on one pass and backward on the other, so the passes differ by $2\rho\,\delta\psi$:
+\[ \delta\psi\approx\frac{\Delta}{2\rho}. \]
+\textbf{Example:} $\Delta=4.2$ cm along-track at $\rho=30$ m $\Rightarrow\delta\psi=0.042/60=7.0\times10^{-4}$ rad $=0.040^\circ$. The same logic applied to the \emph{height} of a flat road edge on both sides gives the roll residual, and to the height of features ahead/behind gives pitch.
+\end{eng}
+
+\section*{Lab 5 --- Checkpoint report in a spreadsheet (Module 13)}
+\begin{eng}
+Set up columns: \textsf{Point ID | Survey Z | LiDAR Z | dZ = LiDAR $-$ Survey | dZ$^2$}. Then:
+\begin{itemize}
+\item mean: \texttt{=AVERAGE(D2:D31)}
+\item standard deviation: \texttt{=STDEV.S(D2:D31)}
+\item RMSE: \texttt{=SQRT(SUMSQ(D2:D31)/COUNT(D2:D31))}
+\item final RMSE with checkpoint survey error in G1: \texttt{=SQRT(RMSE\^{}2+G1\^{}2)}
+\end{itemize}
+Enter the ten residuals from the Module 13 worked example and confirm 0.53 cm, 2.64 cm, 2.56 cm and 2.75 cm. Then add a deliberate blunder (+25 cm) to one point and see how strongly RMSE reacts --- and why each large residual must be investigated, not just averaged.
+\end{eng}

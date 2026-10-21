@@ -1,0 +1,43 @@
+\section{The right-hand rule: naming X, Y, Z and roll, pitch, yaw}
+\begin{kid}
+Hold up your \textbf{right} hand. Point your \textbf{thumb} straight ahead --- that is \textbf{X}. Point your \textbf{first finger} to the left --- that is \textbf{Y}. Bend your \textbf{middle finger} so it points up --- that is \textbf{Z}. All three are at right angles, like the corner of a box. Now make a thumbs-up: the way your curled fingers wrap around your thumb is the ``plus'' direction for turning around that thumb. Point your thumb along X and your fingers show plus \textbf{roll}; along Y, plus \textbf{pitch}; along Z, plus \textbf{yaw}.
+\end{kid}
+
+\fig[1.0]{righthand}{The right-hand rule. Left: thumb, index and middle finger give X, Y and Z. Right: with the thumb along an axis, the curled fingers show the positive rotation about it --- roll about X, pitch about Y, yaw about Z.}
+
+\begin{eng}
+\textbf{Rule 1 --- the axes form a right-handed set.} With the right hand: thumb $=+X$, index finger $=+Y$, middle finger $=+Z$. Equivalently, $\hat{\vect x}\times\hat{\vect y}=\hat{\vect z}$ (Module 2). Every coordinate frame in this course --- sensor, body, IMU, world (ENU) and map projection with height --- is right-handed. A left-handed frame (one axis flipped) is a mirror image, and no rotation can turn one into the other; mixing them is a classic cause of a ``mirrored'' point cloud.
+
+\textbf{Rule 2 --- positive rotations follow the curl.} Point the right thumb along the positive axis; the fingers curl in the direction of a \emph{positive} angle. Seen from the arrow tip looking back toward the origin, positive is \textbf{counter-clockwise}.
+\begin{itemize}
+\item \textbf{Roll} $\phi$ = rotation about $+X$
+\item \textbf{Pitch} $\theta$ = rotation about $+Y$
+\item \textbf{Yaw} $\psi$ = rotation about $+Z$
+\end{itemize}
+Because the \emph{direction} of each axis decides the sign, the same physical motion can be $+$ in one convention and $-$ in another. The two conventions you will meet most:
+\end{eng}
+
+\fig[0.95]{rhr_vehicle}{The same vehicle in the two common right-handed body frames.}
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{2.2cm}XX}\toprule
+ & FLU: X forward, Y left, Z up & FRD: X forward, Y right, Z down\\\midrule
+Used by & ROS (REP-103), LIO-SAM, most LiDAR drivers, this course & aircraft, many INS/IMU products (NED world frame)\\
++ roll (about X) & left side \emph{up}, right side down & right side \emph{down}\\
++ pitch (about Y) & nose \emph{down} & nose \emph{up}\\
++ yaw (about Z) & nose turns \emph{left} (counter-clockwise from above) & nose turns \emph{right} (clockwise from above, like azimuth)\\
+World frame & ENU: East, North, Up & NED: North, East, Down\\\bottomrule
+\end{tabularx}\end{center}
+
+\begin{worked}{checking a frame with your hand (and with the cross product)}
+\textbf{Given:} a datasheet says a sensor's axes are ``X forward, Y right, Z up.''
+\step{Hand test} right thumb forward, index finger right --- the middle finger now points \emph{down}, not up.
+\step{Cross-product test} forward $\times$ right $=(1,0,0)\times(0,-1,0)=(0,0,-1)$ = down in a frame where $(0,1,0)$ is left.
+\result{``X forward, Y right, Z up'' is \textbf{left-handed}. Either the datasheet means Z down (FRD) or one axis is mislabeled. Resolve it with the manufacturer before computing a single lever arm or boresight; a sign error here mirrors or tilts the entire cloud.}
+\end{worked}
+
+\begin{tip}
+When setting up a rig, stand behind the vehicle, hold up your right hand in the way the manual defines the axes, and \emph{physically} roll, pitch and yaw the IMU a few degrees while watching the live output. Each angle should increase in the direction your fingers curl. Write the verified convention in the calibration record (Appendix E).
+\end{tip}
+

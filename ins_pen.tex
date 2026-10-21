@@ -1,0 +1,62 @@
+\section{What can LiDAR see through?}
+\begin{kid}
+A laser is light, so it acts like a flashlight beam, not like X-ray vision. It cannot see \emph{through} a wall, a tree trunk, or the ground. It \emph{can} slip through holes --- the gaps between leaves, the openings in a fence --- and reach whatever is behind them. It passes through clear glass the way sunlight does. And it is stopped almost right away by water.
+\end{kid}
+
+\fig[1.0]{penetration}{The five situations every LiDAR user meets. Orange dots are recorded returns.}
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{2.2cm}X}\toprule
+\textbf{Material or condition} & \textbf{Does the laser get through?} & \textbf{What you get and what to do}\\\midrule
+Tree canopy, shrubs & \textbf{Through the gaps only} & First returns on leaves, last returns on the ground where there are openings. Dense evergreen or summer canopy may leave no ground hits: collect in leaf-off season, slow down, add passes.\\
+Tall grass, crops, mangroves & \textbf{Rarely} & Points sit on top of the vegetation, not the soil. Heights are biased high; take ground shots by conventional methods.\\
+Chain-link fence, mesh, railings & \textbf{Partly} (gaps) & Some points on the fence, some behind it; the fence appears as a sparse ghost surface.\\
+Clear glass windows & \textbf{Mostly through} & Few returns from the glass itself (except head-on); you see the room behind. Reflections can create ``mirror-world'' ghost points.\\
+Tinted, frosted or coated glass & \textbf{Partly / varies} & Unpredictable; check the cloud.\\
+Mirrors, polished metal, chrome & \textbf{No --- reflects away} & Dropouts or ghost points placed at false ranges behind the surface.\\
+Water (865--1550 nm) & \textbf{No} & Absorbed within centimeters; calm water often returns nothing except straight down. Only green (532 nm) bathymetric LiDAR maps the bottom, in clear water.\\
+Wet pavement, puddles & \textbf{No} & Weak or missing returns; specular reflection; schedule collection after surfaces dry.\\
+Rain, fog, dust, smoke, steam & \textbf{Partly} & Range shortens; ``floating'' false points near the sensor; heavy fog can block completely. Filter them out (Module 17).\\
+Falling snow & \textbf{Partly} & Noise points in the air; snow cover hides the ground surface.\\
+Walls, soil, pavement, people, vehicles & \textbf{No} & Opaque: anything behind is in shadow. Plan extra passes or positions to see behind objects.\\
+Underground utilities & \textbf{No} & LiDAR maps only visible surfaces (manhole lids, valve covers). Use ground-penetrating radar or locating for what is buried.\\\bottomrule
+\end{tabularx}\end{center}
+
+\begin{bigidea}
+LiDAR never ``penetrates'' solid material. It reaches hidden ground only through openings, which is why multiple returns (Module 3) and many viewing angles matter more than laser power.
+\end{bigidea}
+
+\section{Reflectivity of common surfaces}
+\fig[0.86]{reflectivity}{Approximate reflectivity of common surfaces at the near-infrared wavelengths used by most mobile scanners (865--905 nm). Values vary with moisture, age, roughness, color and incidence angle.}
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.18}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{4.2cm}>{\centering\arraybackslash}p{2.3cm}X}\toprule
+\textbf{Surface} & \textbf{Typical reflectivity} & \textbf{What it means in the field}\\\midrule
+Clear, calm water & 1--5\% & often no return at all except straight below the sensor\\
+Black tire, rubber & 2--5\% & among the darkest targets; shortest detection range\\
+Black or dark car paint & 3--8\% & cars may appear with holes; glossy paint can also mirror\\
+Fresh asphalt & 4--8\% & dark: road returns thin out first at long range\\
+Wet soil, wet asphalt & 4--12\% & water darkens surfaces in the near infrared\\
+Dark rock (basalt) & 5--15\% & dark\\
+Aged, gray asphalt & 10--20\% & brighter as it weathers\\
+Dry soil & 15--35\% & medium\\
+Tree bark, wood & 20--45\% & medium\\
+Concrete & 25--50\% & good, consistent target\\
+Dry sand & 30--55\% & bright\\
+Grass, green leaves & 40--60\% & bright in the near infrared (healthy plants reflect strongly there)\\
+White paint, road striping & 60--85\% & very bright: striping stands out in intensity images\\
+Fresh snow & 75--95\% at 865--905 nm & very bright at 905 nm --- but much darker at 1550 nm\\
+Retroreflective signs and tape & ``over 100\%'' & sends light straight back; can saturate the receiver and bias the range (Module 15)\\\bottomrule
+\end{tabularx}\end{center}
+{\footnotesize Values are typical ranges compiled for teaching; they are not specifications. Sensors that report \emph{calibrated reflectivity} (such as the Ouster OS0) let you measure your own surfaces.}
+
+\begin{worked}{how far can I see dark asphalt?}
+\textbf{Given:} the OS0 detects a 10\% target to 35 m (Module 15). Received power falls as $1/R^2$ (Section 4.2), so for the same detection threshold the maximum range grows as the \emph{square root} of reflectivity.
+\step{Fresh asphalt, 5\%} $35\times\sqrt{5/10}=35\times0.71=25$ m
+\step{Black car, 4\%} $35\times\sqrt{0.4}=22$ m
+\step{Concrete, 40\%} $35\times\sqrt{4}=70$ m (the datasheet's 75 m at 80\% shows the rule flattening out in bright sunlight)
+\result{plan the usable swath on the \emph{darkest} surface you must map: on new asphalt, expect road coverage to end near 25 m, long before the brochure range.}
+\end{worked}
+

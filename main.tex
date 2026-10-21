@@ -1,0 +1,83 @@
+\documentclass[11pt,letterpaper,openany]{book}
+\usepackage[T1]{fontenc}
+\usepackage[sc]{mathpazo}
+\usepackage[scaled=0.92]{helvet}
+\linespread{1.06}
+\usepackage[margin=0.9in,top=0.85in,bottom=0.9in,headheight=14pt]{geometry}
+\usepackage{amsmath,amssymb,mathtools,bm}
+\usepackage{graphicx,xcolor,tabularx,booktabs,array,multicol,enumitem,longtable}
+\usepackage[most]{tcolorbox}
+\usepackage{titlesec,fancyhdr}
+\usepackage{siunitx}
+\usepackage[hidelinks,pdftitle={LiDAR from the Ground Up},pdfauthor={D.S. Banks, PSM}]{hyperref}
+\graphicspath{{figs/}}
+\setlist{itemsep=1pt,topsep=3pt}
+\setlength{\parskip}{4pt}\setlength{\parindent}{0pt}
+
+\definecolor{navy}{HTML}{1F3B73}\definecolor{teal}{HTML}{138D75}\definecolor{orange}{HTML}{E67E22}
+\definecolor{red}{HTML}{C0392B}\definecolor{purple}{HTML}{7D3C98}\definecolor{gold}{HTML}{B7950B}
+\definecolor{kid}{HTML}{1E8449}\definecolor{grayx}{HTML}{5D6D7E}
+
+% headings
+\titleformat{\chapter}[display]{\sffamily\bfseries\color{navy}}{\large MODULE \thechapter}{4pt}{\Huge}[\vspace{2pt}{\color{orange}\titlerule[2pt]}]
+\titlespacing*{\chapter}{0pt}{-10pt}{14pt}
+\titleformat{\section}{\sffamily\Large\bfseries\color{navy}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\sffamily\large\bfseries\color{teal}}{\thesubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{10pt}{4pt}\titlespacing*{\subsection}{0pt}{8pt}{3pt}
+
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\sffamily\small\color{grayx}LiDAR from the Ground Up}
+\fancyhead[R]{\sffamily\small\color{grayx}\leftmark}
+\fancyfoot[C]{\sffamily\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\chaptermark}[1]{\markboth{Module \thechapter: #1}{}}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\sffamily\small\thepage}\renewcommand{\headrulewidth}{0pt}}
+
+% boxes
+\tcbset{base/.style={enhanced,breakable,boxrule=0.8pt,arc=3pt,left=7pt,right=7pt,top=5pt,bottom=5pt,fonttitle=\sffamily\bfseries,before skip=8pt,after skip=8pt}}
+\newtcolorbox{kid}[1][]{base,colback=kid!6,colframe=kid,title={\textsf{SIMPLE APPROACH}},#1}
+\newtcolorbox{eng}[1][]{base,colback=navy!4,colframe=navy,title={\textsf{ENGINEER'S VIEW}},#1}
+\newtcolorbox{worked}[1]{base,colback=orange!5,colframe=orange,title={WORKED EXAMPLE --- #1}}
+\newtcolorbox{tryit}[1][]{base,colback=purple!5,colframe=purple,title={TRY IT YOURSELF},after upper={\par\smallskip{\color{purple}\rule{\linewidth}{0.4pt}}\par\textsf{\small\color{purple}\textbf{Answers:} worked solutions are in Appendix A, ``Answers to Try It Yourself,'' starting on page \pageref{app:answers}.}},#1}
+\newtcolorbox{improve}[1][]{base,colback=red!4,colframe=red!80!black,title={IMPROVED FROM THE SOURCE MATERIAL},#1}
+\newtcolorbox{tip}[1][]{base,colback=teal!6,colframe=teal,title={SURVEYOR'S FIELD TIP},#1}
+\newtcolorbox{keyeq}[1]{base,unbreakable,colback=white,colframe=navy,boxrule=1.4pt,title={KEY EQUATION --- #1},coltitle=white,colbacktitle=navy}
+\newtcolorbox{seminar}[1][]{base,colback=gold!8,colframe=gold!80!black,boxrule=1.4pt,title={FOR SURVEY SEMINAR PARTICIPANTS},#1}
+\newtcolorbox{warning}[1][]{base,colback=red!6,colframe=red!75!black,boxrule=1.4pt,title={WARNING},#1}
+\newtcolorbox{bigidea}{base,colback=gold!10,colframe=gold,title={BIG IDEA}}
+
+\newcommand{\step}[1]{\par\smallskip\textsf{\textbf{\color{orange!80!black}#1}}\par}
+\newcommand{\result}[1]{\par\smallskip\colorbox{orange!20}{\parbox{\dimexpr\linewidth-2\fboxsep}{\textbf{Result:} #1}}\par}
+\newenvironment{symbols}{\par\smallskip\textsf{\small\textbf{What every symbol means}}\par\small\renewcommand{\arraystretch}{1.15}\tabularx{\linewidth}{>{\centering\arraybackslash}p{1.6cm}X>{\raggedright\arraybackslash}p{2.4cm}}\toprule\textbf{Symbol}&\textbf{Meaning}&\textbf{Units}\\\midrule}{\bottomrule\endtabularx\par}
+\newcommand{\fig}[3][0.9]{\begin{figure}[htbp]\centering\includegraphics[width=#1\linewidth]{#2}\caption{#3}\end{figure}}
+\usepackage{caption}\captionsetup{font={small,sf},labelfont={bf,color=navy}}
+\newcommand{\vect}[1]{\mathbf{#1}}
+\newcommand{\sources}[1]{\begin{tcolorbox}[base,colback=gray!4,colframe=grayx,title={SOURCES FOR THIS MODULE}]\footnotesize #1\end{tcolorbox}}
+
+\raggedbottom
+\renewcommand{\topfraction}{0.85}\renewcommand{\textfraction}{0.1}\renewcommand{\floatpagefraction}{0.75}
+\begin{document}
+\input{ch00_front}
+\input{ch01_intro}
+\input{ch02_math}
+\input{ch03_tof}
+\input{ch04_beam}
+\input{ch05_polar}
+\input{ch06_rotation}
+\input{ch07_imu}
+\input{ch08_timing}
+\input{ch09_calib}
+\input{ch10_slam}
+\input{ch11_scanmatch}
+\input{ch12_factor}
+\input{ch13_accuracy}
+\input{ch13b_errprop}
+\input{ch13c_os0}
+\input{ch13d_gx5}
+\input{ch13e_riegl}
+\input{ch14_processing}
+\input{ch14b_florida}
+\input{ch14c_practice}
+\input{ch15_capstone}
+\input{ch16_back}
+\end{document}

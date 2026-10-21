@@ -1,0 +1,231 @@
+\appendix
+\titleformat{\chapter}[display]{\sffamily\bfseries\color{navy}}{\large APPENDIX \thechapter}{4pt}{\Huge}[\vspace{2pt}{\color{orange}\titlerule[2pt]}]
+\renewcommand{\chaptermark}[1]{\markboth{Appendix \thechapter: #1}{}}
+
+\chapter{Answers to Try It Yourself}\label{app:answers}
+\small
+\begin{multicols}{2}
+\textbf{1.1} $343\times1/2=171.5$ m.\\
+\textbf{1.2} IMU; time synchronization; lever arm and boresight; trajectory estimation (GNSS/INS + SLAM); ground control and checkpoints.
+
+\textbf{2.1} $8.727\times10^{-4}$ rad; $80\times8.727\times10^{-4}=6.98$ cm.\\
+\textbf{2.2} $\sqrt{4+2.25+9}=\sqrt{15.25}=3.91$.\\
+\textbf{2.3} $\sqrt{144+25}=13$ m.\\
+\textbf{2.4} 5 steps (a 3-4-5 triangle).
+
+\textbf{3.1} $2.997\times10^8\times166.8\times10^{-9}/2=25.0$ m.\\
+\textbf{3.2} $\delta t=2\times0.01/c\approx66.7$ ps.
+
+\textbf{4.1} $0.008+40\times0.0005=0.028$ m $=2.8$ cm.\\
+\textbf{4.2} $(60/20)^2=9$ times weaker.\\
+\textbf{4.3} The white sign: it reflects much more light (higher reflectance); black rubber absorbs it.\\
+\textbf{4.4} The tree (through gaps between leaves) and the glass storefront (the laser mostly passes through clear glass). Not the brick wall (opaque) or the pond (near-infrared light stops at the water surface).
+
+\textbf{5.1} $\rho\cos V=39.848$; $x=34.509$, $y=-19.924$, $z=3.486$ m; $\sqrt{34.509^2+19.924^2+3.486^2}=40.000$ \checkmark\\
+\textbf{5.2} $\rho=\sqrt{9+16+144}=13.0$ m; $H=\operatorname{atan2}(4,3)=53.13^\circ$; $V=\operatorname{atan2}(12,5)=67.38^\circ$.\\
+\textbf{5.3} $32\times900\times20=576\,000$ pts/s; $10/20=0.5$ m per head line.
+
+\textbf{6.1} $(0,10)$ then back to $(10,0)$: a rotation by $-\psi$ undoes $+\psi$ ($\vect R^{\mathsf T}=\vect R^{-1}$).\\
+\textbf{6.2} $\psi=90^\circ-135^\circ=-45^\circ$.\\
+\textbf{6.3} $0.02/40=5\times10^{-4}$ rad $=0.029^\circ$ (about 1.7 arc-minutes).
+
+\textbf{7.1} $10\,\text{m}g=0.098$ m/s$^2$; $\tfrac12\times0.098\times10^2=4.9$ m.\\
+\textbf{7.2} $10^\circ/\text{h}=4.85\times10^{-5}$ rad/s; $\tfrac12\times20\times4.85\times10^{-5}\times30^2=0.44$ m.\\
+\textbf{7.3} $9.83-9.80=0.03$ m/s$^2\approx3$ m$g$.
+
+\textbf{8.1} $30\times0.0005=1.5$ cm.\\
+\textbf{8.2} $90^\circ/\text{s}\times0.002=0.18^\circ=0.00314$ rad; $\times15=4.7$ cm.\\
+\textbf{8.3} The car moves while the picture is being taken, so different parts are captured at different positions --- just like a LiDAR sweep.
+
+\textbf{9.1} 0.765 m error in the body $z$ direction; it does \emph{not} depend on range (a lever-arm error is a constant offset in the body frame).\\
+\textbf{9.2} $0.02/60=3.3\times10^{-4}$ rad $=0.019^\circ$.\\
+\textbf{9.3} $Z=0.974$ m, so the point height is 10.974 m (31 cm lower than with roll and pitch).
+
+\textbf{10.1} Straight line: $(10.40,\ 5.00,\ 0^\circ)$.\\
+\textbf{10.2} $K=0.09/0.18=0.5$; $\mu=50.10$ m; $\sigma^2=0.045$, $\sigma=0.212$ m.\\
+\textbf{10.3} The landmark is somewhere known, so seeing it at a measured distance and direction rules out many possible positions.
+
+\textbf{11.1} Centered: $\vect p'=(\mp0.5,0)$, $\vect q'=(0,\mp0.5)$; sums $0$ and $0.5$ $\Rightarrow\theta=90^\circ$; $\vect t=(2,1.5)-\vect R(0.5,0)=(2,1.0)$.\\
+\textbf{11.2} The line is the $z$-axis: $d=\sqrt{3^2+4^2}=5$.\\
+\textbf{11.3} Everything looks the same as you move, so there is nothing to tell you how far you have gone.
+
+\textbf{12.1} Odometry sums to exactly 3.0, so there is no misclosure: $x=(1.0,\,2.1,\,3.0)$, all residuals 0.\\
+\textbf{12.2} $\begin{psmallmatrix}2&-1&0\\-1&2&-1\\0&-1&5\end{psmallmatrix}\vect x=\begin{psmallmatrix}-0.1\\0.2\\13.7\end{psmallmatrix}$ $\Rightarrow x=(1.062,\ 2.223,\ 3.185)$; odometry residuals $+0.062$ each, GPS $-0.015$. The stiffer GPS gets most of its way.\\
+\textbf{12.3} The stiff band hardly stretches; the others stretch more to share the strain.
+
+\textbf{13.1} Mean $1.2$ cm; RMSE $\sqrt{34/5}=2.61$ cm; with checkpoint error $\sqrt{6.8+2.25}=3.01$ cm.\\
+\textbf{13.2} $\sqrt{1+4+4+16}=5$ cm; attack the 4 cm term first (it is 64\% of the variance).\\
+\textbf{13.3} If the computer used them to fit the map, they would of course agree with it --- the test would prove nothing.
+
+\textbf{14.1} Along the beam: 0.3 cm; across: $15\times1.745\times10^{-4}=0.26$ cm.\\
+\textbf{14.2} Fully correlated errors add linearly: $2+3=5$ cm (not 3.6 cm).\\
+\textbf{14.3} $0.5/\sqrt n<0.05\Rightarrow n>100$.\\
+\textbf{14.4} $1.96\times1.5=2.94$ cm.
+
+\textbf{15.1} $8\times0.01227=0.098$ m (9.8 cm).\\
+\textbf{15.2} $0.005+3\times0.00611=0.023$ m (2.3 cm).\\
+\textbf{15.3} $\sqrt{1.25^2+0.65^2}=1.41$ cm.\\
+\textbf{15.4} $1800\times20\times10^{-6}=0.036$ s; $\times10$ m/s $=0.36$ m.
+
+\textbf{16.1} Misclosure 0 (a constant bias rotates the whole loop); far corner $707\times0.008727=6.2$ m off.\\
+\textbf{16.2} $0.01\times60=0.6^\circ/\sqrt{\text{h}}$.\\
+\textbf{16.3} $0.03/25=0.0012$ rad $=0.069^\circ$.\\
+\textbf{16.4} Because an error that is the same on every leg rotates or stretches the whole figure, and a rotated or stretched closed figure still closes.\\
+\textbf{16.5} $b=0.0065/1.745\times10^{-3}=3.7$ m.\\
+\textbf{16.6} $\sqrt{0.30^2+0.022^2+0.321^2}=0.44$ m.
+
+\textbf{17.1} $152.4\times\sin37.5^\circ\times1.745\times10^{-4}=0.016$ m (1.6 cm).\\
+\textbf{17.2} Zone depth $c/(2\times1.2\times10^6)=124.9$ m; $152.4/124.9=1.22$ $\Rightarrow$ zone 2.\\
+\textbf{17.3} $\sqrt{1.0^2+2.5^2+0.5^2}=2.7$ cm.\\
+\textbf{17.4} It is Class 3R: from a moving aircraft the beam sweeps past any eye too fast to harm it (NOHD 0 m above 1 kn), but a stationary beam has a hazard distance (0.3 m, 3.5 m with optical aids).
+
+\textbf{18.1} $(\lfloor40.52\rfloor,\lfloor-9.6\rfloor,\lfloor7.96\rfloor)=(40,-10,7)$.\\
+\textbf{18.2} $16\times1\times0.75=12$ m$^3$.\\
+\textbf{18.3} A roll boresight error (it tilts the road in opposite senses on opposite passes).
+
+\textbf{19.1} 5J-17.051(2): the accuracy of data shall be independently verified. A LiDAR survey satisfies it by testing against independent checkpoints that were never used as control, and documenting the method and RMSE.\\
+\textbf{19.2} March 5 --- the survey date is the last date of data acquisition (5J-17.051(3)(d)), not the processing date.\\
+\textbf{19.3} No. The edited tile's hash no longer matches the code listed in the sealed signature file, so that file is no longer sealed (5J-17.062(4)).\\
+\textbf{19.4} U.S.\ survey foot: 365\,760.7315 m; international foot: 365\,760.0000 m; difference 0.7315 m (2.40 ft).
+
+\textbf{20.1} Exercise responsible charge: obtain and review the calibration, trajectory quality and control; run (or direct) an independent checkpoint test; confirm datums, units and classification; state responsibility for the vendor's data before sealing.\\
+\textbf{20.2} Any three of: no data behind solid objects or under dense vegetation; no near-infrared returns below water; no underground utilities; occlusions by traffic; reduced accuracy beyond the usable range; areas affected by GNSS outages.\\
+\textbf{20.3} Part 107 limits altitude to 400 ft AGL (absent a waiver or nearby structure); lower altitude also shortens the range, so attitude and range terms shrink and point density rises.
+\end{multicols}
+\normalsize
+
+\chapter{Final Exam (Administered Separately)}
+The final exam and its answer keys are \textbf{not printed in this book}. They are in the separate \emph{Instructor Packet}, which contains:
+\begin{itemize}
+\item \textbf{two exam versions} (A and B) of 50 conceptual and standards questions each --- 15 true/false, 20 multiple choice on concepts, and 15 on standards and professional practice;
+\item the answer keys, a map of every question to the seminar's learning objectives, and administration instructions;
+\item the \textbf{pass mark: 70\%} (35 of 50 correct).
+\end{itemize}
+No calculations are required and no calculator is needed. To prepare, review the figures, Simple Approach boxes, Big Ideas, Field Tips, and Modules 13, 14, 19 and 20.
+
+\chapter{Equation Summary Sheet}
+\small
+\renewcommand{\arraystretch}{1.6}
+\renewcommand{\arraystretch}{1.45}
+\begin{longtable}{>{\raggedright\arraybackslash}p{4.1cm}>{\raggedright\arraybackslash}p{10.2cm}>{\centering\arraybackslash}p{1.1cm}}\toprule
+\textbf{Quantity} & \textbf{Equation} & \textbf{Mod.}\\\midrule
+\endfirsthead
+\textbf{Quantity} & \textbf{Equation} & \textbf{Mod.}\\\midrule
+\endhead
+
+Time-of-flight range & $\rho=c\,\Delta t/2,\ \ c=c_0/n$ & 3\\
+Max.\ unambiguous range & $\rho_{\max}=c/(2f_{\text{PRF}})$ & 3\\
+Phase range & $\rho=\tfrac{\lambda_m}{2}(N+\Delta\varphi/2\pi)$ & 3\\
+Beam footprint & $D=d_0+\rho\gamma$ & 4\\
+Received power & $P_r\propto\rho_{\text{refl}}\cos\theta_i/R^2$ & 4\\
+Polar to Cartesian & $x=\rho\cos V\cos H,\ y=\rho\cos V\sin H,\ z=\rho\sin V$ & 5\\
+Point spacing & $\Delta_{\text{along}}=v/f,\ \Delta_{\text{across}}=\rho\Delta\theta$ & 5\\
+Small-angle error & $\delta=\rho\,\delta\alpha$ (rad) & 2, 6\\
+3-D rotation & $\vect R=\vect R_z(\psi)\vect R_y(\theta)\vect R_x(\phi)$ & 6\\
+Rigid transform & $\vect r_W=\vect R\vect r_B+\vect p$;\ $\Delta\vect T_{ij}=\vect T_i^{-1}\vect T_j$ & 6\\
+IMU model & $\hat{\boldsymbol\omega}=\boldsymbol\omega+\vect b^\omega+\vect n^\omega,\ \hat{\vect a}=\vect R^{BW}(\vect a-\vect g)+\vect b^a+\vect n^a$ & 7\\
+Strapdown & $\vect v'=\vect v+\vect g\Delta t+\vect R\hat{\vect a}\Delta t$;\ $\vect p'=\vect p+\vect v\Delta t+\tfrac12(\vect g+\vect R\hat{\vect a})\Delta t^2$ & 7\\
+Bias growth & $\delta y=\tfrac12vb_gt^2$;\ $\delta x=\tfrac12b_at^2$ & 7\\
+Preintegration & $\Delta\vect R_{ij}=\vect R_i^{\mathsf T}\vect R_j$, \ldots & 7\\
+Timing error & $\delta=v\,\delta t+\rho\dot\psi\,\delta t$ & 8\\
+Direct georeferencing & $\vect r_W=\vect p_W+\vect R^W_B(\vect R^B_S\vect r_S+\vect l^B)$ & 9\\
+Motion model & $\alpha=(R-L)/w$;\ $x'=x+(r+\tfrac w2)(\sin(\theta+\alpha)-\sin\theta)$ & 10\\
+Kalman (1-D) & $K=\bar\sigma^2/(\bar\sigma^2+\sigma_z^2)$;\ $\mu=\bar\mu+K(z-\bar\mu)$;\ $\sigma^2=(1-K)\bar\sigma^2$ & 10\\
+EKF & $\bar{\vect P}=\vect G\vect P\vect G^{\mathsf T}+\vect Q$;\ $\vect K=\bar{\vect P}\vect H^{\mathsf T}(\vect H\bar{\vect P}\vect H^{\mathsf T}+\vect R)^{-1}$ & 10\\
+ICP & $\min\sum\|\vect R\vect p_i+\vect t-\vect q_i\|^2$;\ $\vect R=\vect V\vect U^{\mathsf T}$, $\vect t=\bar{\vect q}-\vect R\bar{\vect p}$ & 11\\
+Edge / plane distance & $d_e=\|(\vect p-\vect a)\times(\vect p-\vect b)\|/\|\vect a-\vect b\|$; $d_p=|(\vect p-\vect u)\cdot\vect n|/\|\vect n\|$ & 11\\
+Factor graph & $\vect X^*=\arg\min\sum\|\vect h_k(\vect X)-\vect z_k\|^2_{\Sigma_k}$ & 12\\
+Normal equations & $\vect A^{\mathsf T}\vect W\vect A\,\vect x=\vect A^{\mathsf T}\vect W\vect b$ & 12\\
+RMSE & $\sqrt{\tfrac1n\sum e_i^2}$;\ $\text{RMSE}_H=\sqrt{\text{RMSE}_x^2+\text{RMSE}_y^2}$ & 2, 13\\
+Final accuracy & $\sqrt{\text{RMSE}_{\text{data}}^2+\text{RMSE}_{\text{survey}}^2}$ & 13\\
+Error budget (RSS) & $\sigma=\sqrt{\sum\sigma_j^2}$ & 2, 13\\
+Outlier test & $\bar d_i>\mu+\alpha\sigma$ & 18\\
+Grid volume & $V=\sum A(z_{\text{top}}-z_{\text{base}})$ & 18\\
+Variance propagation & $\sigma_y^2=\sum(\partial f/\partial x_i)^2\sigma_i^2+2\sum a_ia_j\sigma_{ij}$ & 14\\
+Covariance propagation & $\boldsymbol\Sigma_y=\vect J\boldsymbol\Sigma_x\vect J^{\mathsf T}$ & 14\\
+Averaging with bias & $\text{RMSE}=\sqrt{b^2+\sigma^2/n}$ & 14\\
+95\% factors & 1.960 (1-D), 2.448 (2-D), 2.796 (3-D) & 14\\
+Quantization & $\sigma_q=q/\sqrt{12}$ & 15\\
+Angular step & $\Delta\theta=360^\circ/N_{\text{col}}$;\ $s=\rho\Delta\theta$ & 15\\
+Random walks & $\text{ARW}=60N_g$;\ $\sigma_\psi=\text{ARW}\sqrt t$ & 16\\
+Dual-antenna heading & $\sigma_\psi\approx\sigma_{\text{rel}}/b$ & 16\\
+Coast error & $\sqrt{(\sigma_vt)^2+(\tfrac12b_at^2)^2+(\tfrac16gb_gt^3)^2}$ & 16\\\bottomrule
+\end{longtable}
+\normalsize
+
+\input{ch16b_labs}
+\input{ch16c_sop}
+
+\chapter{Glossary}
+\small
+\begin{multicols}{2}
+\begin{description}[leftmargin=0pt,itemsep=2pt,font=\bfseries\color{navy}]
+\item[Attitude] Orientation of the platform: roll, pitch, yaw.
+\item[Bias] A slowly changing offset in a sensor reading; integrates into drift.
+\item[Boresight] The small rotation between the LiDAR and IMU frames.
+\item[Checkpoint] A surveyed point used only to test accuracy, never to adjust.
+\item[Control point] A surveyed point used to fix the datum and constrain the solution.
+\item[Covariance] A matrix describing uncertainties and how they are correlated.
+\item[De-skew] Correcting each point of a sweep for the motion during that sweep.
+\item[Dead reckoning] Computing position by adding up measured motion from a known start.
+\item[DTM] Digital terrain model: the bare-earth surface.
+\item[EKF] Extended Kalman filter: a Kalman filter linearized with Jacobians.
+\item[Factor graph] A graph of unknown states and the measurements (factors) that connect them, solved by least squares.
+\item[Footprint] Size of the laser spot on the target.
+\item[GNSS] Global Navigation Satellite Systems (GPS, GLONASS, Galileo, BeiDou).
+\item[Hallway effect] Weak along-track constraint in featureless corridors.
+\item[ICP] Iterative Closest Point: repeatedly pair and fit two point clouds.
+\item[IMU] Inertial measurement unit: accelerometers + gyroscopes.
+\item[Innovation] Measurement minus its prediction.
+\item[iSAM2] Incremental smoothing and mapping: updates only the changed part of a factor graph.
+\item[Jacobian] Matrix of partial derivatives used to linearize a model.
+\item[Kalman gain] Weight given to a new measurement versus the prediction.
+\item[Keyframe] A selected scan whose pose becomes a node in the graph.
+\item[LAS/LAZ] Standard point-cloud file format / its compressed version.
+\item[Lever arm] Offset vector between two sensor origins.
+\item[LIO-SAM] Tightly-coupled lidar--inertial odometry via smoothing and mapping (Shan \emph{et al.}, 2020).
+\item[Loop closure] Recognizing a revisited place and adding that constraint.
+\item[MAP] Maximum a posteriori: the most probable solution given all data.
+\item[NDT] Normal Distributions Transform: registration against per-voxel Gaussians.
+\item[Point cloud] A set of 3-D points, often with intensity and time.
+\item[Pose] Position plus orientation (6 degrees of freedom).
+\item[PPS] Pulse per second: GNSS timing signal for synchronization.
+\item[Preintegration] Summarizing many IMU samples into one relative-motion measurement.
+\item[RMSE] Root-mean-square error: the standard accuracy measure.
+\item[RSS] Root-sum-square: how independent errors combine.
+\item[SLAM] Simultaneous localization and mapping.
+\item[Smoother] An estimator that uses past \emph{and} future data to refine each state.
+\item[Strapdown] IMU fixed to the body; orientation tracked computationally.
+\item[Tightly coupled] Sensors are fused in one estimation problem, at raw-measurement level.
+\item[Voxel] A small 3-D grid cube.
+\end{description}
+\end{multicols}
+\normalsize
+
+\chapter{References and Further Study}
+\small
+\begin{enumerate}[leftmargin=*]
+\item Shan, T., Englot, B., Meyers, D., Wang, W., Ratti, C., \& Rus, D. (2020). LIO-SAM: Tightly-coupled lidar inertial odometry via smoothing and mapping. \emph{IEEE/RSJ IROS}. arXiv:2007.00258. (Source document for Modules 7, 11, 12.)
+\item \emph{Mobile LiDAR Basics for Surveying and Mapping} --- technical seminar document, October 2026 (59 pp.). (Source document; examples revised and corrected here.)
+\item \emph{LiDAR Mobile Mapping with SLAM: Course Outline}, 2026. (Source document; defines the four-module structure mapped in the course map.)
+\item Zhang, J., \& Singh, S. (2017). Low-drift and real-time lidar odometry and mapping (LOAM). \emph{Autonomous Robots}, 41(2), 401--416.
+\item Forster, C., Carlone, L., Dellaert, F., \& Scaramuzza, D. (2017). On-manifold preintegration for real-time visual--inertial odometry. \emph{IEEE Trans.\ Robotics}, 33(1), 1--21.
+\item Kaess, M., \emph{et al.} (2012). iSAM2: Incremental smoothing and mapping using the Bayes tree. \emph{Int.\ J.\ Robotics Research}, 31(2).
+\item Besl, P.\ J., \& McKay, N.\ D. (1992). A method for registration of 3-D shapes. \emph{IEEE PAMI}, 14(2), 239--256.
+\item Segal, A., Haehnel, D., \& Thrun, S. (2009). Generalized-ICP. \emph{Robotics: Science and Systems}.
+\item Biber, P., \& Stra{\ss}er, W. (2003). The normal distributions transform: a new approach to laser scan matching. \emph{IROS}.
+\item Arun, K.\ S., Huang, T.\ S., \& Blostein, S.\ D. (1987). Least-squares fitting of two 3-D point sets. \emph{IEEE PAMI}, 9(5).
+\item Thrun, S., Burgard, W., \& Fox, D. (2005). \emph{Probabilistic Robotics}. MIT Press.
+\item Brenner, C. SLAM lecture series (Units A--G), Leibniz University Hannover (video lectures and Python exercises).
+\item ASPRS (2023; Version 2, 2024). \emph{ASPRS Positional Accuracy Standards for Digital Geospatial Data, Edition 2}. American Society for Photogrammetry and Remote Sensing.
+\item Florida Administrative Code, Chapter 5J-17, \emph{Standards of Practice} (Board of Professional Surveyors and Mappers). Consult the current text.
+\item Florida Department of Transportation. Terrestrial mobile LiDAR surveying and mapping guidance (current edition).
+\item Groves, P.\ D. (2013). \emph{Principles of GNSS, Inertial, and Multisensor Integrated Navigation Systems}, 2nd ed. Artech House.
+\item Dellaert, F., \& Kaess, M. (2017). Factor graphs for robot perception. \emph{Foundations and Trends in Robotics}, 6(1--2).
+\item IEC 60825-1. Safety of laser products --- Part 1: Equipment classification and requirements.
+\end{enumerate}
+
+\vspace{1em}
+\begin{bigidea}
+\textbf{Where to go next.} Run LIO-SAM or a similar open-source pipeline on a public dataset; then take a commercial system to a small, well-controlled site, survey 30 checkpoints, and follow Module 21 from plan to accuracy statement. Nothing teaches like closing your own loop.
+\end{bigidea}

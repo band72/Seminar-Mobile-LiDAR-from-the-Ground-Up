@@ -1,0 +1,53 @@
+\section{Building the trajectory: poses, scans, IMU, GNSS and images}
+\begin{kid}
+Think of a trip recorded as a flip-book. Each page is a \textbf{pose}: where the car was and which way it was pointing at one instant. The IMU writes a new page hundreds of times a second, so the flip-book is smooth --- but it slowly drifts. The LiDAR compares each new scan with the last ones and corrects the drift, like recognizing the same buildings. GNSS now and then says ``this page is exactly here on Earth.'' The camera takes pictures along the way, and each picture is glued to the page for the moment it was taken. Flip through all the pages and you have the \textbf{trajectory}: the path, with direction, at every instant.
+\end{kid}
+
+\subsection*{The words}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{3.0cm}X}\toprule
+Pose & position ($X,Y,Z$) \emph{and} orientation (roll, pitch, yaw) at one instant (Module 6)\\
+Trajectory & the continuous sequence of poses over time --- the ``path with direction'' (often delivered as a time-stamped file, e.g.\ an SBET or a pose table)\\
+Keyframe pose & a pose that is a node in the factor graph (LIO-SAM: every 1 m or 10°)\\
+Interpolated pose & a pose computed \emph{between} keyframes for any time you need: each laser pulse, each image\\
+Image pose & the camera's pose at exposure time (photogrammetrists call it exterior orientation): trajectory pose + camera lever arm and boresight\\\bottomrule
+\end{tabularx}\end{center}
+
+\fig[1.0]{traj_timeline}{One second of data. The IMU ticks 200 times, the LiDAR completes 10 sweeps, GNSS gives 5 fixes and the camera takes 2 images. The trajectory (top row) is the common thread that gives every one of them a pose.}
+
+\subsection*{What each sensor contributes}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{2.0cm}>{\raggedright\arraybackslash}p{1.4cm}XX}\toprule
+Sensor & Rate & Contributes to the trajectory & Cannot do\\\midrule
+\color{teal}IMU & 100--1000 Hz & smooth, high-rate motion between everything else; roll and pitch from gravity; de-skews every LiDAR sweep; bridges gaps (preintegration factors) & stay accurate on its own for more than seconds; give absolute position\\
+\color{orange}LiDAR scans & 10--20 Hz & relative motion from scan matching (odometry factors); heading and drift control wherever there is geometry; loop closures when places are revisited; the map itself & work in featureless places (corridors, open fields); give absolute coordinates\\
+\color{gold}GNSS & 1--20 Hz & absolute position in the datum (GNSS factors); stops long-term drift; RTK makes it centimeter-level; dual antenna adds heading & work in tunnels, under canopy, indoors; supply attitude at high rate\\
+\color{purple}Camera images & 1--10 Hz & in LIO-SAM: nothing --- images \emph{receive} poses. (Visual--inertial systems also use image features as extra odometry.) & ---\\
+\textbf{Control} & a few points & ties the whole trajectory to surveyed coordinates; checkpoints prove it & ---\\\bottomrule
+\end{tabularx}\end{center}
+
+\fig[0.98]{traj_map}{The path as built: blue trajectory with pose axes, orange LiDAR scan coverage used for matching, gold GNSS fixes (absent in the tunnel), and purple camera images, each placed with its own interpolated pose.}
+
+\fig[0.9]{traj_share}{Conceptually, the factor graph leans on whichever sensors have information at each moment: LiDAR and IMU carry the tunnel; GNSS and IMU carry the featureless field.}
+
+\begin{worked}{giving a camera image its pose}
+\textbf{Given:} trajectory poses at $t_1=10.00$ s: $E=100.00$, $N=200.00$ m, heading $30.0^\circ$; at $t_2=10.10$ s: $E=101.50$, $N=200.10$ m, heading $31.0^\circ$. A photo is exposed at $t=10.04$ s.
+\step{Step 1 --- fraction of the way} $f=(10.04-10.00)/(10.10-10.00)=0.4$
+\step{Step 2 --- position} $E=100.00+0.4(1.50)=100.60$ m;\ $N=200.00+0.4(0.10)=200.04$ m
+\step{Step 3 --- heading} $30.0+0.4(1.0)=30.4^\circ$ (real software interpolates the full rotation, e.g.\ quaternion ``slerp'')
+\step{Step 4 --- camera offset} apply the camera's lever arm and boresight (Module 9) to move from the IMU to the lens
+\result{the image pose is $(100.60,\ 200.04)$, heading $30.4^\circ$. The same interpolation gives every one of the millions of laser pulses its pose.}
+\end{worked}
+
+\begin{worked}{why the camera needs calibration and timing too}
+\step{Boresight error $0.1^\circ$, point 20 m away} $20\times0.001745=0.035$ m --- colors land 3.5 cm off their points
+\step{Timing error 5 ms at 10 m/s} $10\times0.005=0.05$ m --- colors smear 5 cm along the road
+\result{colorized point clouds and photo-measured features inherit every trajectory error \emph{plus} the camera's own calibration and timing errors. Calibrate and synchronize the camera like the LiDAR (Modules 8--9).}
+\end{worked}
+
+\begin{tip}
+\textbf{Deliver and archive the trajectory.} Keep the final trajectory (time, position, attitude and their standard deviations), the image exterior orientations, the calibration file and the processing log with the project. When a client later asks ``where did this point come from?'', the trajectory is the answer --- and it is the first thing a reviewer will inspect for drift, gaps and GNSS outages.
+\end{tip}
+

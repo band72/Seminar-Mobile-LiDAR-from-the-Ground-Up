@@ -1,0 +1,145 @@
+\chapter{Sample SOP and Client Accuracy Agreement}
+This appendix is a \textbf{template}. It shows how the ideas in this course become a written Standard Operating Procedure (SOP) and a signed agreement on horizontal and vertical accuracy. Replace every sample value with your project's requirements, and have the surveyor in responsible charge review it against the current standards and contract.
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{3.4cm}X>{\bfseries}p{2.6cm}X}\toprule
+SOP number & ML-SOP-001 & Revision & 0 (sample)\\
+Title & \multicolumn{3}{p{10.5cm}}{Mobile LiDAR Topographic Survey --- Collection, Processing, QA/QC and Reporting}\\
+Effective date & \_\_\_\_\_\_\_\_ & Approved by & \_\_\_\_\_\_\_\_, PSM\\\bottomrule
+\end{tabularx}\end{center}
+
+\section*{1. Purpose}
+To produce mobile LiDAR point clouds and derived topographic products whose horizontal and vertical accuracy is agreed with the client \emph{before} collection, measured independently \emph{after} processing, and reported in the language of the ASPRS Positional Accuracy Standards.
+
+\section*{2. Scope}
+Vehicle-, backpack- or cart-mounted mobile laser scanning for topographic surveys, corridor mapping, as-builts and volumes. It does not cover boundary determination or subsurface utility locating.
+
+\section*{3. References}
+\begin{itemize}
+\item ASPRS Positional Accuracy Standards for Digital Geospatial Data, Edition 2, Version 2 (2024).
+\item ASPRS LAS Specification, version 1.4 (current revision).
+\item Chapter 5J-17, Florida Administrative Code, Standards of Practice (current text).
+\item FDOT guidance for terrestrial mobile LiDAR and the FDOT Florida Permanent Reference Network (FPRN), where applicable.
+\item IEC 60825-1, Safety of laser products (Class 1 equipment only).
+\item Manufacturer manuals and datasheets for the scanner, IMU/INS and GNSS receivers.
+\end{itemize}
+
+\section*{4. Roles and responsibilities}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{3.6cm}X}\toprule
+Surveyor in responsible charge (PSM) & approves the SOP and accuracy agreement; signs the final report and accuracy statement\\
+Project manager & client contact; schedule; scope changes; nonconformance decisions with the PSM\\
+Field crew chief & equipment checks, calibration loop, collection, field log, safety\\
+Control surveyor & control and checkpoint survey; keeps checkpoint coordinates \emph{sealed} from processing staff\\
+Processing analyst & trajectory, georeferencing, cleaning, classification, products\\
+QA reviewer (independent) & accuracy testing against checkpoints, swath checks, report review\\\bottomrule
+\end{tabularx}\end{center}
+
+\section*{5. Client accuracy agreement}
+Complete and sign this agreement \textbf{before mobilization}. It fixes what will be delivered, how accurate it must be, and how accuracy will be proven.
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{5.0cm}X}\toprule
+\textbf{Item} & \textbf{Agreed value (sample --- edit for your project)}\\\midrule
+Project / location & Main Street corridor, 2.0 km, curb to right-of-way line\\
+Horizontal datum and realization & NAD 83(2011), epoch 2010.0; State Plane Coordinate System, Florida East zone\\
+Vertical datum and geoid & NAVD 88 via GEOID18 (state the model)\\
+Linear units & \_\_\_\_\_\_ (state U.S. survey foot or international foot explicitly; NGS deprecated the U.S. survey foot after 2022 --- confirm statutory and client requirements)\\
+\textbf{Horizontal accuracy class} & \textbf{RMSE$_H$ $\le$ 5 cm} (0.16 ft) on well-defined features within 25 m (82 ft) of the trajectory\\
+\textbf{Vertical accuracy class (NVA)} & \textbf{RMSE$_V$ $\le$ 3 cm} (0.10 ft) on hard, non-vegetated surfaces --- \emph{acceptance criterion}\\
+Vegetated vertical accuracy (VVA) & tested and reported as found (no pass/fail)\\
+Data internal precision & within-swath smooth-surface max difference $\le$ 1.8 cm (0.06 ft); swath-to-swath RMSD$_z$ $\le$ 2.4 cm (0.08 ft), max difference $\le$ 4.8 cm (0.16 ft) (0.6$X$ / 0.8$X$ / 1.6$X$ for $X$ = 3 cm)\\
+Checkpoints & $\ge$30 NVA checkpoints on hard surfaces; $\ge$30 well-defined horizontal checkpoints (painted chevrons, corners); distributed along the full length and both sides; never used as control\\
+Checkpoint / control accuracy & checkpoints RMSE$_V$ $\le$ 1.5 cm (0.05 ft), RMSE$_H$ $\le$ 2.5 cm (0.08 ft) (at least 2$\times$ better than the product); method and redundancy documented\\
+Accuracy reporting & ASPRS Edition 2 wording; checkpoint survey error included in the reported RMSE\\
+Point density & $\ge$ 400 points/m$^2$ (37 points/ft$^2$) on pavement within 20 m (66 ft) (verified on test patches)\\
+Usable range & points beyond 25 m (82 ft) from the trajectory excluded from accuracy-critical products\\
+Classification (LAS codes) & 1, 2, 6, 7, 11, 13--15, 17, 18 (others by agreement)\\
+Deliverables & LAS 1.4 (PDRF 7, RGB) as LAZ tiles; ground surface (TIN) with breaklines; planimetric line work in CAD format; trajectory file; control and checkpoint report; survey report with accuracy statement; metadata\\
+Collection conditions & dry pavement; daylight or as agreed; traffic control per permit; GNSS/RTK availability checked (e.g.\ FPRN VRS)\\
+Acceptance and remedy & if NVA or horizontal RMSE exceeds the class, producer investigates, reprocesses, or recollects the affected area at no added cost; outliers beyond 3$\times$RMSE are investigated and documented, never silently removed\\\midrule
+Client representative & Name \_\_\_\_\_\_\_\_\_\_\_\_ \quad Signature \_\_\_\_\_\_\_\_\_\_\_\_ \quad Date \_\_\_\_\_\_\\
+Surveyor in responsible charge & Name \_\_\_\_\_\_\_\_\_\_\_\_ \quad PSM No.\ \_\_\_\_\_\_ \quad Signature \_\_\_\_\_\_\_\_\_\_\_\_ \quad Date \_\_\_\_\_\_\\\bottomrule
+\end{tabularx}\end{center}
+
+\begin{tip}
+\textbf{Agree on what ``accuracy'' means before anyone drives.} Most disputes come from four gaps: (1) the class was stated without saying RMSE or 95\%; (2) horizontal and vertical were not separated; (3) nobody said which surfaces are tested (hard surfaces vs.\ grass); (4) datum, geoid and units were assumed. The table above closes all four.
+\end{tip}
+
+\section*{6. Procedure}
+\subsection*{6.1 Planning}
+\begin{enumerate}[label=\alph*.]
+\item Build an error budget for the system and route (Modules 13--14); confirm the agreed classes are achievable at the planned range and speed.
+\item Plan routes for loop closures and passes in both directions; identify GNSS-poor areas (tunnels, canopy, urban canyons) and add control there.
+\item Lay out control (every $\sim$250 m / 820 ft and in GNSS-poor areas) and checkpoints (independent, distributed, both sides).
+\item Confirm RTK source (base or network such as FPRN), mountpoint, datum and epoch.
+\item Obtain permits and maintenance-of-traffic plans; schedule for dry surfaces.
+\end{enumerate}
+
+\subsection*{6.2 Equipment checks and calibration}
+\begin{enumerate}[label=\alph*.]
+\item Verify firmware, calibration file (lever arm, boresight) and its date; record in the field log.
+\item Confirm time synchronization (PPS/PTP lock) and IMU, LiDAR and GNSS streams at nominal rates.
+\item Static IMU alignment and a calibration loop over known features; review boresight residuals before production.
+\item Laser safety: street and terrestrial scanners Class 1; airborne Class 3R scanners (e.g.\ RIEGL VUX-240\textsuperscript{24}) operated only per the manufacturer's NOHD/ENOHD and the company laser-safety program; post crew safety briefing.
+\end{enumerate}
+
+\subsection*{6.3 Control and checkpoint survey}
+\begin{enumerate}[label=\alph*.]
+\item Survey control and checkpoints with methods meeting the agreed accuracy (redundant RTK, static GNSS, or total station / digital levels).
+\item Assign IDs; deliver checkpoint coordinates only to the QA reviewer (sealed from processing).
+\item Check into a known monument at start and end of each session; record differences.
+\end{enumerate}
+
+\subsection*{6.4 Data collection}
+\begin{enumerate}[label=\alph*.]
+\item Collect at or below the planned speed; drive both directions; avoid stops in traffic where possible.
+\item Keep a field log: times, weather, GNSS outages, sensor warnings, deviations from plan.
+\item Verify data on site (coverage, density, no gaps) before demobilizing.
+\end{enumerate}
+
+\subsection*{6.5 Processing}
+\begin{enumerate}[label=\alph*.]
+\item Trajectory: GNSS/INS (RTK or PPK) with LiDAR SLAM and loop closures; review trajectory standard deviations and flag weak stretches.
+\item Georeference with the approved calibration; de-skew; apply control.
+\item Clean noise and moving objects; classify to the agreed LAS codes; document voxel size and filter settings.
+\item Extract products: surface with breaklines, planimetrics, volumes as ordered.
+\end{enumerate}
+
+\subsection*{6.6 QA/QC and acceptance testing}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{>{\raggedright\arraybackslash}p{4.2cm}Xc}\toprule
+\textbf{Test} & \textbf{Criterion (sample)} & \textbf{Pass?}\\\midrule
+NVA, $\ge$30 hard-surface checkpoints & RMSE$_V$ (incl.\ checkpoint error) $\le$ 3 cm (0.10 ft) & $\square$\\
+Horizontal, $\ge$30 well-defined points & RMSE$_H$ (incl.\ checkpoint error) $\le$ 5 cm (0.16 ft) & $\square$\\
+VVA & reported as found & $\square$\\
+Within-swath precision & max difference $\le$ 1.8 cm (0.06 ft) on flat surfaces & $\square$\\
+Swath-to-swath & RMSD$_z$ $\le$ 2.4 cm (0.08 ft); max $\le$ 4.8 cm (0.16 ft) & $\square$\\
+Point density & $\ge$ 400 pts/m$^2$ on test patches & $\square$\\
+Classification & spot check; no ground points on vehicles/buildings & $\square$\\
+Datum / geoid / units & match the agreement and file headers & $\square$\\
+Residual review & every residual $>$3$\times$RMSE investigated and documented & $\square$\\\bottomrule
+\end{tabularx}\end{center}
+
+\subsection*{6.7 Reporting}
+The report states methods, equipment, calibration, trajectory solution, control used, checkpoints used (kept separate), datums, geoid, units, the test results and the accuracy statement. Sample statement:
+\begin{tcolorbox}[base,colback=gray!4,colframe=grayx,title={Sample accuracy statement}]
+``This data set was tested to meet ASPRS Positional Accuracy Standards for Digital Geospatial Data, Edition 2, Version 2 (2024) for a 3 cm RMSE$_V$ Vertical Accuracy Class and a 5 cm RMSE$_H$ Horizontal Accuracy Class. Non-Vegetated Vertical Accuracy (NVA) was found to be RMSE$_V$ = 2.1 cm using 30 independent checkpoints, including checkpoint survey uncertainty. Horizontal accuracy was found to be RMSE$_H$ = 2.8 cm using 30 well-defined checkpoints. Vegetated Vertical Accuracy (VVA) was found to be RMSE$_V$ = \_\_ cm. Horizontal datum: NAD 83(2011) epoch 2010.0, SPCS Florida East; vertical datum: NAVD 88 (GEOID18); units: \_\_\_.''
+\end{tcolorbox}
+
+\subsection*{6.8 Nonconformance and corrective action}
+If any acceptance test fails: stop delivery of the affected area, identify the cause (trajectory, calibration, control, datum, processing), correct and retest, and record the event, cause and fix in the project file. Never delete checkpoints to make a test pass.
+
+\subsection*{6.9 Records and retention}
+Archive raw sensor data, trajectory, calibration file, control and checkpoint data, processing logs and settings (including voxel and filter parameters), QA results, deliverables and the signed agreement, for the retention period required by law and contract.
+
+\section*{7. Revision history}
+\begin{center}\small
+\begin{tabular}{llll}\toprule
+Rev. & Date & Description & Approved\\\midrule
+0 & \_\_\_\_\_\_ & Initial issue (sample from course text) & \_\_\_\_\_\_\\\bottomrule
+\end{tabular}\end{center}

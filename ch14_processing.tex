@@ -1,0 +1,132 @@
+\chapter{Processing, QA/QC and Deliverables}
+
+\section{From raw data to a clean cloud}
+\fig[1.0]{workflow}{Field-to-office workflow.}
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{>{\bfseries}lX}\toprule
+Step & What happens \\\midrule
+1 Ingest & copy raw LiDAR, IMU, GNSS, camera and field logs; verify time bases and the calibration file\\
+2 Trajectory & GNSS/INS post-processing (PPK) and/or SLAM with loop closures; inspect the trajectory's standard deviations\\
+3 Georeference & apply lever arm, boresight, de-skew; generate the point cloud (Module 9)\\
+4 Clean & remove noise, outliers and moving objects\\
+5 Adjust & introduce control; strip-to-strip alignment if needed\\
+6 QA/QC & checkpoints, cloud-to-cloud comparisons, accuracy report (Module 13)\\
+7 Classify \& extract & ground, buildings, vegetation, poles, line work, surfaces\\
+8 Deliver \& archive & LAS/LAZ, surfaces, CAD, report, metadata; keep raw data\\\bottomrule
+\end{tabularx}\end{center}
+
+\section{Removing outliers}
+\begin{kid}
+Imagine a crowd of people standing close together in a park --- except one person way out by the fence. You can tell that person is ``alone'' because their nearest neighbors are far away. Outlier removal looks for dots whose nearest neighbors are far away, and throws them out: they are usually dust, rain, birds, or reflections.
+\end{kid}
+\fig[0.75]{sor}{Statistical outlier removal keeps points whose neighbors are close.}
+
+\begin{keyeq}{Statistical outlier removal (SOR)}
+\[ \bar d_i=\frac1k\sum_{j=1}^{k}\|\vect p_i-\vect p_{j}\|,\qquad \text{remove }i\text{ if }\ \bar d_i>\mu_{\bar d}+\alpha\,\sigma_{\bar d} \]
+\begin{symbols}
+$\bar d_i$ & average distance from point $i$ to its $k$ nearest neighbors & m\\
+$k$ & neighbors examined (e.g.\ 8--50) & ---\\
+$\mu_{\bar d},\sigma_{\bar d}$ & mean and standard deviation of all the $\bar d_i$ values & m\\
+$\alpha$ & how many standard deviations count as ``too far'' (e.g.\ 1--3) & ---\\
+\end{symbols}
+\end{keyeq}
+
+\begin{worked}{SOR on eight points}
+\textbf{Given:} mean-neighbor distances (m): $0.05,0.06,0.04,0.05,0.07,0.05,0.06,0.42$; $\alpha=1$.
+\step{Step 1 --- mean} $\mu=0.80/8=0.100$ m
+\step{Step 2 --- standard deviation} $\sigma=0.121$ m
+\step{Step 3 --- threshold} $0.100+1\times0.121=0.221$ m
+\result{only the 0.42 m point is removed. Notice the outlier inflated both $\mu$ and $\sigma$; robust versions use the median instead.}
+\end{worked}
+
+\section{Moving objects}
+Cars, people and bicycles appear as smeared streaks or as ``ghost'' copies when two passes see them in different places. Dynamic-object removal compares overlapping passes (or a voxel map over time): points that appear in a space later seen \emph{through} (the laser passed through it and hit something behind) are flagged as transient. Critical work still gets a visual edit. Record what was removed.
+
+\section{Thinning: voxel down-sampling}
+\fig[0.8]{voxel}{Each 0.5 m cube keeps one representative point (the centroid of its points).}
+
+\begin{keyeq}{Voxel index}
+\[ (i,j,k)=\left(\left\lfloor\frac{x}{s}\right\rfloor,\left\lfloor\frac{y}{s}\right\rfloor,\left\lfloor\frac{z}{s}\right\rfloor\right) \]
+\begin{symbols}
+$s$ & voxel (cube) size, e.g.\ 0.2 m (LIO-SAM edge map), 0.4 m (plane map) & m\\
+$\lfloor\cdot\rfloor$ & floor: round down to the whole number below & ---\\
+$(i,j,k)$ & which cube the point falls in; all points with the same index are averaged & ---\\
+\end{symbols}
+\end{keyeq}
+\textit{Example:} point $(3.27,\ 1.81,\ 0.44)$ with $s=0.5$ m falls in voxel $(6,\ 3,\ 0)$. Thinning makes matching fast and evens out density near the vehicle, but deliverable clouds should keep full resolution where detail matters.
+
+\begin{warning}[title={WARNING --- voxel size trades accuracy for speed}]
+Making your voxel (the 3-D box) \textbf{too large reduces accuracy} while it improves performance. Every point inside a box is replaced by one average point, so a large box:
+\begin{itemize}
+\item rounds off edges, curb lips, pipe walls and other fine features --- a 0.5 m voxel cannot show a 15 cm curb reveal;
+\item blends points from different surfaces (a wall and the ground beside it) into one point that lies on neither;
+\item thins the features that scan matching relies on, which can weaken SLAM and let the trajectory drift (Modules 11--12).
+\end{itemize}
+A small voxel keeps detail but leaves more points, so processing, matching and file sizes all cost more. \textbf{There is no single correct size: you have to balance the cost with trial and error.} Start with a voxel well below the smallest feature you must map (for example, one-third of it), process a test section, compare the result against checkpoints and the full-resolution cloud, then enlarge the voxel only as far as accuracy still meets the specification. Record the voxel size you used in the processing report.
+\end{warning}
+
+\section{Classification and the bare-earth surface}
+\fig[0.92]{ground}{Classifying ground points and building a bare-earth surface (DTM).}
+
+\begin{eng}
+Ground filters (progressive morphological filters, cloth simulation, TIN densification) separate ground from objects. ASPRS LAS classification codes used in deliverables include: 1 unclassified, 2 ground, 3/4/5 low/medium/high vegetation, 6 building, 7 low noise, 9 water, 17 bridge deck, 18 high noise. From ground points a TIN or grid DTM is built; breaklines (curb lines, edges of pavement, ditch bottoms) are digitized from the cloud and enforced in the surface so it follows sharp grade changes.
+\end{eng}
+
+\section{Volumes}
+\fig[0.6]{volume}{A stockpile gridded at 2 m: each column is height $\times$ cell area.}
+
+\begin{keyeq}{Grid volume}
+\[ V=\sum_{\text{cells}}A_{\text{cell}}\,\big(z_{\text{top}}-z_{\text{base}}\big) \]
+\begin{symbols}
+$A_{\text{cell}}$ & area of one grid cell & m$^2$\\
+$z_{\text{top}}-z_{\text{base}}$ & height of the surface above the base surface in that cell & m\\
+$V$ & volume & m$^3$\\
+\end{symbols}
+\end{keyeq}
+
+\begin{worked}{stockpile volume}
+\textbf{Given:} 3$\times$3 grid of 2 m cells ($A=4$ m$^2$); heights above base (m): $1.2,\,1.5,\,1.1;\ 1.8,\,2.4,\,1.6;\ 1.0,\,1.3,\,0.9$.
+\step{Step 1 --- sum heights} $3.8+5.8+3.2=12.8$ m
+\step{Step 2 --- times area} $12.8\times4=51.2$ m$^3$
+\result{51.2 m$^3$ (about 67 cubic yards). Finer grids or TIN-to-TIN methods (as in Civil 3D's volume surfaces) give better answers on steep edges.}
+\end{worked}
+
+\section{Cloud-to-cloud QA}
+\fig[0.85]{c2c}{Differencing two overlapping passes reveals trajectory problems that checkpoints between them could miss.}
+\begin{eng}
+Compute, for each point of pass A, the distance to the nearest point (or local plane) of pass B (a C2C or M3C2 comparison). On hard surfaces, the result should be centered on zero with a spread close to the range noise. Systematic patterns tell you what went wrong: a constant offset suggests datum/GNSS; a tilt across the road suggests roll boresight; a localized blob suggests a trajectory problem (GNSS outage, corridor); a smooth ramp along the road suggests drift.
+\end{eng}
+
+\section{Deliverables and CAD}
+\begin{itemize}
+\item \textbf{Point clouds}: LAS 1.4 / LAZ (compressed), classified, with intensity and GPS time; coordinate reference system and vertical datum/geoid in the header and metadata.
+\item \textbf{Surfaces}: TIN/DTM with breaklines for Civil 3D; contours if required.
+\item \textbf{Planimetrics}: edge of pavement, curb, striping, signs, poles, manholes, utility as-builts --- extracted as 2-D/3-D line work.
+\item \textbf{Cross-sections and volumes}.
+\item \textbf{Report}: equipment, calibration, trajectory method, control used, checkpoint results, accuracy statement, datum, limitations.
+\end{itemize}
+
+\begin{tip}
+Civil 3D handles point clouds through ReCap (RCP/RCS): index the LAS/LAZ in ReCap, attach to the drawing, create a surface from the ground class, then add breaklines. Very large clouds should be tiled and thinned for the surface while the full cloud is kept for reference. Match deliverable size to what the client's hardware and software can actually open.
+\end{tip}
+
+\section{A peek inside the data stream (ROS topics)}
+\begin{center}\small
+\begin{tabularx}{\linewidth}{lll X}\toprule
+\textbf{Topic} & \textbf{Message type} & \textbf{Rate} & \textbf{Survey meaning}\\\midrule
+\texttt{/imu/data} & \texttt{sensor\_msgs/Imu} & 100--400 Hz & angular velocity (rad/s) and linear acceleration (m/s$^2$, gravity included)\\
+\texttt{/points} & \texttt{sensor\_msgs/PointCloud2} & 10 Hz & $x,y,z$, intensity, ring, and per-point \emph{time} (for de-skew)\\
+\texttt{/gnss/fix} & \texttt{sensor\_msgs/NavSatFix} & 1--20 Hz & latitude, longitude, height, covariance\\
+\texttt{/tf\_static} & \texttt{tf2\_msgs/TFMessage} & once & lever arm and boresight\\\bottomrule
+\end{tabularx}\end{center}
+A sample IMU epoch at rest might read angular velocity $(0.0021,\,-0.0154,\,0.0842)$ rad/s and acceleration $(0.12,\,-0.03,\,9.78)$ m/s$^2$: the 9.78 is gravity, and the 0.12 m/s$^2$ forward reading at rest would suggest a 0.7° pitch tilt (Module 7's ``gravity leak'') or a bias.
+
+\begin{tryit}
+\textbf{18.1} Which voxel (0.25 m) contains the point $(10.13,\ -2.40,\ 1.99)$?\\
+\textbf{18.2} A 4$\times$4 grid of 1 m cells has an average height of 0.75 m. What is the volume?\\
+\textbf{18.3} Two passes differ by a tilt: +3 cm on the left edge, $-$3 cm on the right edge of a 10 m road. Which calibration angle would you suspect?
+\end{tryit}
+
+\sources{Rusu, R.\ B.\ \emph{et al.}\ (2008), statistical outlier removal (PCL); Lague, D.\ \emph{et al.}\ (2013), M3C2 cloud comparison, \emph{ISPRS J.} 82; ASPRS \emph{LAS Specification} 1.4 (classes); Autodesk ReCap/Civil 3D documentation.}
