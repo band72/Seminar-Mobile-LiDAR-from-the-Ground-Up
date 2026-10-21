@@ -70,7 +70,7 @@ Back matter ([`ch16_back.tex`](ch16_back.tex)) includes answers to the in-text e
 | [`usfix.py`](usfix.py) | Converts British spellings to US spellings in the chapter files |
 | [`xl/`](xl/) | Builds the companion Excel workbook of worked examples ([`xl/build.py`](xl/build.py)) |
 | [`review/`](review/) | [`tech_review.py`](review/tech_review.py) recomputes key printed values; results in [`Technical_Review_Log.txt`](review/Technical_Review_Log.txt) |
-| [`LICENSE`](LICENSE) | MIT license |
+| [`LICENSE`](LICENSE), [`LICENSE-CODE`](LICENSE-CODE) | Content license (CC BY-NC-ND 4.0) and code license (MIT) |
 
 ## Building
 
@@ -108,6 +108,16 @@ The quiz answer key and the final-exam builder are not published here. Instructo
 
 This course is maintained as a living document and will be refined at regular intervals as standards and technology change. A project-based companion with worked, real-world examples is in development to clarify and standardize LiDAR deliverables.
 
+Each revision is published as a [GitHub Release](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/releases) with a summary of what changed. Questions, corrections and project ideas for the companion are welcome in [Discussions](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/discussions).
+
+## Disclaimer
+
+This material is for education only. It is not legal or professional advice and does not replace the judgment of a licensed surveyor and mapper. Standards, rules and specifications change. Always verify the current editions of the ASPRS standards, Chapter 5J-17 F.A.C., FDOT requirements and NSRS guidance before relying on them for a project.
+
 ## License
 
-MIT. See [LICENSE](LICENSE).
+**Course content** (book, slides, LaTeX sources, figures, workbook and sample data): [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/). You may share it with credit, for non-commercial purposes, without modification. For commercial use, adaptation or instructor licensing, contact the author.
+
+**Code** (the Python scripts): MIT. See [LICENSE-CODE](LICENSE-CODE).
+
+Full terms are in [LICENSE](LICENSE).
