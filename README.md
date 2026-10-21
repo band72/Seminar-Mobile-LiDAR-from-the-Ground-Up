@@ -5,6 +5,15 @@ D.S. Banks, PSM
 
 Source files for a continuing-education (CE) course for surveyors, engineers and geospatial professionals. The course covers mobile LiDAR from first principles ("light bounces back") through the factor-graph mathematics inside modern SLAM software such as LIO-SAM, and on to the accuracy statistics a surveyor signs off on.
 
+## Read the course
+
+| Document | Description |
+|----------|-------------|
+| 📘 [**Course text** (PDF, 185 pages)](docs/LiDAR_from_the_Ground_Up_R0.pdf) | The full book: 21 modules, worked examples, labs, sample SOP, glossary and references |
+| 🎤 [**Seminar slides with speaker notes** (PDF, 76 pages)](docs/Seminar_Slides_with_Notes_R0.pdf) | The six-hour seminar presentation, with the presenter's notes for each slide |
+
+Both are revision R0 (October 2026), compressed for download.
+
 It is a two-track course. Every module has a plain-language explanation anyone can follow, alongside a rigorous engineering treatment of the same topic.
 
 The course was built from an earlier *Mobile LiDAR Basics* seminar, a four-module course outline, and the LIO-SAM research paper (Shan *et al.*, 2020). Those sources were reorganized, corrected and greatly expanded.
@@ -41,6 +50,7 @@ Back matter ([`ch16_back.tex`](ch16_back.tex)) includes answers to the in-text e
 
 | Path | Contents |
 |------|----------|
+| [`docs/`](docs/) | Course text and seminar slides as PDFs (see [Read the course](#read-the-course)) |
 | [`main.tex`](main.tex) | Master document. Build this to produce the course text. |
 | `ch*.tex` | Module chapters (linked in the table above) |
 | [`ins_asprs.tex`](ins_asprs.tex), [`ins_pen.tex`](ins_pen.tex), [`ins_rhr.tex`](ins_rhr.tex), [`ins_traj.tex`](ins_traj.tex) | Inserts used within the chapters |
