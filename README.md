@@ -1,4 +1,4 @@
-<img src="docs/course-cover.jpg" alt="Cover of LiDAR from the Ground Up by D.S. Banks, PSM" width="180" align="right">
+<img src="docs/course-cover.jpg" alt="Cover of LiDAR from the Ground Up by D.S. Banks, PSM" width="150" align="right">
 
 # LiDAR from the Ground Up
 **Mobile Laser Scanning, IMUs, SLAM and Survey-Grade Deliverables** · D.S. Banks, PSM
