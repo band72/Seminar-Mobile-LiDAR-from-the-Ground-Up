@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Scout Maps the Park</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: one stage — the park map on the left, the step card on the right; step chips and legend below. Stacks on phones. */
+:root{
+  --bg:#EEF3EA; --panel:#FFFFFF; --ink:#1C2A25; --muted:#56675F; --line:#D5DFD0;
+  --ground:#E3ECDB; --grid:#D3DFCA;
+  --rover:#1F6F7A; --guess:#D9611F; --guess-soft:rgba(217,97,31,.16);
+  --map:#2459A6; --laser:#D63A6B; --tree:#3F8A4E; --tree-dark:#2E6B3B; --rock:#8A8378; --truepath:#7E918A;
+  --accent-soft:#FBE7D9; --chip:#F5F8F2;
+  --display:'Fredoka','Trebuchet MS',Verdana,sans-serif;
+  --body:'Nunito','Segoe UI',Verdana,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1715; --panel:#16211E; --ink:#E7F0EB; --muted:#9DB1A8; --line:#2A3A35;
+  --ground:#18261F; --grid:#22342C;
+  --rover:#5CC3CF; --guess:#F08A4B; --guess-soft:rgba(240,138,75,.18);
+  --map:#7DB1FF; --laser:#FF6F9A; --tree:#5DB46E; --tree-dark:#3F8E50; --rock:#A69F93; --truepath:#7F948C;
+  --accent-soft:#3A2618; --chip:#1C2925; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1715; --panel:#16211E; --ink:#E7F0EB; --muted:#9DB1A8; --line:#2A3A35;
+  --ground:#18261F; --grid:#22342C;
+  --rover:#5CC3CF; --guess:#F08A4B; --guess-soft:rgba(240,138,75,.18);
+  --map:#7DB1FF; --laser:#FF6F9A; --tree:#5DB46E; --tree-dark:#3F8E50; --rock:#A69F93; --truepath:#7F948C;
+  --accent-soft:#3A2618; --chip:#1C2925; color-scheme:dark}
+html,body{height:auto}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 32px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-direction:column;gap:4px}
+.eyebrow{font-size:.78rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--guess)}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(1.9rem,4.2vw,2.8rem);line-height:1.05;margin:0;text-wrap:balance}
+.lead{margin:0;color:var(--muted);max-width:62ch}
+.stage{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:18px;align-items:start}
+.mapcard{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:10px;min-width:0}
+canvas{display:block;width:100%;aspect-ratio:20/13.8;border-radius:12px;max-width:100%}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.stepnum{font-family:var(--display);font-weight:600;color:var(--guess);font-size:1.05rem}
+.card h2{font-family:var(--display);font-weight:600;font-size:1.7rem;line-height:1.1;margin:0;text-wrap:balance}
+.caption{margin:0;font-size:1.08rem;min-height:7.5em}
+.survey{margin:0;font-size:.9rem;color:var(--muted);border-top:1px dashed var(--line);padding-top:10px}
+.survey b{color:var(--ink)}
+.bar{height:6px;background:var(--chip);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--guess);border-radius:6px}
+.controls{display:flex;flex-wrap:wrap;gap:8px}
+button{font-family:var(--display);font-weight:600;font-size:1rem;border:1px solid var(--line);background:var(--chip);color:var(--ink);
+  border-radius:999px;padding:9px 16px;cursor:pointer}
+button:hover{border-color:var(--guess)}
+button:focus-visible{outline:3px solid var(--map);outline-offset:2px}
+button.primary{background:var(--guess);border-color:var(--guess);color:#fff;min-width:96px}
+.toggle{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.95rem;cursor:pointer}
+.toggle input{width:20px;height:20px;accent-color:var(--rover)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{font-family:var(--body);font-weight:700;font-size:.9rem;padding:7px 12px}
+.chips button[aria-current="step"]{background:var(--accent-soft);border-color:var(--guess);color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:10px 22px;font-size:.92rem;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:8px}
+.sw{width:18px;height:18px;border-radius:50%;flex:none}
+.sw.rover{background:var(--rover);border-radius:5px}
+.sw.guess{border:3px solid var(--guess);background:transparent;border-radius:5px}
+.sw.bubble{background:var(--guess-soft);border:2px dashed var(--guess)}
+.sw.dot{background:var(--map);border:2px solid var(--panel);box-shadow:0 0 0 1px var(--map)}
+.sw.tree{background:var(--tree)}
+.sw.laser{background:var(--laser);height:4px;width:22px;border-radius:2px}
+.foot{font-size:.85rem;color:var(--muted);margin:0}
+@media (max-width:820px){.stage{grid-template-columns:1fr}.caption{min-height:0}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">SLAM · Simultaneous Localization And Mapping</div>
+    <h1>Scout Maps the Park</h1>
+    <p class="lead">Scout is a little rover with a spinning laser. Watch it build a map of a park it has never seen, while figuring out where it is on that map, one step at a time.</p>
+  </header>
+
+  <div class="stage">
+    <div class="mapcard"><canvas id="cv" role="img" aria-label="Animated map of a park showing Scout the rover, the laser, the map dots and Scout's guessed path"></canvas></div>
+    <div class="card" aria-live="polite">
+      <div class="stepnum" id="stepnum">Step 1 of 8</div>
+      <h2 id="title">Meet Scout</h2>
+      <p class="caption" id="caption"></p>
+      <div class="bar" aria-hidden="true"><i id="prog"></i></div>
+      <div class="controls">
+        <button id="back" type="button">◀ Back</button>
+        <button id="play" type="button" class="primary">Pause</button>
+        <button id="next" type="button">Next ▶</button>
+        <button id="restart" type="button">Start over</button>
+      </div>
+      <label class="toggle" for="real"><input id="real" type="checkbox" checked> Show what is really there</label>
+      <p class="survey" id="survey"></p>
+    </div>
+  </div>
+
+  <nav class="chips" id="chips" aria-label="Steps"></nav>
+
+  <div class="legend">
+    <span><i class="sw rover"></i>Scout (where it really is)</span>
+    <span><i class="sw guess"></i>Where Scout thinks it is</span>
+    <span><i class="sw bubble"></i>“Not sure” bubble</span>
+    <span><i class="sw dot"></i>Dots on Scout’s map</span>
+    <span><i class="sw tree"></i>Real trees and rocks</span>
+    <span><i class="sw laser"></i>Laser beam</span>
+  </div>
+  <p class="foot">Tip: turn off “Show what is really there” to see only what Scout knows. Keys: Space plays or pauses, arrows step back and forward.</p>
+</div>
+
+<script>
+const LM=[
+ {id:'A',x:2.0,y:0.9,k:'tree'},{id:'B',x:6,y:1.3,k:'rock'},{id:'C',x:9.5,y:1.2,k:'tree'},
+ {id:'D',x:13,y:1.4,k:'tree'},{id:'E',x:16.5,y:1.1,k:'rock'},{id:'F',x:18.8,y:5,k:'tree'},
+ {id:'G',x:18.8,y:8,k:'tree'},{id:'H',x:15.5,y:10.8,k:'rock'},{id:'I',x:1.2,y:6.5,k:'tree'}];
+const RANGE=3.5, DS=0.05, LEN=40, N=Math.round(LEN/DS);
+function truePose(s){
+ if(s<14) return {x:3+s,y:3,th:0};
+ if(s<20) return {x:17,y:3+(s-14),th:Math.PI/2};
+ if(s<34) return {x:17-(s-20),y:9,th:Math.PI};
+ return {x:3,y:9-Math.min(s,40)+34,th:1.5*Math.PI};
+}
+function simulate(){
+ let seed=7; const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647-0.5;};
+ const est={x:3,y:3,th:0}; let sig2=0.01;
+ const samples=[], events=[]; const dots={}; // id -> {x,y,first}
+ const lookEvery=Math.round(2.5/DS);
+ for(let i=0;i<=N;i++){
+  const s=i*DS, tp=truePose(s);
+  if(i>0){
+   const tp0=truePose((i-1)*DS);
+   let dth=tp.th-tp0.th;
+   est.th += dth*1.05 + 0.035*DS + 0.003*rnd();
+   const L=DS*1.04;
+   est.x += L*Math.cos(est.th); est.y += L*Math.sin(est.th);
+   sig2 += 0.035*DS;
+  }
+  if(i%lookEvery===0 && (i===0 || s>=5-1e-9)){
+   const pre={x:est.x,y:est.y,th:est.th,sig:Math.sqrt(sig2)};
+   const seen=LM.filter(l=>Math.hypot(l.x-tp.x,l.y-tp.y)<=RANGE).map(l=>l.id);
+   const obs={};
+   for(const id of seen){const l=LM.find(q=>q.id===id);
+     const dx=l.x-tp.x, dy=l.y-tp.y, a=est.th-tp.th;
+     obs[id]={x:est.x+dx*Math.cos(a)-dy*Math.sin(a), y:est.y+dx*Math.sin(a)+dy*Math.cos(a)};}
+   const recent=seen.filter(id=>dots[id] && s-dots[id].first<=12.5 && s-dots[id].first>0);
+   const old=seen.filter(id=>dots[id] && s-dots[id].first>12.5);
+   const fresh=seen.filter(id=>!dots[id]);
+   const match = recent.length? recent : (old.length && s>=LEN-1e-9 ? [] : []);
+   let k=0;
+   if(match.length){
+     // target pose: shift est so that observations line up with map dots
+     let mx=0,my=0; for(const id of match){const l=LM.find(q=>q.id===id); mx+=dots[id].x-l.x; my+=dots[id].y-l.y;}
+     mx/=match.length; my/=match.length;
+     k=sig2/(sig2+0.04);
+     est.x+=k*(tp.x+mx-est.x); est.y+=k*(tp.y+my-est.y);
+     // heading: pull toward heading consistent with map (approx: true heading + small map bias)
+     est.th += k*0.9*(tp.th-est.th);
+     sig2=Math.max((1-k)*sig2, 0.012);
+   }
+   const post={x:est.x,y:est.y,th:est.th,sig:Math.sqrt(sig2)};
+   const dotsBefore=JSON.parse(JSON.stringify(dots));
+   // re-observe with corrected pose
+   for(const id of seen){const l=LM.find(q=>q.id===id);
+     const dx=l.x-tp.x, dy=l.y-tp.y, a=est.th-tp.th;
+     const o={x:est.x+dx*Math.cos(a)-dy*Math.sin(a), y:est.y+dx*Math.sin(a)+dy*Math.cos(a)};
+     if(!dots[id]) dots[id]={x:o.x,y:o.y,first:s};
+     else if(match.includes(id)){dots[id].x+=0.3*(o.x-dots[id].x);dots[id].y+=0.3*(o.y-dots[id].y);}
+   }
+   events.push({i,s,seen,match,old,fresh,obs,pre,post,dotsBefore,dotsAfter:JSON.parse(JSON.stringify(dots))});
+  }
+  const last=events.length&&events[events.length-1].i===i?events[events.length-1]:null;
+  samples.push({s,tx:tp.x,ty:tp.y,tth:tp.th,ex:est.x,ey:est.y,eth:est.th,sig:Math.sqrt(sig2),
+    px:last?last.pre.x:est.x,py:last?last.pre.y:est.y,pth:last?last.pre.th:est.th,psig:last?last.pre.sig:Math.sqrt(sig2)});
+ }
+ return {samples,events};
+}
+
+
+const {samples:SM, events:EV} = simulate();
+const LMBY = Object.fromEntries(LM.map(l=>[l.id,l]));
+
+const STEPS = [
+ {title:"Meet Scout", caption:"Scout is dropped in a park it has never seen. It has no map. It knows only one thing: “I am right HERE.” Its “not sure” bubble is tiny, because it hasn’t moved yet.",
+  survey:"<b>In survey words:</b> the starting pose is known, like setting up on a control point.", segs:[{t:"still",dur:3.2}]},
+ {title:"Look around", caption:"Scout spins its laser. Each beam bounces off a tree or a rock and comes back. Scout puts a blue dot on its map for everything it sees.",
+  survey:"<b>In survey words:</b> a LiDAR scan measures range and angle to features; the first scan starts the map.", segs:[{t:"look",ev:0,mode:"first",dur:3.4}]},
+ {title:"Roll and guess", caption:"Scout rolls forward and counts its wheel turns to guess how far it went. Wheels slip a little, so the orange guess drifts away from the real Scout. With every step the “not sure” bubble grows.",
+  survey:"<b>In survey words:</b> prediction from IMU and odometry (dead reckoning). Errors add up as you move.", segs:[{t:"move",from:0,to:5,dur:3.6}]},
+ {title:"Look again and match", caption:"Scout looks again. It sees the rock it saw before and says, “That’s the same rock!” The dashed line connects where Scout sees it now to the dot already on its map. They don’t line up, so Scout knows its guess is off.",
+  survey:"<b>In survey words:</b> scan matching and data association: pairing new returns with features already in the map.", segs:[{t:"look",ev:1,mode:"match",dur:3.6}]},
+ {title:"Fix the guess", caption:"If the rock is where the map says, then Scout must really be over here. Scout slides its guess to make things line up, and the bubble shrinks. The new tree gets its own dot.",
+  survey:"<b>In survey words:</b> the correction step of the filter, a weighted adjustment that trusts the sharper measurement more.", segs:[{t:"fix",ev:1,dur:2.8}]},
+ {title:"Again and again", caption:"Roll, look, match, fix — over and over. Along the top of the park there is nothing to see. With no trees to check against, the bubble keeps growing and the guess wanders off.",
+  survey:"<b>In survey words:</b> feature-poor stretches (blank walls, open fields, tunnels) are where SLAM drifts. That is where you add control.", segs:[]},
+ {title:"Home again: “I’ve been here!”", caption:"Scout comes back near where it started and sees its very first tree and rock. But look: its map dots are far from where it sees them now. All the little slips added up. Scout says, “I’ve been here before!”",
+  survey:"<b>In survey words:</b> loop closure: recognizing a place already mapped exposes the accumulated misclosure, like closing a traverse.", segs:[]},
+ {title:"Close the loop", caption:"Scout uses that match to fix its whole path, not just this spot. Every step gets a small share of the fix, and the map snaps into shape. That is SLAM: making a map and finding yourself on it, at the same time.",
+  survey:"<b>In survey words:</b> the factor graph (pose graph) adjusts every pose at once and distributes the misclosure, like a least-squares traverse adjustment.", segs:[{t:"close",ev:EV.length-1,dur:3.6},{t:"final",dur:2.2}]}
+];
+// build the multi-event steps
+(function(){
+  const evIdx = s => EV.findIndex(e=>Math.abs(e.s-s)<1e-6);
+  for(let k=evIdx(7.5); k<=evIdx(30); k++){STEPS[5].segs.push({t:"move",from:EV[k-1].s,to:EV[k].s,dur:.7},{t:"lookfix",ev:k,dur:.75});}
+  for(let k=evIdx(32.5); k<=evIdx(37.5); k++){STEPS[6].segs.push({t:"move",from:EV[k-1].s,to:EV[k].s,dur:.7},{t:"lookfix",ev:k,dur:.75});}
+  STEPS[6].segs.push({t:"move",from:37.5,to:40,dur:.8},{t:"look",ev:EV.length-1,mode:"home",dur:4.2});
+  STEPS.forEach(st=>st.dur=st.segs.reduce((a,b)=>a+b.dur,0));
+})();
+
+const ease = q => q<.5 ? 2*q*q : 1-Math.pow(-2*q+2,2)/2;
+const lerp = (a,b,q)=>a+(b-a)*q;
+const idxOf = s => s/DS;
+function interpPre(s){ // head pose while moving (pre-correction at event index)
+  const f=idxOf(s), i=Math.floor(f), q=f-i;
+  const a=SM[i], b=SM[Math.min(i+1,SM.length-1)];
+  const A = {x:a.ex,y:a.ey,th:a.eth,sig:a.sig}, B={x:b.px,y:b.py,th:b.pth,sig:b.psig};
+  if(q<1e-9) return {x:a.px,y:a.py,th:a.pth,sig:a.psig};
+  return {x:lerp(A.x,B.x,q),y:lerp(A.y,B.y,q),th:lerp(A.th,B.th,q),sig:lerp(A.sig,B.sig,q),tx:lerp(a.tx,b.tx,q),ty:lerp(a.ty,b.ty,q),tth:lerp(a.tth,b.tth,q)};
+}
+function trueAt(s){ const f=idxOf(s), i=Math.floor(f), q=f-i, a=SM[i], b=SM[Math.min(i+1,SM.length-1)];
+  return {x:lerp(a.tx,b.tx,q),y:lerp(a.ty,b.ty,q),th:lerp(a.tth,b.tth,q)}; }
+function lastEvBefore(s){ let e=null; for(const v of EV){ if(v.s<=s+1e-9) e=v; } return e; }
+
+// ---- compute a frame -------------------------------------------------------
+function frame(stepI, t){
+  const st=STEPS[stepI]; let acc=0, seg=st.segs[st.segs.length-1], q=1;
+  for(const sg of st.segs){ if(t<acc+sg.dur){ seg=sg; q=(t-acc)/sg.dur; break;} acc+=sg.dur; }
+  const F={s:0,head:null,sig:.1,pathEnd:0,dots:{},sweep:null,rays:[],obs:[],links:[],speech:null,blend:0,glow:[],newDots:[],popQ:1};
+  if(seg.t==="still"){ F.s=0; F.head={x:SM[0].px,y:SM[0].py,th:0}; F.sig=SM[0].psig; }
+  else if(seg.t==="move"){
+    const s=lerp(seg.from,seg.to,ease(q)); F.s=s; const h=interpPre(s); F.head=h; F.sig=h.sig; F.pathEnd=s;
+    F.dots=lastEvBefore(seg.from).dotsAfter;
+  } else if(seg.t==="look"||seg.t==="lookfix"||seg.t==="fix"){
+    const e=EV[seg.ev]; F.s=e.s; F.pathEnd=e.s;
+    const pre={x:e.pre.x,y:e.pre.y,th:e.pre.th}, post={x:e.post.x,y:e.post.y,th:e.post.th};
+    if(seg.t==="look"){
+      F.head=pre; F.sig=e.pre.sig; F.dots=e.dotsBefore;
+      const sw=Math.min(q/.45,1); if(sw<1) F.sweep=sw;
+      F.rays=e.seen.filter(id=>q>.12);
+      if(seg.mode==="first"){ if(q>.55){F.dots=e.dotsAfter; F.newDots=e.fresh; F.popQ=Math.min((q-.55)/.2,1);} }
+      else {
+        const showIds = seg.mode==="home"? e.old : e.seen;
+        if(q>.45){ F.obs=showIds.map(id=>({id,...e.obs[id], matched:(seg.mode==="home"?e.old:e.match).includes(id)}));
+          F.links=(seg.mode==="home"?e.old:e.match).filter(id=>e.dotsBefore[id]); }
+        if(seg.mode==="home" && q>.55){ F.speech="I’ve been here!"; F.glow=e.old; }
+      }
+    } else if(seg.t==="fix"){
+      const w=ease(Math.min(q/.75,1));
+      F.head={x:lerp(pre.x,post.x,w),y:lerp(pre.y,post.y,w),th:lerp(pre.th,post.th,w)}; F.sig=lerp(e.pre.sig,e.post.sig,w);
+      F.dots = q>.7? e.dotsAfter : e.dotsBefore; if(q>.7){F.newDots=e.fresh; F.popQ=Math.min((q-.7)/.2,1);}
+      const fade=1-w; if(fade>.05) F.obs=e.seen.map(id=>({id,x:e.obs[id].x+(F.head.x-pre.x),y:e.obs[id].y+(F.head.y-pre.y),matched:e.match.includes(id),alpha:fade}));
+      F.links=e.match; F.linkAlpha=fade;
+    } else { // lookfix (fast)
+      if(q<.45){ F.head=pre; F.sig=e.pre.sig; F.dots=e.dotsBefore; F.sweep=q/.45; F.rays=e.seen; }
+      else { const w=ease((q-.45)/.55); F.head={x:lerp(pre.x,post.x,w),y:lerp(pre.y,post.y,w),th:lerp(pre.th,post.th,w)};
+        F.sig=lerp(e.pre.sig,e.post.sig,w); F.dots=q>.7?e.dotsAfter:e.dotsBefore; F.rays=e.seen; if(q>.7){F.newDots=e.fresh;F.popQ=Math.min((q-.7)/.2,1);} }
+    }
+  } else if(seg.t==="close"||seg.t==="final"){
+    const e=EV[EV.length-1]; F.s=e.s; F.pathEnd=e.s; F.blend = seg.t==="final"?1:ease(q);
+    F.head={x:e.post.x,y:e.post.y,th:e.post.th}; F.sig=lerp(e.post.sig,.1,F.blend); F.dots=e.dotsAfter;
+    if(seg.t==="close" && q<.35){F.speech="I’ve been here!"; F.glow=e.old;}
+    if(seg.t==="final"){F.speech="Map done!";}
+  }
+  return F;
+}
+
+// ---- drawing ----------------------------------------------------------------
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1;
+function resize(){ const r=cv.getBoundingClientRect(); DPR=Math.min(window.devicePixelRatio||1,2);
+  W=r.width; H=r.height; cv.width=Math.round(W*DPR); cv.height=Math.round(H*DPR); draw(); }
+new ResizeObserver(resize).observe(cv);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const Y0=-1.6, Y1=12.2;
+const X = x => x/20*W, Y = y => H - (y-Y0)/(Y1-Y0)*H, U = d => d/20*W;
+
+function rover(x,y,th,fill,stroke,alpha){
+  ctx.save(); ctx.translate(X(x),Y(y)); ctx.rotate(-th); ctx.globalAlpha=alpha??1;
+  const L=U(.95), Wd=U(.7), r=U(.14);
+  ctx.beginPath(); ctx.roundRect(-L/2,-Wd/2,L,Wd,r);
+  if(fill){ctx.fillStyle=fill; ctx.fill();}
+  if(stroke){ctx.lineWidth=Math.max(2,U(.07)); ctx.strokeStyle=stroke; ctx.setLineDash(fill?[]:[U(.12),U(.08)]); ctx.stroke(); ctx.setLineDash([]);}
+  // nose
+  ctx.beginPath(); ctx.moveTo(L/2+U(.05),0); ctx.lineTo(L/2-U(.18),-U(.16)); ctx.lineTo(L/2-U(.18),U(.16)); ctx.closePath();
+  ctx.fillStyle=fill?css('--panel'):stroke; ctx.fill();
+  if(fill){ ctx.beginPath(); ctx.arc(-U(.08),0,U(.13),0,Math.PI*2); ctx.fillStyle=css('--laser'); ctx.fill(); }
+  ctx.restore();
+}
+function treeAt(l,alpha){
+  ctx.save(); ctx.globalAlpha=alpha;
+  if(l.k==="tree"){ ctx.beginPath(); ctx.arc(X(l.x),Y(l.y),U(.55),0,Math.PI*2); ctx.fillStyle=css('--tree'); ctx.fill();
+    ctx.beginPath(); ctx.arc(X(l.x)-U(.15),Y(l.y)+U(.12),U(.25),0,Math.PI*2); ctx.fillStyle=css('--tree-dark'); ctx.fill(); }
+  else { ctx.beginPath(); const cx=X(l.x), cy=Y(l.y), r=U(.42);
+    for(let k=0;k<7;k++){const a=k/7*Math.PI*2, rr=r*(.8+.25*Math.sin(k*2.3)); ctx.lineTo(cx+rr*Math.cos(a),cy+rr*Math.sin(a));}
+    ctx.closePath(); ctx.fillStyle=css('--rock'); ctx.fill(); }
+  ctx.restore();
+}
+let current={step:0,t:0};
+function draw(){
+  if(!W) return;
+  const F=frame(current.step,current.t), real=document.getElementById('real').checked;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.fillStyle=css('--ground'); ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle=css('--grid'); ctx.lineWidth=1;
+  for(let x=1;x<20;x++){ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),H);ctx.stroke();}
+  for(let y=Math.ceil(Y0);y<Y1;y++){ctx.beginPath();ctx.moveTo(0,Y(y));ctx.lineTo(W,Y(y));ctx.stroke();}
+  const tp = F.s>0||F.pathEnd>0 ? trueAt(F.s) : trueAt(0);
+  if(real){
+    LM.forEach(l=>treeAt(l,1));
+    // real path
+    ctx.beginPath(); for(let j=0;j<=idxOf(F.pathEnd);j++){const p=SM[j]; j?ctx.lineTo(X(p.tx),Y(p.ty)):ctx.moveTo(X(p.tx),Y(p.ty));}
+    ctx.lineTo(X(tp.x),Y(tp.y)); ctx.setLineDash([6,6]); ctx.strokeStyle=css('--truepath'); ctx.lineWidth=2; ctx.stroke(); ctx.setLineDash([]);
+  }
+  // laser sweep and rays from the REAL rover
+  if(F.sweep!==null){ const a=F.sweep*Math.PI*2*1.5; ctx.save(); ctx.globalAlpha=.25;
+    ctx.beginPath(); ctx.moveTo(X(tp.x),Y(tp.y)); ctx.arc(X(tp.x),Y(tp.y),U(RANGE),-a-.5,-a); ctx.closePath(); ctx.fillStyle=css('--laser'); ctx.fill(); ctx.restore();
+    ctx.beginPath(); ctx.arc(X(tp.x),Y(tp.y),U(RANGE),0,Math.PI*2); ctx.setLineDash([3,6]); ctx.strokeStyle=css('--laser'); ctx.lineWidth=1.2; ctx.stroke(); ctx.setLineDash([]); }
+  F.rays.forEach(id=>{const l=LMBY[id]; ctx.beginPath(); ctx.moveTo(X(tp.x),Y(tp.y)); ctx.lineTo(X(l.x),Y(l.y)); ctx.strokeStyle=css('--laser'); ctx.lineWidth=2.5; ctx.stroke();
+    ctx.beginPath(); ctx.arc(X(l.x),Y(l.y),U(.18),0,Math.PI*2); ctx.fillStyle=css('--laser'); ctx.fill();});
+  // guessed path (with loop-closure blend)
+  const b=F.blend*0.95;
+  ctx.beginPath(); const n=Math.floor(idxOf(F.pathEnd));
+  for(let j=0;j<=n;j++){const p=SM[j]; const x=lerp(p.ex,p.tx,b), y=lerp(p.ey,p.ty,b); j?ctx.lineTo(X(x),Y(y)):ctx.moveTo(X(x),Y(y));}
+  const hx=lerp(F.head.x,tp.x,b), hy=lerp(F.head.y,tp.y,b);
+  ctx.lineTo(X(hx),Y(hy)); ctx.strokeStyle=css('--guess'); ctx.lineWidth=3; ctx.lineJoin='round'; ctx.stroke();
+  // match links and observations
+  (F.links||[]).forEach(id=>{const o=(F.obs.find(o=>o.id===id)); const d=F.dots[id]; if(!o||!d) return;
+    ctx.save(); ctx.globalAlpha=F.linkAlpha??1; ctx.beginPath(); ctx.moveTo(X(o.x),Y(o.y)); ctx.lineTo(X(d.x),Y(d.y)); ctx.setLineDash([6,5]); ctx.strokeStyle=css('--map'); ctx.lineWidth=2.5; ctx.stroke(); ctx.restore();});
+  F.obs.forEach(o=>{ctx.save(); ctx.globalAlpha=o.alpha??1; const s=U(.22); ctx.beginPath(); ctx.moveTo(X(o.x)-s,Y(o.y)-s); ctx.lineTo(X(o.x)+s,Y(o.y)+s); ctx.moveTo(X(o.x)+s,Y(o.y)-s); ctx.lineTo(X(o.x)-s,Y(o.y)+s);
+    ctx.strokeStyle=css('--laser'); ctx.lineWidth=3; ctx.stroke(); ctx.restore();});
+  // map dots
+  for(const [id,d] of Object.entries(F.dots)){ const l=LMBY[id]; const x=lerp(d.x,l.x,b), y=lerp(d.y,l.y,b);
+    let sc=1; if(F.newDots.includes(id)) sc=.3+.7*F.popQ+.25*Math.sin(F.popQ*Math.PI);
+    if(F.glow.includes(id)){ctx.beginPath(); ctx.arc(X(x),Y(y),U(.55),0,Math.PI*2); ctx.strokeStyle=css('--map'); ctx.lineWidth=3; ctx.stroke();}
+    ctx.beginPath(); ctx.arc(X(x),Y(y),U(.24)*sc,0,Math.PI*2); ctx.fillStyle=css('--map'); ctx.fill(); ctx.lineWidth=2.5; ctx.strokeStyle=css('--panel'); ctx.stroke(); }
+  // bubble + guess
+  ctx.beginPath(); ctx.arc(X(hx),Y(hy),U(Math.max(.35,F.sig*2.4)),0,Math.PI*2); ctx.fillStyle=css('--guess-soft'); ctx.fill();
+  ctx.setLineDash([5,5]); ctx.strokeStyle=css('--guess'); ctx.lineWidth=1.5; ctx.stroke(); ctx.setLineDash([]);
+  rover(hx,hy,lerp(F.head.th,tp.th,b),null,css('--guess'),1);
+  // real rover
+  rover(tp.x,tp.y,tp.th,css('--rover'),css('--rover'),1);
+  // speech bubble
+  if(F.speech){ ctx.save(); ctx.font=`600 ${Math.max(14,U(.62))}px Fredoka, Verdana, sans-serif`; const tw=ctx.measureText(F.speech).width;
+    const bx=Math.min(Math.max(X(tp.x)+U(.6),8),W-tw-28), by=Math.max(Y(tp.y)-U(2.2),8); const bw=tw+24, bh=U(.62)+18;
+    ctx.beginPath(); ctx.roundRect(bx,by,bw,bh,12); ctx.fillStyle=css('--panel'); ctx.fill(); ctx.lineWidth=2.5; ctx.strokeStyle=css('--ink'); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(bx+18,by+bh); ctx.lineTo(X(tp.x)+U(.2),Y(tp.y)-U(.45)); ctx.lineTo(bx+34,by+bh); ctx.fillStyle=css('--panel'); ctx.fill(); ctx.stroke();
+    ctx.fillStyle=css('--ink'); ctx.textBaseline='middle'; ctx.fillText(F.speech,bx+12,by+bh/2); ctx.restore(); }
+  // labels for blank stretch
+  if(current.step===5 && real){ ctx.save(); ctx.font=`700 ${Math.max(12,U(.42))}px Nunito, Verdana, sans-serif`; ctx.fillStyle=css('--muted'); ctx.textAlign='center';
+    ctx.fillText('nothing to see up here', X(9.5), Y(10.9)); ctx.restore(); }
+}
+
+// ---- player -----------------------------------------------------------------
+const $=id=>document.getElementById(id);
+const chips=$('chips');
+STEPS.forEach((s,i)=>{const b=document.createElement('button'); b.type='button'; b.id='chip'+(i+1); b.textContent=(i+1)+'. '+s.title.replace(/:.*$/,'');
+  b.addEventListener('click',()=>{goto(i); setPlaying(true);}); chips.appendChild(b);});
+let playing=!matchMedia('(prefers-reduced-motion: reduce)').matches, last=null, hold=0;
+function render(){
+  const st=STEPS[current.step];
+  $('stepnum').textContent=`Step ${current.step+1} of ${STEPS.length}`; $('title').textContent=st.title;
+  $('caption').textContent=st.caption; $('survey').innerHTML=st.survey;
+  $('prog').style.width=Math.min(current.t/st.dur*100,100)+'%';
+  [...chips.children].forEach((c,i)=>{ if(i===current.step) c.setAttribute('aria-current','step'); else c.removeAttribute('aria-current'); });
+  draw();
+}
+function goto(i,atEnd){ current.step=Math.max(0,Math.min(STEPS.length-1,i)); current.t=atEnd?STEPS[current.step].dur:0; hold=0; render(); }
+function setPlaying(p){ playing=p; $('play').textContent=playing?'Pause':'Play'; last=null; }
+function tick(ts){
+  if(playing){ if(last!==null){ const dt=Math.min((ts-last)/1000,.1); const st=STEPS[current.step];
+      if(current.t<st.dur){ current.t=Math.min(st.dur,current.t+dt); render(); }
+      else { hold+=dt; if(hold>1.6){ if(current.step<STEPS.length-1){ goto(current.step+1); } else { setPlaying(false); } } } }
+    last=ts; }
+  requestAnimationFrame(tick);
+}
+$('play').addEventListener('click',()=>{ if(!playing && current.step===STEPS.length-1 && current.t>=STEPS[current.step].dur) goto(0); setPlaying(!playing); });
+$('next').addEventListener('click',()=>{goto(current.step+1); setPlaying(true);});
+$('back').addEventListener('click',()=>{goto(current.step-1); setPlaying(true);});
+$('restart').addEventListener('click',()=>{goto(0); setPlaying(true);});
+$('real').addEventListener('change',draw);
+document.addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT') return;
+  if(e.code==='Space'){e.preventDefault(); $('play').click();} if(e.key==='ArrowRight') $('next').click(); if(e.key==='ArrowLeft') $('back').click(); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',draw);
+new MutationObserver(draw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts) document.fonts.ready.then(draw);
+setPlaying(playing); if(!playing){ current.t=STEPS[0].dur; }
+render(); requestAnimationFrame(tick);
+</script>
+
+</body>
+</html>
