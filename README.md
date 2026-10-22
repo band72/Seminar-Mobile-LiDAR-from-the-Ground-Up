@@ -127,11 +127,11 @@ It applies the processing and QA/QC steps taught in Module 18 of the seminar.
 
 ### Scout Maps the Park: SLAM animation
 
-[![Scout the rover builds a map of a park while finding itself on it](docs/slam-animation.gif)](https://band72.github.io/Seminar-Mobile-LiDAR-from-the-Ground-Up/docs/slam-animation.html)
+[![Scout the rover builds a map of a park while finding itself on it](docs/slam-animation.gif)](https://band72.github.io/Seminar-Mobile-LiDAR-from-the-Ground-Up/slam-animation.html)
 
 An interactive, eight-step animation of how SLAM works: look, roll and guess, match, fix, and close the loop. Each step includes a note in survey terms.
 
-▶ **[Open the interactive animation](https://band72.github.io/Seminar-Mobile-LiDAR-from-the-Ground-Up/docs/slam-animation.html)**
+▶ **[Open the interactive animation](https://band72.github.io/Seminar-Mobile-LiDAR-from-the-Ground-Up/slam-animation.html)**
 
 ## Disclaimer
 
