@@ -131,7 +131,7 @@ It applies the processing and QA/QC steps taught in Module 18 of the seminar.
 
 An interactive, eight-step animation of how SLAM works: look, roll and guess, match, fix, and close the loop. Each step includes a note in survey terms.
 
-▶ **[Open the interactive animation](https://band72.github.io/Seminar-Mobile-LiDAR-from-the-Ground-Up/slam-animation.html)**
+▶ **[Open the interactive animation](https://band72.github.io/Seminar-Mobile-LiDAR-from-the-Ground-Up/docs/slam-animation.html)**
 
 ## Disclaimer
 
