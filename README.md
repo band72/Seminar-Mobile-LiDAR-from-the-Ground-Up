@@ -1,7 +1,9 @@
-# LiDAR from the Ground Up
+<img src="docs/course-cover.jpg" alt="Cover of LiDAR from the Ground Up by D.S. Banks, PSM" width="180" align="right">
 
-**Mobile Laser Scanning, IMUs, SLAM and Survey-Grade Deliverables**
-D.S. Banks, PSM
+# LiDAR from the Ground Up
+**Mobile Laser Scanning, IMUs, SLAM and Survey-Grade Deliverables** · D.S. Banks, PSM
+
+*Look for this cover to be sure you have the official course materials.*
 
 Source files for a continuing-education (CE) course for surveyors, engineers and geospatial professionals. The course covers mobile LiDAR from first principles ("light bounces back") through the factor-graph mathematics inside modern SLAM software such as LIO-SAM, and on to the accuracy statistics a surveyor signs off on.
 
