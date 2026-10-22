@@ -110,6 +110,21 @@ This course is maintained as a living document and will be refined at regular in
 
 Each revision is published as a [GitHub Release](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/releases) with a summary of what changed. Questions, corrections and project ideas for the companion are welcome in [Discussions](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/discussions).
 
+## Tools
+
+### LiDAR Contour Studio — open-source contour generator for LAS/LAZ
+**Repository:** [github.com/band72/Lidar_Prj_2026](https://github.com/band72/Lidar_Prj_2026)
+
+An open-source companion tool, released under the MIT License, for turning LAS/LAZ point clouds into contours and surfaces:
+
+- Filters ground points by ASPRS class and removes statistical outliers
+- Crops by a latitude/longitude bounding box drawn on a map, and by elevation
+- Exports contours to GeoJSON, Shapefile, AutoCAD DXF and GeoPackage, and a DEM to GeoTIFF
+- Writes QA/QC reports (HTML, Markdown, JSON) covering metadata, point density, datums and limitations
+- Runs on Windows, Linux and Android, with a touch-friendly web interface
+
+It applies the processing and QA/QC steps taught in Module 18 of the seminar.
+
 ## Disclaimer
 
 This material is for education only. It is not legal or professional advice and does not replace the judgment of a licensed surveyor and mapper. Standards, rules and specifications change. Always verify the current editions of the ASPRS standards, Chapter 5J-17 F.A.C., FDOT requirements and NSRS guidance before relying on them for a project.
