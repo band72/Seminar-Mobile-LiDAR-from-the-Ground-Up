@@ -125,6 +125,14 @@ An open-source companion tool, released under the MIT License, for turning LAS/L
 
 It applies the processing and QA/QC steps taught in Module 18 of the seminar.
 
+### Scout Maps the Park: SLAM animation
+
+[![Scout the rover builds a map of a park while finding itself on it](docs/slam-animation.gif)](https://band72.github.io/Seminar-Mobile-LiDAR-from-the-Ground-Up/slam-animation.html)
+
+An interactive, eight-step animation of how SLAM works: look, roll and guess, match, fix, and close the loop. Each step includes a note in survey terms.
+
+▶ **[Open the interactive animation](https://band72.github.io/Seminar-Mobile-LiDAR-from-the-Ground-Up/slam-animation.html)**
+
 ## Disclaimer
 
 This material is for education only. It is not legal or professional advice and does not replace the judgment of a licensed surveyor and mapper. Standards, rules and specifications change. Always verify the current editions of the ASPRS standards, Chapter 5J-17 F.A.C., FDOT requirements and NSRS guidance before relying on them for a project.
