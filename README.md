@@ -133,6 +133,18 @@ An interactive, eight-step animation of how SLAM works: look, roll and guess, ma
 
 ▶ **[Open the interactive animation](https://band72.github.io/Seminar-Mobile-LiDAR-from-the-Ground-Up/slam-animation.html)**
 
+## To-do
+
+- [ ] Independent review of the Florida standards module by a second PSM
+- [ ] Add the FDOT Mobile LiDAR (TML) accuracy tolerances for Types A, B and C from the current Surveying and Mapping Handbook
+- [ ] Update the book's agenda to match the slide deck (SLAM as the 70-minute core block)
+- [ ] Replace the simulated capstone dataset with a real, de-identified project
+- [ ] Release the project-based companion with real-world LiDAR deliverable examples
+- [ ] Re-check the NSRS modernization timeline before each offering
+- [ ] Conceptualize each breakout topic with 5 minute summary
+- [x] SLAM animation (Scout Maps the Park)
+- [x] Worked-example Excel workbook
+
 ## Disclaimer
 
 This material is for education only. It is not legal or professional advice and does not replace the judgment of a licensed surveyor and mapper. Standards, rules and specifications change. Always verify the current editions of the ASPRS standards, Chapter 5J-17 F.A.C., FDOT requirements and NSRS guidance before relying on them for a project.
