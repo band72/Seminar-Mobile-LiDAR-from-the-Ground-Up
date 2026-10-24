@@ -135,7 +135,7 @@ An interactive, eight-step animation of how SLAM works: look, roll and guess, ma
 
 ▶ **[Open the interactive animation](https://band72.github.io/Seminar-Mobile-LiDAR-from-the-Ground-Up/slam-animation.html)**
 
-▶ **[SLAM Lectures for Beginning Learning](https://www.youtube.com/watch?v=B2qzYCeT9oQ&list=PLpUPoM7Rgzi_7YWn14Va2FODh7LzADBSm)** 
+▶ **[SLAM Lectures for Beginner](https://www.youtube.com/watch?v=B2qzYCeT9oQ&list=PLpUPoM7Rgzi_7YWn14Va2FODh7LzADBSm)** 
 
 ## To-do
 
