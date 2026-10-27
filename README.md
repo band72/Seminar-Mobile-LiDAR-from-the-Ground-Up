@@ -41,8 +41,8 @@ All PDFs are compressed for download (October 2026).
 
 ## Modules
 
-| # | Module | Source | PDF | Cliff Notes |
-|---|--------|--------|-----|-------------|
+| # | Module | Source | PDF | Notes |
+|---|--------|--------|-----|-------|
 | 1 | [What Is LiDAR?](ch01_intro.tex) | [`ch01_intro.tex`](ch01_intro.tex) | [📄 PDF](docs/modules/Module_01_R0.pdf) | |
 | 2 | [The Math Toolkit](ch02_math.tex) | [`ch02_math.tex`](ch02_math.tex) | [📄 PDF](docs/modules/Module_02_R0.pdf) | |
 | 3 | [Measuring Distance with Light](ch03_tof.tex) | [`ch03_tof.tex`](ch03_tof.tex) | [📄 PDF](docs/modules/Module_03_R0.pdf) | |
