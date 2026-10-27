@@ -1,0 +1,28 @@
+\chapter{Control, Error Budgets and Accuracy Standards}
+
+\section{Relative versus absolute}
+
+\begin{kid}
+You can draw a perfect map of your bedroom --- every toy in the right place compared to every other toy --- but if you don't know where your house is on the street, nobody else can use it to find your room. SLAM makes the bedroom map. \textbf{Control points} --- spots measured very carefully by surveyors --- pin that map onto the real world. \textbf{Checkpoints} are extra careful spots that we keep secret from the computer, then use to test whether the map is truly right.
+\end{kid}
+
+\fig[0.82]{control}{Along a corridor, alternate points used to constrain the solution (control) with points held back purely to test it (checkpoints).}
+
+\begin{tip}
+\begin{itemize}
+\item Use targets the scanner can see and the software can measure: painted chevrons or checkerboards on pavement for vertical and horizontal checks; high-intensity paint shows clearly in intensity.
+\item Survey control and checkpoints with a method at least \textbf{two times} more accurate than the product you are testing (ASPRS Edition 2), and include their own uncertainty in the final accuracy (below).
+\item Distribute checkpoints along the whole project and across the cross-section --- not only at the ends near GNSS-friendly areas.
+\item Confirm the vertical datum and geoid model match project requirements before comparing anything.
+\end{itemize}
+\end{tip}
+
+\section{Computing accuracy from checkpoints}
+
+\fig[0.78]{residuals}{Vertical residuals (LiDAR surface minus surveyed elevation) at ten checkpoints.}
+
+\section{ASPRS lidar data standards in detail}
+
+\begin{kid}
+One rulebook says \emph{how close to the truth} the dots must be and how to check them with secret checkpoints. The other rulebook says \emph{how to write the dots down} in a file, including a label on every dot: ground, building, tree, water, wire, noise\ldots{} so any software can read it.
+\end{kid}

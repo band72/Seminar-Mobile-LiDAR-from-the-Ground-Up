@@ -13,12 +13,23 @@ The course was built from an earlier *Mobile LiDAR Basics* seminar, a four-modul
 
 ## Read the course
 
-| Document | Description |
-|----------|-------------|
-| 📘 [**Course text** (PDF, 185 pages)](docs/LiDAR_from_the_Ground_Up_R0.pdf) | The full book: 21 modules, worked examples, labs, sample SOP, glossary and references |
-| 🎤 [**Seminar slides with speaker notes** (PDF, 76 pages)](docs/Seminar_Slides_with_Notes_R0.pdf) | The six-hour seminar presentation, with the presenter's notes for each slide |
+The course comes in two editions with separate downloads.
 
-Both are revision R0 (October 2026), compressed for download.
+### Seminar (R1)
+
+| Document | Description | |
+|----------|-------------|---|
+| 🎓 [**Seminar edition** (PDF, 71 pages)](docs/LiDAR_from_the_Ground_Up_R1.pdf) | The Surveying Concepts edition used in the seminar: all 21 modules in plain language, with every Simple Approach, Big Idea, Field Tip and Warning box and the illustrations | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/LiDAR_from_the_Ground_Up_R1.pdf) |
+| 🎤 [**Seminar slides with speaker notes** (PDF, 76 pages)](docs/Seminar_Slides_with_Notes_R0.pdf) | The six-hour seminar presentation, with the presenter's notes for each slide | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/Seminar_Slides_with_Notes_R0.pdf) |
+
+### Reference Book (R0)
+
+| Document | Description | |
+|----------|-------------|---|
+| 📘 [**Reference Book** (PDF, 185 pages)](docs/LiDAR_from_the_Ground_Up_R0.pdf) | The full book: 21 modules with the engineering track, worked examples, labs, sample SOP, glossary and references | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/LiDAR_from_the_Ground_Up_R0.pdf) |
+| 🛠️ [**Projects** (PDF, 11 pages)](docs/LiDAR_Projects_R0.pdf) | The capstone project (Module 21) with the sample project dataset and filled-in accuracy report, and the five hands-on labs (Appendix D), taken unchanged from the Reference Book | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/LiDAR_Projects_R0.pdf) |
+
+All PDFs are compressed for download (October 2026).
 
 ## Download the exercise files
 
@@ -60,8 +71,10 @@ Back matter ([`ch16_back.tex`](ch16_back.tex)) includes answers to the in-text e
 
 | Path | Contents |
 |------|----------|
-| [`docs/`](docs/) | Course text and seminar slides (PDF) and the worked-examples workbook (see [Read the course](#read-the-course) and [Download the exercise files](#download-the-exercise-files)) |
-| [`main.tex`](main.tex) | Master document. Build this to produce the course text. |
+| [`docs/`](docs/) | Seminar edition, Reference Book, Projects and seminar slides (PDF) and the worked-examples workbook (see [Read the course](#read-the-course) and [Download the exercise files](#download-the-exercise-files)) |
+| [`main.tex`](main.tex) | Master document. Build this to produce the Reference Book (R0). |
+| [`r1/`](r1/) | Builds the Seminar edition (R1) from the R0 chapters, which it only reads ([`r1/build_r1.py`](r1/build_r1.py), checked by [`r1/check_boxes.py`](r1/check_boxes.py)) |
+| [`projects/`](projects/) | Builds the Projects download from the R0 capstone and labs chapters ([`projects/build_projects.py`](projects/build_projects.py)) |
 | `ch*.tex` | Module chapters (linked in the table above) |
 | [`ins_asprs.tex`](ins_asprs.tex), [`ins_pen.tex`](ins_pen.tex), [`ins_rhr.tex`](ins_rhr.tex), [`ins_traj.tex`](ins_traj.tex) | Inserts used within the chapters |
 | [`quiz_items.tex`](quiz_items.tex), [`sample_table.tex`](sample_table.tex) | Quiz questions (no answers) and the sample results table |
@@ -76,10 +89,24 @@ Back matter ([`ch16_back.tex`](ch16_back.tex)) includes answers to the in-text e
 
 ## Building
 
-**Course text (PDF)**: requires a LaTeX distribution such as TeX Live, with TikZ.
+Requires a LaTeX distribution such as TeX Live, with TikZ. The edition scripts also need Python 3 and Ghostscript (`gs`) for compression.
+
+**Reference Book (R0)**:
 
 ```bash
 latexmk -pdf main.tex
+```
+
+**Seminar edition (R1)**: generates the R1 chapters, checks every kept box and figure against R0, compiles, and writes the compressed `docs/LiDAR_from_the_Ground_Up_R1.pdf`.
+
+```bash
+r1/make_pdf.sh
+```
+
+**Projects**: writes the compressed `docs/LiDAR_Projects_R0.pdf`.
+
+```bash
+projects/make_pdf.sh
 ```
 
 **Figures**: requires Python 3 with `matplotlib`, `numpy` and `Pillow`.

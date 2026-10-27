@@ -1,0 +1,55 @@
+\chapter{Choosing an IMU: AHRS, GNSS/INS and Tactical GNSS/INS}
+
+\begin{kid}
+Imagine two friends walking around the block with their eyes closed. The first friend has a compass and counts steps. The second friend has the same compass and step-counter but also gets a phone message every second saying ``you are about here, give or take two meters.'' Who gets home closest? And who can tell you exactly which way the mailbox is? That is the whole story of this module.
+\end{kid}
+
+\section{The Block Loop Challenge}
+
+\subsection*{Run 1 --- AHRS heading + odometer, systematic errors only}
+
+\fig[0.82]{trav_ahrs}{Sketch of the traverse with the AHRS runs. Errors are drawn 8 times larger than computed so they can be seen.}
+
+\begin{bigidea}
+Closure tests catch errors that \emph{change} around the loop. They are blind to errors that are the \emph{same} on every leg.
+\end{bigidea}
+
+\subsection*{Run 4 --- pure inertial navigation with the GX5-25}
+
+\fig[0.82]{gx5_drift}{Each IMU error source, integrated with no aiding at all, over one 70 s lap.}
+
+\subsection*{Run 5 --- the 3DM-GX5-45 GNSS/INS}
+
+\fig[0.82]{trav_ins}{The GNSS/INS keeps every position within a few meters; in the underpass it coasts on the IMU and drift begins to grow. Errors drawn 5 times actual size.}
+
+\section{Stepping up: the 3DM-GQ7 dual-antenna RTK GNSS/INS}
+
+\begin{kid}
+Now give the second friend a much better step-counter, a pair of ears far apart that hear exactly which way the street runs, and phone messages that say ``you are here, give or take two centimeters'' instead of two meters. That friend can walk the block and point to the mailbox almost perfectly --- as long as the phone has a signal.
+\end{kid}
+
+\subsection*{Why two antennas give heading}
+
+\fig[0.72]{gq7_baseline}{The same relative-position precision gives better heading over a longer baseline.}
+
+\subsection*{Real-time corrections in Florida: the FDOT FPRN}
+
+\begin{kid}
+RTK is like having a friend standing on a spot whose location is known exactly. Your friend radios you, ``The satellites are fooling me by this much right now.'' You subtract the same mistake from your own reading and suddenly you know where you are to within a couple of centimeters. In Florida, the state runs over a hundred of these ``friends'' for free.
+\end{kid}
+
+\begin{tip}
+\textbf{Standards of practice for network RTK.} Before and after each session, \emph{check in on a known control point} and record the difference; log the mountpoint, solution type (VRS/iMAX/single), fix status, PDOP and the number of satellites; record the network datum and epoch (NAD 83(2011) epoch 2010.0) and the geoid model used; and keep independent checkpoints out of the adjustment (Module 13). This is the documentation a reviewer will expect when the accuracy statement cites RTK positioning under Florida's Chapter 5J-17 and FDOT practice.
+\end{tip}
+
+\subsection*{How coasting errors grow}
+
+\fig[0.82]{gq7_coast}{Coast error versus outage length. Velocity dominates first; the gyro's cubic term dominates later.}
+
+\fig[0.85]{imu_compare}{The three sensors side by side. For the AHRS, the ``20-s coast'' bar is free-inertial drift with an uncalibrated accelerometer bias; it has no absolute position.}
+
+\section{The right job for each sensor: inside SLAM}
+
+\begin{tip}
+\textbf{Magnetometer hygiene.} Perform the hard- and soft-iron calibration with the sensor mounted on the final rig (the rig's own steel and motors are the biggest disturbance), keep the unit as far as practical from motors and batteries, and treat magnetic heading as suspect near vehicles, rebar, steel bridges and buried utilities --- Run 2's 2° bridge error is a conservative example.
+\end{tip}

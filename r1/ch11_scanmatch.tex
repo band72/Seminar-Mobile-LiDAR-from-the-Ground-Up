@@ -1,0 +1,37 @@
+\chapter{Scan Matching: Fitting Clouds Together}
+
+\section{The puzzle-piece idea}
+
+\begin{kid}
+Draw a shape on a see-through sheet. Your friend draws the same shape on another sheet, but a little shifted and turned. Lay the sheets on top of each other and slide and twist the top one until the drawings line up perfectly. How far you slid and twisted it tells you how your friend's sheet was placed! A LiDAR does this with two scans: sliding and twisting the new scan until it lines up with the old one tells it how far the car moved.
+\end{kid}
+
+\section{Iterative Closest Point (ICP)}
+
+\fig[1.0]{icp_iters}{A real ICP run: pair each red point with its nearest blue point, solve the best fit, move, repeat.}
+
+\section{Better cost functions: point-to-plane and NDT}
+
+\fig[0.95]{p2plane}{Point-to-point pulls toward sample points; point-to-plane only penalizes the gap normal to the surface.}
+
+\fig[0.55]{ndt}{The Normal Distributions Transform summarizes each grid cell by a mean and covariance.}
+
+\section{Feature-based matching (LOAM and LIO-SAM)}
+
+\fig[0.72]{loam}{Points on sharp corners become edge features; points on smooth surfaces become planar features.}
+
+\begin{kid}
+Instead of matching every single dot, look for the \emph{special} ones: sharp corners (like the corner of a box) and flat sides (like a table top). Corners are easy to recognize and flat sides are easy to slide against. Matching only these is much faster.
+\end{kid}
+
+\subsection{Distances to edges and planes (LIO-SAM eqs.\ 10--11)}
+
+\fig[0.92]{edgeplane}{An edge feature is compared with a line through two map points; a planar feature with a plane through three.}
+
+\section{When matching fails: the hallway effect}
+
+\fig[0.98]{hallway}{In a featureless corridor the matching error has a flat valley along the corridor --- any forward shift fits equally well.}
+
+\begin{tip}
+In corridors: add control or targets along the length, walk/drive both directions, include side rooms or cross-ties to create unique geometry, place temporary objects (cones, boxes) if needed, and always check along-track distances against a taped or total-station measurement.
+\end{tip}

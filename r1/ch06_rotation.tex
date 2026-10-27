@@ -1,0 +1,37 @@
+\chapter{Rotation, Pose and Frames}
+
+\section{Pose = where you are + which way you face}
+
+\begin{kid}
+Stand in the middle of a room. ``Where you are'' is your spot on the floor (and how tall you are). ``Which way you face'' is whether you look at the board or the window, whether you tilt your head, whether you lean. A LiDAR on a car needs to know both of these things, all the time, because the car bumps, turns and leans. Together they are called its \textbf{pose}.
+\end{kid}
+
+\fig[0.95]{rpy}{Roll, pitch and yaw on a mapping vehicle.}
+
+\section{The right-hand rule: naming X, Y, Z and roll, pitch, yaw}
+
+\begin{kid}
+Hold up your \textbf{right} hand. Point your \textbf{first (index) finger} straight ahead --- that is \textbf{X}. Point your \textbf{middle finger} to the left --- that is \textbf{Y}. Stick your \textbf{thumb} straight up --- that is \textbf{Z}. \textbf{The thumb is always Z.} Another way to say it: curl your fingers from X toward Y, and your thumb points to Z. Now make a thumbs-up: the way your curled fingers wrap around your thumb is the ``plus'' direction for turning around that thumb. Point your thumb along X and your fingers show plus \textbf{roll}; along Y, plus \textbf{pitch}; along Z (straight up), plus \textbf{yaw}.
+\end{kid}
+
+\fig[1.0]{righthand}{The right-hand rule. Left: index finger = X, middle finger = Y, and the thumb is always Z; equivalently, the fingers curl from X toward Y and the thumb points to Z. Right: with the thumb along an axis, the curled fingers show the positive rotation about it --- roll about X, pitch about Y, yaw about Z.}
+
+\fig[0.95]{rhr_vehicle}{The same vehicle in the two common right-handed body frames.}
+
+\begin{tip}
+When setting up a rig, stand behind the vehicle, hold up your right hand in the way the manual defines the axes, and \emph{physically} roll, pitch and yaw the IMU a few degrees while watching the live output. Each angle should increase in the direction your fingers curl. Write the verified convention in the calibration record (Appendix E).
+\end{tip}
+
+\section{Rotating a point in 2-D}
+
+\fig[0.42]{rot2d}{Rotating $\vect p=(3,4)$ by 30° counter-clockwise.}
+
+\section{Rotations in 3-D}
+
+\begin{tip}
+\textbf{Yaw is not azimuth.} Surveyors measure azimuth clockwise from grid north. ROS/ENU systems measure yaw counter-clockwise from east. Convert with $\psi=90^\circ-\alpha_{\text{az}}$. A vehicle heading due north has $\alpha_{\text{az}}=0^\circ$ but $\psi=90^\circ$. Grid north also differs from true north by the \emph{convergence angle} of your map projection --- another place a heading can quietly go wrong.
+\end{tip}
+
+\section{Why tiny angle errors matter}
+
+\fig[0.72]{smallangle}{Lateral error versus range for three residual angle errors.}

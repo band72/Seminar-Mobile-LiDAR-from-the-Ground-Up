@@ -1,0 +1,45 @@
+\chapter{Factor Graphs and LIO-SAM}
+
+\section{From a filter to a graph}
+
+\begin{kid}
+Imagine a row of people connected by rubber bands. Each rubber band says ``you two should be this far apart.'' One person is also tied to a post that says ``you belong here.'' If one band pulls a little wrong, everyone wiggles until the pulling is shared out as fairly as possible. A \textbf{factor graph} is that picture: the people are the car's positions over time, and the rubber bands are measurements.
+\end{kid}
+
+\fig[0.95]{factorgraph}{A factor graph: circles are unknown states (poses); small squares are measurements (factors) that tie them together.}
+
+\section{A factor graph you can solve by hand}
+
+\fig[0.95]{fg1d}{Four positions along a straight road, three odometry factors, one GPS factor and a prior.}
+
+\section{LIO-SAM, piece by piece}
+
+\subsection{Keyframes and the sliding window}
+
+\fig[0.95]{keyframes}{Only keyframes enter the graph; a new keyframe is matched to a local map of the last $n$ sub-keyframes.}
+
+\subsection{What it achieved}
+
+\begin{tip}
+You do not need to write an optimizer, but you should be able to answer: Which factors were active in this dataset? Where were the loop closures? Where was GNSS used? Where did the corridor degrade LiDAR odometry? Good processing software lets you view the trajectory colored by its estimated standard deviation --- inspect it before trusting any part of the cloud.
+\end{tip}
+
+\section{Building the trajectory: poses, scans, IMU, GNSS and images}
+
+\begin{kid}
+Think of a trip recorded as a flip-book. Each page is a \textbf{pose}: where the car was and which way it was pointing at one instant. The IMU writes a new page hundreds of times a second, so the flip-book is smooth --- but it slowly drifts. The LiDAR compares each new scan with the last ones and corrects the drift, like recognizing the same buildings. GNSS now and then says ``this page is exactly here on Earth.'' The camera takes pictures along the way, and each picture is glued to the page for the moment it was taken. Flip through all the pages and you have the \textbf{trajectory}: the path, with direction, at every instant.
+\end{kid}
+
+\subsection*{The words}
+
+\fig[1.0]{traj_timeline}{One second of data. The IMU ticks 200 times, the LiDAR completes 10 sweeps, GNSS gives 5 fixes and the camera takes 2 images. The trajectory (top row) is the common thread that gives every one of them a pose.}
+
+\subsection*{What each sensor contributes}
+
+\fig[0.98]{traj_map}{The path as built: blue trajectory with pose axes, orange LiDAR scan coverage used for matching, gold GNSS fixes (absent in the tunnel), and purple camera images, each placed with its own interpolated pose.}
+
+\fig[0.9]{traj_share}{Conceptually, the factor graph leans on whichever sensors have information at each moment: LiDAR and IMU carry the tunnel; GNSS and IMU carry the featureless field.}
+
+\begin{tip}
+\textbf{Deliver and archive the trajectory.} Keep the final trajectory (time, position, attitude and their standard deviations), the image exterior orientations, the calibration file and the processing log with the project. When a client later asks ``where did this point come from?'', the trajectory is the answer --- and it is the first thing a reviewer will inspect for drift, gaps and GNSS outages.
+\end{tip}

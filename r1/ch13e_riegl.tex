@@ -1,0 +1,19 @@
+\chapter{Survey-Grade Case Study: RIEGL VUX-240\textsuperscript{24}}
+
+\begin{kid}
+This scanner is like a super-fast, super-careful version of the ones we met before. It fires up to 2.4 million laser flashes a second from an airplane. To know exactly where each dot lands 500 feet below, we have to add up all the little mistakes: the laser's own wobble, the tiny tilt and turn errors of the motion sensor, and where the GPS thinks the airplane is. The surprise: with a scanner this good, the \emph{airplane's position} is the biggest mistake, not the laser.
+\end{kid}
+
+\section{The project}
+
+\fig[1.0]{riegl_geometry}{The two returns we analyze: Case A straight down from 500 ft AGL; Case B a 500 ft slant return at the edge of the 75° field of view (aircraft at 397 ft AGL).}
+
+\section{Laser errors to consider}
+
+\fig[0.85]{riegl_mta}{At 2.4 MHz the 500 ft echo belongs to the third pulse back.}
+
+\section{Survey-grade checklist for this system}
+
+\begin{bigidea}
+At 500 ft, a survey-grade laser is no longer the weak link: the RIEGL's own range error (2.5 cm) is comparable to the GNSS error, and the IMU's attitude error is 1--7 cm depending on the option. Survey-grade results come from the \emph{whole system} --- trajectory, calibration, control and checkpoints --- not from the laser alone.
+\end{bigidea}

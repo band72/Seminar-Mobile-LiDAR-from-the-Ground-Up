@@ -1,0 +1,37 @@
+\chapter{The IMU: Feeling Motion}
+
+\section{What is inside an IMU?}
+
+\begin{kid}
+When a car speeds up, you get pushed back into your seat. When it turns, you lean to the side. Your body \emph{feels} the motion even with your eyes closed. An IMU is a little box that feels motion the same way. It has three ``push-feelers'' (accelerometers) --- forward, sideways, up --- and three ``spin-feelers'' (gyroscopes). By adding up all those feelings many times a second, the computer can guess where the car went, even inside a tunnel. But like walking with your eyes closed, the guess slowly gets worse.
+\end{kid}
+
+\fig[0.92]{imuparts}{An accelerometer is a mass on springs; a gyroscope senses turning rate.}
+
+\section{Strapdown integration (LIO-SAM eqs.\ 4--6)}
+
+\fig[0.78]{integrate}{Acceleration is summed into velocity; velocity is summed into position.}
+
+\section{Why IMUs drift: biases integrate}
+
+\begin{kid}
+Imagine a scale that always reads 1 gram too heavy. Weigh one candy and the mistake is tiny. Weigh a thousand candies one by one and add them up --- now you are off by a whole kilogram! An IMU adds up its readings thousands of times, so even a tiny error grows and grows.
+\end{kid}
+
+\fig[1.0]{biasgrowth}{Position error versus unaided time for four IMU grades (log scale). Each grade is about ten times better than the one before.}
+
+\section{The hidden killer: tilt error leaks gravity}
+
+\fig[0.68]{tilt}{A small attitude error makes part of gravity look like acceleration.}
+
+\section{IMU grades}
+
+\fig[0.75]{grades}{Typical gyro bias-instability ranges (order of magnitude).}
+
+\section{IMU preintegration (LIO-SAM eqs.\ 7--9)}
+
+\fig[0.92]{preint}{Between two keyframes, hundreds of IMU samples are summarized once into a relative motion.}
+
+\begin{kid}
+Imagine writing down every step you take on a walk: ``step, step, turn a little, step\ldots'' Instead of keeping that whole long list, you could write one note: ``from the door to the swing: 20 steps forward and a quarter turn.'' Preintegration is that short note.
+\end{kid}

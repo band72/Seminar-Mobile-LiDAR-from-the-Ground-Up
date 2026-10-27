@@ -1,0 +1,33 @@
+\chapter{Measuring Distance with Light}
+
+\section{Time of flight}
+
+\fig[0.85]{tof}{A pulse travels out to the wall and back. The clock measures the whole round trip.}
+
+\begin{kid}
+Light is the fastest thing there is. In the time it takes you to blink, light could go around the world more than 2 times! The LiDAR starts a stopwatch when it flashes, and stops it when the flash bounces back. Because the light went \emph{to} the wall and \emph{back}, the wall is only half as far as the light traveled. So we cut the answer in half.
+\end{kid}
+
+\section{How precise must the clock be?}
+
+\fig[0.72]{timing_error}{Range error grows in a straight line with timing error.}
+
+\section{Pulse rate and range ambiguity}
+
+\begin{kid}
+Imagine shouting ``Hello!'' every second in a giant canyon. If an echo takes 3 seconds, you won't know which ``Hello'' it belongs to. A LiDAR has the same problem if it fires the next flash before the last echo has come home.
+\end{kid}
+
+\fig[0.85]{ambiguity}{If the pulse repetition interval is shorter than the round-trip time, echoes get mixed up.}
+
+\section{Phase-shift (continuous-wave) ranging}
+
+\fig[0.75]{phase}{The returned wave is shifted by a fraction of a wavelength.}
+
+\section{Multiple returns}
+
+\fig[0.92]{multireturn}{One wide pulse can hit leaves, a branch and the ground. The receiver sees several peaks.}
+
+\begin{tip}
+Edges of poles, curbs and building corners produce ``mixed pixels'': part of the beam hits the near object and part the far background, and the reported range can land in empty air between them. These show up as ghost points trailing behind edges and are removed in cleaning (Module 18).
+\end{tip}

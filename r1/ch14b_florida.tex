@@ -1,0 +1,30 @@
+\chapter{Florida Standards of Practice, FDOT and the New Datums}
+
+\begin{warning}[title={REGULATORY REVIEW REQUIRED BEFORE TEACHING}]
+This module was compiled from the rule and agency texts listed at the end of the module (retrieved October 2026). It is \textbf{not legal advice} and has \textbf{not yet been reviewed by a second Florida PSM}. Before the seminar, a reviewing PSM should check every citation against the current official text and sign below.\\[4pt]
+Reviewer: \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_, PSM No.\ \_\_\_\_\_\_\_\_ \quad Date: \_\_\_\_\_\_\_\_ \quad Rule versions checked: \_\_\_\_\_\_\_\_\_\_\_\_
+\end{warning}
+
+\begin{kid}
+Every game has a rulebook. Surveyors in Florida have one too, written by the state. It says what every map must show, how accurate it must be and how you prove it, and how you sign your name to it. When the map is made with a laser scanner instead of a total station, the rulebook still applies --- the scanner is just a new kind of measuring tape.
+\end{kid}
+
+\section{General requirements applied to mobile LiDAR (5J-17.051)}
+
+\begin{tip}
+\textbf{5J-17.052 still governs boundaries.} A LiDAR topographic survey does not satisfy boundary-survey requirements (monuments, measured dimensions, water-boundary descriptions and so on in 5J-17.052). If a LiDAR product is part of a boundary survey, the boundary items must still be established and shown under 5J-17.052.
+\end{tip}
+
+\section{FDOT Terrestrial Mobile LiDAR (TML) requirements}
+
+\begin{tip}
+\textbf{District practice example (FDOT District 5 QA/QC plan).} ``Imagery'' covers aerial photogrammetry \emph{and} TML. Coordinate with the FDOT Central Office for a Mobile Survey Tracking System (MSTS) number; submit all raw, interim and final imagery data to the Central Office with a letter of transmittal; deliver the derived DGN/TIN files to the District; and note in the Survey and Map Report that the Central Office has received a separate certified report covering the imagery data. Check your own District's plan.
+\end{tip}
+
+\section{The new national datums (NSRS modernization)}\label{sec:nsrs}
+
+\fig[0.95]{nsrs_timeline}{NSRS modernization timeline as published by NGS and the Federal Register. Dates after 2026 are NGS expectations, not fixed.}
+
+\begin{tip}
+\textbf{Future-proof today's LiDAR.} Record datum, realization, epoch, geoid model and foot in the report, the LAS header (WKT) and the metadata; keep ellipsoid heights and the trajectory so the project can be transformed to NATRF2022/NAPGD2022 later; and expect clients to ask for re-delivery in the new datums once they are adopted.
+\end{tip}

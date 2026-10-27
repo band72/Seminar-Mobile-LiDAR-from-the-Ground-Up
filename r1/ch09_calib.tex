@@ -1,0 +1,25 @@
+\chapter{Lever Arm and Boresight Calibration}
+
+\section{Two boxes on one plate}
+
+\begin{kid}
+Put a toy camera on your shoulder and close your eyes. A friend asks, ``Where is the camera?'' You know where \emph{you} are, but the camera is a little to the side and a little higher --- and it might be turned slightly. If you forget that, you will point to the wrong place. The car's ``body'' (the IMU) and its laser ``eye'' are in different spots too. The \textbf{lever arm} is how far apart they are. The \textbf{boresight} is how much one is twisted compared to the other.
+\end{kid}
+
+\fig[0.78]{leverarm}{The lever arm is the vector from the IMU origin to the LiDAR origin.}
+
+\section{The direct georeferencing equation}
+
+\fig[1.0]{chain}{The chain of operations from a laser echo to a map coordinate.}
+
+\begin{tip}
+In ROS-based systems the lever arm and boresight live in the static transform \texttt{/tf\_static} between \texttt{imu\_link} and the LiDAR frame, e.g.\ translation $[0.120,\ 0.000,\ 0.085]$ m and roll-pitch-yaw $[0.11^\circ,\ -0.23^\circ,\ 0.01^\circ]$. If that transform is missing or wrong, you get the bird's nest of Module 1.
+\end{tip}
+
+\section{How boresight is calibrated}
+
+\fig[0.95]{boresight_cal}{Driving past the same building in opposite directions doubles the visible effect of a boresight error.}
+
+\begin{tip}
+Treat calibration like any instrument adjustment: re-check after any mount change, impact, or long storage, and at the start of every project with a short loop over known features. Document the values used for every dataset.
+\end{tip}

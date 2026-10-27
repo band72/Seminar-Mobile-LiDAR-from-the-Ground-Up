@@ -1,0 +1,31 @@
+\chapter{Ouster OS0 Case Study: Errors and Resolution}
+
+\begin{kid}
+A datasheet is like the label on a box of crayons: it tells you how many colors, how sharp the tips are, and how long they last. But to know whether you can draw a tiny ant or only a big elephant, you have to do a little math with those numbers. That is what this module does for the OS0 laser scanner.
+\end{kid}
+
+\section{Angular resolution and point spacing}
+
+\fig[0.85]{os0_spacing}{Point spacing for each OS0 mode, compared with the size of the laser spot.}
+
+\section{Beam footprint: the real resolution limit}
+
+\fig[0.92]{os0_beams}{At 20 m, the 1024 mode places spots edge to edge; the 4096 mode overlaps each spot with its neighbors.}
+
+\section{Range resolution versus precision versus accuracy}
+
+\begin{kid}
+Think of a ruler. \textbf{Resolution} is how small the marks are (millimeters). \textbf{Precision} is how much your answer wiggles if you measure the same thing ten times. \textbf{Accuracy} is whether the ruler itself is the right length. A ruler can have tiny marks and still be stretched!
+\end{kid}
+
+\subsection{Precision and accuracy versus range and reflectivity}
+
+\fig[0.85]{os0_range}{Range precision (1$\sigma$) and accuracy for the OS0 Rev8. Curves for the 10\% target are read from the datasheet chart and are approximate.}
+
+\begin{tip}
+\textbf{Retroreflective targets are a trap.} The datasheet gives a 2.5 cm accuracy and 1.0 cm precision on retroreflectors --- worse than on ordinary surfaces --- because the very strong return distorts the pulse timing. Do not use retro-tape targets as checkpoints for absolute height unless the bias has been calibrated; use matte painted targets (Lambertian) and use retro targets for horizontal identification only.
+\end{tip}
+
+\section{Timing, synchronization and skew}
+
+\fig[0.78]{os0_clock}{Along-track error from timing for a free-running OS0 clock versus a PTP/PPS-synchronized one.}

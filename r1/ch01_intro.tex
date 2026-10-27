@@ -1,0 +1,23 @@
+\chapter{What Is LiDAR?}
+
+\begin{kid}
+Close your eyes and clap your hands in a big gym. You hear an echo. If the wall is far away, the echo takes longer to come back. If it is close, the echo comes back fast. A bat flies in the dark this way!
+
+A LiDAR does the same thing --- but instead of a clap it uses a tiny flash of laser light, and instead of ears it has a super-fast light catcher. It does this hundreds of thousands of times every second, in every direction, so it can ``see'' the shape of everything around it: roads, trees, buildings, people. Each echo becomes one dot. Millions of dots together make a 3-D picture called a \textbf{point cloud}.
+\end{kid}
+
+\section{The name}
+
+\fig[0.95]{pointcloud}{A synthetic mobile-LiDAR point cloud of a street, colored by height: road, curbs, poles, trees and building faces. Every dot is one laser echo.}
+
+\section{The four families of LiDAR}
+
+\fig[1.0]{family}{The same measuring idea mounted four ways.}
+
+\section{The one big problem: the instrument is moving}
+
+\begin{bigidea}
+A laser can only tell you \emph{``that wall is 25.000 m away in that direction from me.''} If you do not know exactly where ``me'' is --- and which way ``me'' was pointing --- at the \emph{exact instant} of each pulse, the measurement is useless. Most of this course is about knowing ``me'': the sensor's \textbf{pose}.
+\end{bigidea}
+
+\fig[0.95]{birdsnest}{Left: the same scans placed with a bad trajectory form the famous ``bird's nest.'' Right: with a correct high-rate trajectory every scan stacks into a crisp map.}

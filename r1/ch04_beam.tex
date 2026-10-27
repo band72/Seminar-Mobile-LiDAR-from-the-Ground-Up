@@ -1,0 +1,33 @@
+\chapter{The Laser Beam and the Echo}
+
+\section{The beam spreads out}
+
+\begin{kid}
+Shine a flashlight at your hand: you see a small circle. Now shine it at a wall across the room: the circle is much bigger. A laser beam spreads too --- just very, very slowly. Far away, the laser ``dot'' can be as big as a coin, so it can touch the edge of a pole and the wall behind it at the same time.
+\end{kid}
+
+\fig[0.82]{footprint}{The footprint of a beam with 5 mm exit diameter and 0.3 mrad divergence.}
+
+\section{How strong is the echo? The LiDAR range equation}
+
+\begin{kid}
+The farther away something is, the dimmer its echo. It gets dim fast: twice as far means only one quarter as bright. Shiny white things (a road sign) send back lots of light; black asphalt or wet surfaces send back very little. And if the light hits a surface at a slant, most of it bounces away like a ball skipping off water.
+\end{kid}
+
+\fig[0.95]{power}{Left: the $1/R^2$ law. Right: the $\cos\theta_i$ incidence-angle law.}
+
+\section{What can LiDAR see through?}
+
+\begin{kid}
+A laser is light, so it acts like a flashlight beam, not like X-ray vision. It cannot see \emph{through} a wall, a tree trunk, or the ground. It \emph{can} slip through holes --- the gaps between leaves, the openings in a fence --- and reach whatever is behind them. It passes through clear glass the way sunlight does. And it is stopped almost right away by water.
+\end{kid}
+
+\fig[1.0]{penetration}{The five situations every LiDAR user meets. Orange dots are recorded returns.}
+
+\begin{bigidea}
+LiDAR never ``penetrates'' solid material. It reaches hidden ground only through openings, which is why multiple returns (Module 3) and many viewing angles matter more than laser power.
+\end{bigidea}
+
+\section{Reflectivity of common surfaces}
+
+\fig[0.86]{reflectivity}{Typical reflectivity of common surfaces at the near-infrared wavelengths used by most mobile scanners (865--905 nm). Values vary with moisture, age, roughness, color and incidence angle.}

@@ -1,0 +1,45 @@
+\chapter{Processing, QA/QC and Deliverables}
+
+\section{From raw data to a clean cloud}
+
+\fig[1.0]{workflow}{Field-to-office workflow.}
+
+\section{Removing outliers}
+
+\begin{kid}
+Imagine a crowd of people standing close together in a park --- except one person way out by the fence. You can tell that person is ``alone'' because their nearest neighbors are far away. Outlier removal looks for dots whose nearest neighbors are far away, and throws them out: they are usually dust, rain, birds, or reflections.
+\end{kid}
+
+\fig[0.75]{sor}{Statistical outlier removal keeps points whose neighbors are close.}
+
+\section{Thinning: voxel down-sampling}
+
+\fig[0.8]{voxel}{Each 0.5 m cube keeps one representative point (the centroid of its points).}
+
+\begin{warning}[title={WARNING --- voxel size trades accuracy for speed}]
+Making your voxel (the 3-D box) \textbf{too large reduces accuracy} while it improves performance. Every point inside a box is replaced by one average point, so a large box:
+\begin{itemize}
+\item rounds off edges, curb lips, pipe walls and other fine features --- a 0.5 m voxel cannot show a 15 cm curb reveal;
+\item blends points from different surfaces (a wall and the ground beside it) into one point that lies on neither;
+\item thins the features that scan matching relies on, which can weaken SLAM and let the trajectory drift (Modules 11--12).
+\end{itemize}
+A small voxel keeps detail but leaves more points, so processing, matching and file sizes all cost more. \textbf{There is no single correct size: you have to balance the cost with trial and error.} Start with a voxel well below the smallest feature you must map (for example, one-third of it), process a test section, compare the result against checkpoints and the full-resolution cloud, then enlarge the voxel only as far as accuracy still meets the specification. Record the voxel size you used in the processing report.
+\end{warning}
+
+\section{Classification and the bare-earth surface}
+
+\fig[0.92]{ground}{Classifying ground points and building a bare-earth surface (DTM).}
+
+\section{Volumes}
+
+\fig[0.6]{volume}{A stockpile gridded at 2 m: each column is height $\times$ cell area.}
+
+\section{Cloud-to-cloud QA}
+
+\fig[0.85]{c2c}{Differencing two overlapping passes reveals trajectory problems that checkpoints between them could miss.}
+
+\section{Deliverables and CAD}
+
+\begin{tip}
+Civil 3D handles point clouds through ReCap (RCP/RCS): index the LAS/LAZ in ReCap, attach to the drawing, create a surface from the ground class, then add breaklines. Very large clouds should be tiled and thinned for the surface while the full cloud is kept for reference. Match deliverable size to what the client's hardware and software can actually open.
+\end{tip}

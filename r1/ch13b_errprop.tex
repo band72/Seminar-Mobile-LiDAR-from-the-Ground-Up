@@ -1,0 +1,63 @@
+\chapter{Error Propagation and Error Budgets}
+
+\section{Three kinds of error}
+
+\begin{kid}
+Imagine throwing darts. If your darts land all over the board, that is \textbf{random error} --- your hand shakes a little differently every time. If all your darts land in a tight group, but always 5 cm to the left of the bullseye, that is \textbf{systematic error} --- maybe the board is crooked. If one dart hits the wall, that is a \textbf{blunder}. You fix each one in a different way: practice to shrink random error, straighten the board to remove systematic error, and throw out the dart that hit the wall.
+\end{kid}
+
+\section{The law of propagation of variances (one output)}
+
+\fig[0.68]{ep_linear}{Near the operating point the model is almost a straight line. Its slope converts input spread into output spread.}
+
+\section{When errors are correlated}
+
+\fig[0.95]{ep_corr}{A bias shared by both points shifts absolute heights but disappears from a height \emph{difference}.}
+
+\section{Many outputs at once: the covariance matrix}
+
+\fig[1.0]{ep_chain}{The general propagation recipe.}
+
+\fig[0.62]{ep_ellipse}{Horizontal error ellipse of the worked example. The 95\% ellipse is 2.448 times the 1$\sigma$ ellipse.}
+
+\section{Propagating through the full georeferencing equation}\label{sec:fullbudget}
+
+\fig[0.85]{ep_budget_range}{Contributions versus range for the same backpack. Fixed terms dominate close in; angle terms take over far out.}
+
+\begin{tip}
+Use the curve to set your \textbf{maximum useful range}. With this system, a 3 cm horizontal spec is met only out to about 18 m; beyond that, either filter points by range in processing or improve the heading (more loop closures, better IMU, control along the route).
+\end{tip}
+
+\section{Checking with Monte Carlo simulation}
+
+\begin{kid}
+Instead of doing hard math, you can just \emph{pretend} thousands of times. Roll dice to make up small random errors for every input, compute the point, and write it down. Do it 100,000 times on a computer and look at how spread out the answers are. If the spread matches the formula, you know the formula was right.
+\end{kid}
+
+\fig[0.78]{ep_mc}{Vertical error of the 20 m point: 100\,000 simulated georeferencings (bars) versus the linear-propagation Gaussian (line).}
+
+\section{Averaging, and the floor set by bias}
+
+\fig[0.78]{ep_avg}{Averaging $n$ points shrinks random error as $1/\sqrt n$ but cannot go below the systematic bias.}
+
+\section{Error budgets: from sources to a total}\label{sec:budgets}
+
+\begin{kid}
+If you pack a backpack, every item takes up some room, and the bag can only hold so much. An error budget is a list of every little thing that can make a dot land in the wrong place, and how much ``room'' each one takes, so we know the whole bag still closes.
+\end{kid}
+
+\fig[0.8]{budget}{Independent 1$\sigma$ contributions combine by root-sum-square, not by simple addition.}
+
+\section{Error budgets for the case-study systems}
+
+\subsection{IMU attitude: GX5-25, GX5-45 and GQ7 (Module 16)}\label{sec:bud-imu}
+
+\fig[0.8]{gx5_point}{Sideways and vertical point error caused by each sensor's attitude accuracy, versus range. The GQ7 heading line coincides with the GX5 roll/pitch line, and the GQ7 roll/pitch line with SLAM-aided heading.}
+
+\subsection{RIEGL VUX-240\textsuperscript{24} at 500 ft (Module 17)}\label{sec:bud-riegl}
+
+\fig[0.82]{riegl_imu}{Each IMU option's post-processed attitude accuracy projected to the ground at 500 ft (small-angle rule, Module 2).}
+
+\fig[1.0]{riegl_budget}{Error contributions (1$\sigma$) for the RiLOC-F at 500 ft. The dashed line is the 5 cm class.}
+
+\fig[0.85]{riegl_totals}{Totals for each IMU/GNSS option. Better attitude helps horizontal; vertical is limited by GNSS and laser range.}

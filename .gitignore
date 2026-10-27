@@ -12,3 +12,8 @@ quiz.py
 exam_build.py
 *.xlsx
 !docs/*.xlsx
+quiz_R1.py
+quiz_key_R1.tex
+r1/main_r1.pdf
+projects/main_projects.pdf
+quiz_items_R1.tex

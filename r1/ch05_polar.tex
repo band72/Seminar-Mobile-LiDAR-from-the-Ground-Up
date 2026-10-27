@@ -1,0 +1,27 @@
+\chapter{From Angles and Distance to X, Y, Z}
+
+\section{The idea}
+
+\begin{kid}
+To tell a friend where a treasure is hidden, you could say: ``Face the big tree. Turn a little to the left. Look a little up. Now walk 25 steps that way.'' That is a \textbf{turn}, a \textbf{tilt} and a \textbf{distance}. A LiDAR records the same three things for every dot. Then it does some triangle math to change them into ``how far forward, how far sideways, how far up'' --- which we call X, Y and Z.
+\end{kid}
+
+\fig[0.6]{polar3d}{A range of 25 m with horizontal angle 40° and vertical angle 15° becomes a point at (18.50, 15.52, 6.47) m.}
+
+\fig[0.95]{polar_steps}{The two moves: tilt (side view), then turn (top view).}
+
+\section{Mechanical versus solid-state scanners}
+
+\fig[1.0]{patterns}{How three kinds of scanner sample the world (angles in degrees).}
+
+\section{How dense will my points be?}
+
+\begin{kid}
+Imagine painting a road with a paint-roller that only touches the road once every big step. If you walk faster, the stripes get further apart. If you roll faster, they get closer.
+\end{kid}
+
+\fig[0.85]{spacing}{Each sweep of the scanner lays a line of points across the road.}
+
+\begin{tip}
+Mobile mapping heads for survey work are often mounted \emph{tilted} so the spinning plane slices the road at an angle; then several channels hit the same strip of road at different times and along-track gaps close up. Point-density specifications should be checked on the delivered data (points per m$^2$ on a test patch), not assumed from the brochure.
+\end{tip}

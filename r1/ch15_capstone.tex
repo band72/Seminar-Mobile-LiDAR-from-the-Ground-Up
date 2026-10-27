@@ -1,0 +1,29 @@
+\chapter{Capstone and Sample Project Dataset}
+
+\begin{kid}
+This is the ``big game'' at the end of the season. You use every skill you practiced: measuring with light, turning angles into dots, keeping track of the car, fixing mistakes with landmarks, and checking your work with secret checkpoints. If every step is done carefully, the final map can be trusted to build a real road.
+\end{kid}
+
+\section{Collecting and processing}
+
+\begin{tip}
+\textbf{Sample accuracy statement.} ``This dataset was tested for vertical accuracy at 30 independent checkpoints on hard surfaces and found to have $\text{RMSE}_z$ = 2.1 cm, including checkpoint survey uncertainty, and $\text{RMSE}_H$ = 2.8 cm horizontally, in accordance with the ASPRS Positional Accuracy Standards, Edition 2. Horizontal datum: [NAD83(2011) State Plane Florida East, US ft]; vertical datum: [NAVD88, GEOID18].'' Fill in the datums your project actually used, and comply with the content requirements of the governing standards of practice (in Florida, Ch.\ 5J-17 F.A.C.).
+\end{tip}
+
+\section{Sample project dataset: trajectory, checkpoints and accuracy report}\label{sec:dataset}
+
+\fig[1.0]{sample_trajectory}{Top: the 2.0 km (6,562 ft) trajectory with 10 control points and 30 checkpoints; the red stretch is the GNSS outage under the underpass. Bottom: the trajectory's own 1$\sigma$ estimates rise in the underpass and are pulled back down by the mid-underpass control target.}
+
+\begin{bigidea}
+Read the trajectory before reading the point cloud. The bottom plot shows exactly where accuracy is strong (open sky, 1.4 cm / 0.05 ft) and where it is weak (underpass, up to 3.6 cm / 0.12 ft) --- which is where extra checkpoints belong.
+\end{bigidea}
+
+\subsection*{Checkpoint table}
+
+\fig[0.92]{sample_residuals}{Vertical residuals at the 30 checkpoints. No residual exceeds 3$\times$RMSE (5.7 cm), so none is flagged as a blunder.}
+
+\section{One pulse, one more time: the master checklist}
+
+\begin{bigidea}
+Measure carefully, control what you can, check what you must, and document what you did. That is how survey-grade work is produced with any instrument --- including a laser that never stands still.
+\end{bigidea}

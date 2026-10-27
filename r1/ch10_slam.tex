@@ -1,0 +1,43 @@
+\chapter{SLAM: Mapping While Finding Yourself}
+
+\section{The chicken-and-egg problem}
+
+\begin{kid}
+You are blindfolded in a new house and must draw a map of it. To draw a wall in the right place, you need to know where you are standing. But to know where you are standing, you need a map! SLAM is the clever trick of doing both a little at a time: take a step, feel a wall, guess where you are, add the wall to your map, take another step\ldots\ and when you bump into a wall you already drew, you fix up your whole map.
+\end{kid}
+
+\fig[0.8]{chicken}{Simultaneous Localization And Mapping solves both questions together.}
+
+\section{The motion model}
+
+\fig[0.6]{motionmodel}{A two-track (differential drive) platform: when one side travels farther, the platform turns.}
+
+\section{Uncertainty grows when you move and shrinks when you look}
+
+\fig[0.95]{uncertainty}{Each prediction inflates the 2$\sigma$ uncertainty ellipse; one good landmark observation collapses it.}
+
+\section{The Kalman filter in one dimension}
+
+\begin{kid}
+Two friends guess how tall a tree is. One is a careful measurer; the other is just eyeballing. You trust the careful one more, so your final answer is \emph{between} their guesses but closer to the careful one. The Kalman filter does exactly that, with numbers that say \emph{how much} closer.
+\end{kid}
+
+\fig[0.78]{kalman1d}{A wide prediction and a sharp measurement combine into an even sharper estimate.}
+
+\section{The extended Kalman filter (EKF)}
+
+\subsection{Correcting with a landmark}
+
+\fig[0.6]{ekf}{The 2$\sigma$ ellipse before (orange) and after (teal) seeing the landmark.}
+
+\section{Particle filters and EKF-SLAM}
+
+\fig[0.78]{particles}{Particles can represent ``I'm in corridor A \emph{or} corridor B.''}
+
+\section{Drift and loop closure}
+
+\fig[0.8]{loop}{Odometry drifts like an open traverse; recognizing the start point closes the loop and distributes the misclosure.}
+
+\begin{tip}
+Plan routes like traverses: return to the start, cross earlier paths, and add cross-ties in long corridors. Every revisit is a free closure. A route that never revisits anything is an open traverse --- its end can be far off and nothing in the data will tell you.
+\end{tip}

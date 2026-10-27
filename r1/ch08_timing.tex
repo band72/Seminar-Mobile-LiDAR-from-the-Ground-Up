@@ -1,0 +1,25 @@
+\chapter{Timing, GNSS and Motion Compensation}
+
+\section{One clock to rule them all}
+
+\begin{kid}
+Imagine you and a friend take photos of a race. If your camera's clock is one second slow, your photo of the runner crossing the line will be labeled at the wrong time --- and the runner will seem to be in the wrong place. Every sensor on a mapping car must use the \emph{same} clock, set perfectly, so every laser dot gets matched to exactly where the car was at that instant.
+\end{kid}
+
+\fig[0.85]{pps}{GNSS PPS, LiDAR and IMU events all share one time base.}
+
+\section{GNSS and IMU: a perfect partnership}
+
+\fig[0.82]{gnssimu}{The IMU drifts but never stops; GNSS never drifts but can disappear. Together they are far better than either.}
+
+\section{Motion compensation (de-skewing)}
+
+\begin{kid}
+Take a photo of a fast car with a slow camera and the car looks stretched and blurry. A spinning LiDAR takes 1/10 of a second to sweep all the way around, and the vehicle moves during that time. If the computer pretends the whole sweep happened at one instant, straight walls come out bent. De-skewing fixes the blur by moving each dot back to where it really was.
+\end{kid}
+
+\fig[0.95]{deskew}{A wall scanned while driving toward it at 15 m/s. Left: raw sweep. Right: after de-skewing each point with its own pose.}
+
+\begin{tip}
+A practical QA check before processing: confirm that (1) the IMU stream is present at its nominal rate with no gaps, (2) every LiDAR point has a per-point time field, (3) LiDAR and IMU timestamps overlap and are in the same time base, and (4) the static lever-arm/boresight transform is loaded. If any of these is missing, stop --- no amount of processing will fix it later.
+\end{tip}
