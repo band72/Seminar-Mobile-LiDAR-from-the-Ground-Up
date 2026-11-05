@@ -4,14 +4,22 @@ R0 files are only read, never written. The Projects PDF contains, unchanged:
   - Module 21, Capstone and Sample Project Dataset (ch15_capstone.tex)
   - Appendix D, Hands-On Labs (ch16b_labs.tex)
 with their R0 module and appendix numbers, so they match the Reference Book.
+References to other modules resolve to the Reference Book's section and page
+numbers, taken from a full R0 build (shared with modules/build_modules.py).
 
 Writes projects/main_projects.tex.
 Usage: python3 projects/build_projects.py
 """
+import re
+import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 R0 = HERE.parent
+sys.path.insert(0, str(R0 / "modules"))
+from build_modules import r0_labels  # noqa: E402
+
+CHAPTERS = ["ch15_capstone", "ch16b_labs"]
 
 FRONT = r"""\frontmatter
 \begin{titlepage}
@@ -49,9 +57,13 @@ def main():
                                 "pdftitle={LiDAR from the Ground Up: Projects (R0)}")
     preamble = preamble.replace("LiDAR from the Ground Up}\n\\fancyhead[R]",
                                 "LiDAR from the Ground Up: Projects}\n\\fancyhead[R]")
-    # The capstone cites an error-budget section that lives in Module 14 of the Reference Book.
-    preamble += ("\\makeatletter\\AtBeginDocument{\\newlabel{sec:bud-cap}"
-                 "{{14.11.4 of the Reference Book}{102}{}{}{}}}\\makeatother\n")
+    # Labels defined outside these chapters live in the Reference Book: say so after the number.
+    own = set()
+    for name in CHAPTERS:
+        own |= set(re.findall(r"\\label\{([^}]*)\}", (R0 / f"{name}.tex").read_text()))
+    external = "\n".join(re.sub(r"^(\\newlabel\{[^}]*\}\{\{)([^}]*)", r"\1\2 of the Reference Book", line)
+                         for label, line in r0_labels().items() if label not in own)
+    preamble += "\\makeatletter\\AtBeginDocument{" + external + "}\\makeatother\n"
     body = (FRONT
             + "\\setcounter{chapter}{20}\n\\input{../ch15_capstone}\n"
             + APPENDIX + "\\input{../ch16b_labs}\n")
