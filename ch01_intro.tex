@@ -3,15 +3,42 @@
 \begin{kid}
 Close your eyes and clap your hands in a big gym. You hear an echo. If the wall is far away, the echo takes longer to come back. If it is close, the echo comes back fast. A bat flies in the dark this way!
 
-A LiDAR does the same thing --- but instead of a clap it uses a tiny flash of laser light, and instead of ears it has a super-fast light catcher. It does this hundreds of thousands of times every second, in every direction, so it can ``see'' the shape of everything around it: roads, trees, buildings, people. Each echo becomes one dot. Millions of dots together make a 3-D picture called a \textbf{point cloud}.
+A LiDAR does the same thing --- but instead of a clap it uses a tiny flash of laser light, and instead of ears it has a super-fast light catcher. It does this hundreds of thousands to millions of times every second, in every direction, so it can ``see'' the shape of everything around it: roads, trees, buildings, people. Each echo becomes one dot. Millions of dots together make a 3-D picture called a \textbf{point cloud}.
+
+Now imagine doing the clapping trick while riding in a car. To draw the dots in the right place, you also have to know exactly where the car was, and which way you were facing, every time you clapped. That is the hard part, and it is what this whole course is about.
 \end{kid}
 
 \section{The name}
+
 \textbf{LiDAR} stands for \textbf{Li}ght \textbf{D}etection \textbf{A}nd \textbf{R}anging. ``Ranging'' is the surveyor's word for measuring distance. A LiDAR is, at heart, an electronic distance meter (EDM) --- the same physics as the EDM inside a total station --- that fires extremely fast and sweeps its beam in many directions.
+
+Two details are worth fixing early. First, most mobile scanners use \emph{pulsed} time of flight: they time a short burst of light out and back. Some total-station EDMs and a few scanners instead use phase comparison or frequency modulation; Module~3 compares them. Second, a scanner reports \emph{raw} observations --- a range, two angles, a time tag and an intensity --- not coordinates. Coordinates are something we compute, and every step of that computation is a place where error can enter.
 
 \fig[0.95]{pointcloud}{A synthetic mobile-LiDAR point cloud of a street, colored by height: road, curbs, poles, trees and building faces. Every dot is one laser echo.}
 
+\begin{eng}
+The basic range equation is
+\[
+R = \frac{c\,\Delta t}{2},
+\]
+where $c \approx 299\,792\,458$\,m/s is the speed of light (corrected for the refractive index of air in precise work) and $\Delta t$ is the round-trip travel time. The factor of two is there because the light travels out \emph{and} back. Two numbers worth memorizing:
+\begin{itemize}
+\item a target 25\,m away returns its echo after about 167\,ns;
+\item a timing error of only 1\,ns is a range error of about 15\,cm.
+\end{itemize}
+This is why range timing is done in dedicated electronics at picosecond resolution, and why a scanner's quoted range accuracy (typically millimeters for survey-grade units, one to a few centimeters for automotive-style spinning units) is an impressive feat of engineering.
+\end{eng}
+
+\section{A short history: why mobile LiDAR, why now}
+
+Laser ranging dates to the 1960s, shortly after the laser itself was invented. Airborne topographic LiDAR became a commercial survey tool in the 1990s, once GNSS and inertial navigation were good enough to tell the aircraft where it was at every instant. Terrestrial scanners on tripods followed for buildings, plants and forensics.
+
+Mobile mapping changed twice. Vehicle-mounted systems built on survey-grade scanners and high-end GNSS/INS arrived in the 2000s for highway and rail corridors. Then, in the 2010s, the self-driving-car industry made compact multi-beam spinning sensors cheap, and robotics research made LiDAR SLAM (simultaneous localization and mapping) practical. The result is the range of equipment surveyors now see: from vehicle systems costing as much as a house to backpacks and handhelds built around the same kind of sensor that sits on a robot.
+
+The practical consequence for this course is that the \emph{sensor} is no longer the main question. The questions are how the trajectory was computed, how the system was calibrated and controlled, and how the accuracy was proven.
+
 \section{The four families of LiDAR}
+
 \fig[1.0]{family}{The same measuring idea mounted four ways.}
 
 \begin{center}\small
@@ -21,15 +48,37 @@ A LiDAR does the same thing --- but instead of a clap it uses a tiny flash of la
 \textbf{Platform} & \textbf{How it moves} & \textbf{Where the position comes from} & \textbf{Typical use}\\ \midrule
 Airborne & aircraft / drone & GNSS + IMU (very open sky) & terrain, floodplains \\
 Terrestrial (TLS) & stands still on a tripod & surveyed setups, targets & buildings, plants, forensics\\
-Mobile (MLS) & car, train, boat & GNSS + IMU + LiDAR SLAM & corridors, roads, rail\\
+Mobile (MLS) & car, train, boat & GNSS + IMU, often aided by LiDAR SLAM & corridors, roads, rail\\
 Backpack / handheld & a walking person & IMU + LiDAR SLAM (+ control) & indoors, tunnels, under canopy\\
 \bottomrule
 \end{tabularx}
 \end{center}
 
+The boundaries are blurring. Drone systems use the same small sensors as handhelds; some handhelds add a GNSS antenna; some vehicle systems lean heavily on SLAM in urban canyons. It is more useful to ask \emph{where the trajectory comes from} than which box a product is sold in. Two broad answers cover almost everything:
+\begin{description}
+\item[GNSS/INS-driven.] Position comes mainly from GNSS, with the IMU bridging between fixes and through short outages. Common on survey-grade vehicle and airborne systems. Works best with open sky.
+\item[SLAM-driven.] Position comes mainly from matching each new scan against the map built so far, with the IMU smoothing motion between scans. Common on handheld and backpack units. Works where GNSS cannot, but drifts unless tied down with control.
+\end{description}
+Most modern systems blend both, and Modules 10--12 show how.
+
 This course concentrates on the two moving families at the bottom of the table: \textbf{mobile} and \textbf{handheld} systems. They are the hardest, because the instrument never holds still --- and the most productive, because you can capture a kilometer of street in the time it takes to set up a total station a few times.
 
+\section{Anatomy of a mobile mapping system}
+
+Whatever the price, a moving scanner is the same handful of parts working together:
+\begin{description}
+\item[Scanner.] Measures range, angles and intensity, often for several returns per pulse.
+\item[IMU.] Senses rotation and acceleration hundreds of times per second, so the pose is known between position fixes (Module~7).
+\item[GNSS receiver and antenna.] Supplies absolute position and, through PPS and time messages, the master clock (Module~8).
+\item[Timing hardware.] Puts every measurement from every sensor on one time scale.
+\item[Rigid mount.] Holds the sensors in a fixed, measured geometry: the lever arms and boresight angles of Module~9.
+\item[Optional extras.] Cameras for colorizing and feature extraction, wheel odometers (DMIs) on vehicles, and base stations or network corrections for GNSS.
+\item[Software.] Trajectory processing, point-cloud generation, adjustment to control, classification and QA/QC (Modules 10--12 and 18).
+\end{description}
+If any one of these is wrong --- a loose bracket, a mismatched clock, a mistyped lever arm --- the scanner can be perfect and the map still wrong.
+
 \section{The one big problem: the instrument is moving}
+
 \begin{bigidea}
 A laser can only tell you \emph{``that wall is 25.000 m away in that direction from me.''} If you do not know exactly where ``me'' is --- and which way ``me'' was pointing --- at the \emph{exact instant} of each pulse, the measurement is useless. Most of this course is about knowing ``me'': the sensor's \textbf{pose}.
 \end{bigidea}
@@ -37,7 +86,7 @@ A laser can only tell you \emph{``that wall is 25.000 m away in that direction f
 \fig[0.95]{birdsnest}{Left: the same scans placed with a bad trajectory form the famous ``bird's nest.'' Right: with a correct high-rate trajectory every scan stacks into a crisp map.}
 
 \begin{eng}
-For a moving scanner each laser return must be placed in the project frame using the full six-degree-of-freedom pose (three positions $X,Y,Z$ and three angles roll, pitch, yaw) of the sensor at the time that particular pulse was fired. A spinning scanner at 10\,Hz fires up to a few million pulses per second, so the pose must be known at very high rate. That is achieved by combining:
+For a moving scanner each laser return must be placed in the project frame using the full six-degree-of-freedom pose (three positions $X,Y,Z$ and three angles roll, pitch, yaw) of the sensor at the time that particular pulse was fired. Note that the \emph{rotation} rate of a spinning scanner (typically 10--20\,Hz) and its \emph{pulse} rate (hundreds of thousands to a few million per second) are different things: within one 0.1\,s revolution the vehicle has moved, so even the points of a single sweep do not share one pose. The pose must therefore be known at very high rate. That is achieved by combining:
 \begin{enumerate}
 \item an \textbf{inertial measurement unit (IMU)} for high-rate, short-term motion (Module 7);
 \item \textbf{precise time synchronization} so every measurement shares one clock (Module 8);
@@ -47,7 +96,73 @@ For a moving scanner each laser return must be placed in the project frame using
 \end{enumerate}
 \end{eng}
 
+\section{How small errors become big errors}
+
+Three quick calculations show why the course spends so much time on pose, timing and calibration. All three use the small-angle rule: an angle error $\delta\theta$ (in radians) at range $R$ moves a point sideways by about $R\,\delta\theta$.
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{Xll}
+\toprule
+\textbf{Error source} & \textbf{Example} & \textbf{Point moves by}\\ \midrule
+Heading or boresight error & $0.01^\circ$ at 50\,m & $\approx 9$\,mm\\
+Heading or boresight error & $0.1^\circ$ at 50\,m & $\approx 87$\,mm\\
+Timing error & 1\,ms at 72\,km/h (20\,m/s) & 20\,mm\\
+Timing error & 10\,ms at 72\,km/h & 200\,mm\\
+Range timing error & 1\,ns & 150\,mm\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{bigidea}
+Angle errors grow with distance and timing errors grow with speed. A system that is excellent at 15\,m and walking pace can be unacceptable at 80\,m and highway speed. Specifications that leave out range and speed are incomplete.
+\end{bigidea}
+
+\section{Density, spacing and what the cloud can show}
+
+Point count is not the same as information. A spinning scanner with 128 beams, 1024 firings per revolution and a 10\,Hz spin produces $128 \times 1024 \times 10 \approx 1.3$ million points per second (single return). But those points spread out with distance: horizontal spacing is $360^\circ/1024 \approx 0.35^\circ$, which at 25\,m is about 15\,cm between neighboring points on a wall. A wide-field sensor with its 128 beams spread over $90^\circ$ vertically has gaps of about 0.7$^\circ$ --- roughly 30\,cm at 25\,m.
+
+So a curb face, a manhole lid or a thin pole may be hit by only a few points, or by none, even in a cloud of hundreds of millions. Multiple passes, slower speed and closer ranges increase density where it matters. Module~15 works through these numbers for a real sensor.
+
+\section{Precision is not accuracy}
+
+A mobile point cloud can look perfect --- crisp walls, sharp curbs, no doubled surfaces --- and still be in the wrong place by a decimeter or more. That is the difference between:
+\begin{description}
+\item[Relative accuracy (precision).] How well points agree with each other: wall thickness, noise on a flat road, agreement between overlapping passes.
+\item[Absolute accuracy.] How well points agree with the datum, proven by independent checkpoints that were \emph{not} used to adjust the data.
+\end{description}
+SLAM is very good at the first and, without control, can be poor at the second. Clients usually need both.
+
+Absolute accuracy is reported under the \emph{ASPRS Positional Accuracy Standards for Digital Geospatial Data}, Edition~2 (Version~1, 2023; Version~2, 2024). Four changes from Edition~1 matter most to a mobile-LiDAR surveyor:
+\begin{itemize}
+\item accuracy is reported as RMSE alone; the 95\% confidence-level figures are gone;
+\item a fully compliant product test needs at least 30 checkpoints (capped at 120 on large projects);
+\item the error in the checkpoint survey itself is now included in the computed product accuracy, so control quality shows up directly in the result;
+\item vegetated vertical accuracy (VVA) is still reported but is no longer a pass/fail criterion unless client and producer agree a threshold.
+\end{itemize}
+Module~13 shows how to measure relative and absolute accuracy and how to write the accuracy statement.
+
+\section{What mobile LiDAR does well, and where it struggles}
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{XX}
+\toprule
+\textbf{Strengths} & \textbf{Limitations}\\ \midrule
+Fast capture of long corridors, often at traffic speed & Line of sight only: parked cars and vegetation cause shadows (occlusion)\\
+Crews stay off the roadway, improving safety & GNSS degrades in urban canyons, tunnels and under canopy\\
+Dense, complete record; extract more features later without returning to the field & Dark, wet, glossy or glass surfaces return weak, missing or false points\\
+Works in the dark (active sensor) & Rain, fog, dust and spray add noise\\
+Captures geometry a crew might skip: overhead clearances, sign faces, bridge undersides & Data volume is large; processing and QA/QC take real time and skill\\
+& Ground under vegetation and in steep terrain may need conventional fill-in\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+A sound project plan uses mobile LiDAR where it is strong and conventional survey where it is not, and says so in the scope.
+
 \section{Why surveyors already understand most of this}
+
 \begin{center}\small
 \renewcommand{\arraystretch}{1.2}
 \begin{tabularx}{\linewidth}{XX}
@@ -56,28 +171,62 @@ For a moving scanner each laser return must be placed in the project frame using
 Time-of-flight range & EDM distance\\
 Polar-to-Cartesian conversion & Total-station angle + distance $\to$ coordinates\\
 Pose (position + orientation) & Instrument station + backsight orientation\\
+Lever arm & Height of instrument / height of rod, in three dimensions\\
+Boresight misalignment & Collimation and index errors\\
 IMU dead reckoning & An open traverse --- error accumulates\\
+GNSS outage & Running a traverse with no check to control\\
 Loop closure & Closing a traverse\\
 Factor-graph optimization & Least-squares network adjustment\\
 Control points vs checkpoints & Constrained points vs independent check shots\\
 Error budget (root-sum-square) & Traverse / level-network design\\
+Point density and spacing & Shot spacing on a topo survey\\
 \bottomrule
 \end{tabularx}
 \end{center}
 
+The tools are new; the reasoning is not. A surveyor who would never accept an unclosed traverse should be just as uneasy with an unchecked SLAM trajectory.
+
+\section{The professional's responsibility}
+
+Software can produce a beautiful point cloud with almost no input from the operator. That makes it easy to forget that someone still has to answer, and sign for, the same questions as on any survey: What datum and epoch? What control, and how was it established? How was accuracy tested, with how many independent checkpoints? What areas are missing, unreliable or outside the stated accuracy? Who is responsible for the deliverable?
+
+Modules 18--20 cover processing, state standards of practice (using Florida Chapter 5J-17 F.A.C. and FDOT requirements as the worked example), the upcoming modernized NSRS datums, and the contract language --- scope, accuracy statements and limitations --- that protects both client and surveyor. Rules and standards change; always confirm the current editions before relying on them.
+
+\section{How the course is organized}
+
+The modules build in a deliberate order, following one point from the moment the laser fires to the moment the surveyor signs:
+\begin{enumerate}
+\item \textbf{Foundations (Modules 1--2):} the problem, and the math toolkit.
+\item \textbf{The single measurement (Modules 3--5):} how range and angles become a point in the scanner's own frame.
+\item \textbf{Placing the point in the world (Modules 6--9):} rotation and pose, the IMU, timing and GNSS, and calibration.
+\item \textbf{Estimating the trajectory (Modules 10--12):} SLAM, scan matching and factor graphs, ending with the equations in LIO-SAM.
+\item \textbf{Proving the result (Modules 13--17):} control, error budgets, error propagation, ASPRS standards, and three hardware case studies from low-cost to survey-grade.
+\item \textbf{Delivering the work (Modules 18--21):} processing, QA/QC, state and agency requirements, professional practice and a capstone accuracy test on a sample dataset.
+\end{enumerate}
+
 \section{What you will be able to do at the end}
+
 \begin{itemize}
 \item Compute a range from a time of flight and explain why we divide by two.
 \item Turn a range and two angles into $X,Y,Z$ --- and then into project coordinates using lever arm, boresight, attitude and trajectory.
 \item Predict how fast an IMU of a given grade drifts, and how far a timing or boresight error moves a point.
+\item Estimate point spacing and density for a sensor at a given range and speed, and plan passes accordingly.
 \item Explain, with numbers, what an extended Kalman filter, ICP, and a factor graph actually do.
 \item Read the LIO-SAM paper's equations and know what every symbol means.
+\item Tell the difference between a GNSS/INS-driven and a SLAM-driven system, and choose an IMU grade suited to a project.
 \item Build an error budget, compute RMSE from checkpoints, and report accuracy in the language of current standards.
+\item Separate relative from absolute accuracy, and design control and checkpoint layouts that prove each.
+\item Run a processing and QA/QC workflow and recognize common failure signs: doubled surfaces, drift, and timing or boresight artifacts.
+\item Write a scope, accuracy statement and limitations section that meet applicable standards of practice.
 \end{itemize}
 
-\begin{tryit}
+\begin{tryit}[unbreakable]
 \textbf{1.1} (Simple) If you clap and hear the echo after 1 second, and sound travels about 343 meters each second, how far away is the wall? (Hint: the sound went there \emph{and} back.)\\
-\textbf{1.2} (Engineer) List the five ingredients (besides the laser) needed to turn a moving scanner's ranges into a survey-grade map.
+\textbf{1.2} (Engineer) List the five ingredients (besides the laser) needed to turn a moving scanner's ranges into a survey-grade map.\\
+\textbf{1.3} (Simple) A laser echo returns after 200\,ns. How far away is the target? Use $c \approx 3 \times 10^8$\,m/s.\\
+\textbf{1.4} (Engineer) A vehicle travels at 25\,m/s. The scanner and IMU clocks are offset by 4\,ms. Roughly how far are points displaced along the direction of travel?\\
+\textbf{1.5} (Engineer) A boresight heading error of $0.05^\circ$ goes uncorrected. How far does it move a point at 10\,m? At 60\,m? What does that tell you about where to look for calibration problems?\\
+\textbf{1.6} (Discussion) A handheld SLAM scan of a parking garage looks crisp, with no doubled walls. Your client asks whether it is ``accurate.'' What do you need to know, and what would you measure, before you answer?
 \end{tryit}
 
 \sources{Shan, T.\ \emph{et al.} (2020), LIO-SAM, IEEE/RSJ IROS, arXiv:2007.00258; \emph{Mobile LiDAR Basics for Surveying and Mapping} seminar (2026); \emph{LiDAR Mobile Mapping with SLAM} course outline (2026).}

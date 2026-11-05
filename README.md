@@ -22,14 +22,14 @@ The course comes in two editions with separate downloads.
 | 🎓 [**Seminar edition** (PDF, 71 pages)](docs/LiDAR_from_the_Ground_Up_R1.pdf) | The Surveying Concepts edition used in the seminar: all 21 modules in plain language, with every Simple Approach, Big Idea, Field Tip and Warning box and the illustrations | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/LiDAR_from_the_Ground_Up_R1.pdf) |
 | 🎤 [**Seminar slides with speaker notes** (PDF, 76 pages)](docs/Seminar_Slides_with_Notes_R0.pdf) | The six-hour seminar presentation, with the presenter's notes for each slide | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/Seminar_Slides_with_Notes_R0.pdf) |
 
-### Reference Book (R0)
+### Reference Book (R0.1)
 
 | Document | Description | |
 |----------|-------------|---|
-| 📘 [**Reference Book** (PDF, 185 pages)](docs/LiDAR_from_the_Ground_Up_R0.pdf) | The full book: 21 modules with the engineering track, worked examples, labs, sample SOP, glossary and references | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/LiDAR_from_the_Ground_Up_R0.pdf) |
+| 📘 [**Reference Book**, R0.1 (PDF, 190 pages)](docs/LiDAR_from_the_Ground_Up_R0.pdf) | The full book: 21 modules with the engineering track, worked examples, labs, sample SOP, glossary and references | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/LiDAR_from_the_Ground_Up_R0.pdf) |
 | 🛠️ [**Projects** (PDF, 11 pages)](docs/LiDAR_Projects_R0.pdf) | The capstone project (Module 21) with the sample project dataset and filled-in accuracy report, and the five hands-on labs (Appendix D), taken unchanged from the Reference Book | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/LiDAR_Projects_R0.pdf) |
 
-All PDFs are compressed for download (October 2026).
+All PDFs are compressed for download. The Reference Book, module PDFs and Projects are revision **R0.1** (November 2026: Module 1 expanded with system anatomy, error growth, point density, precision vs. accuracy and ASPRS Edition 2, plus exercises 1.3–1.6); the original R0 text is kept under the [`R0` tag](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/tree/R0). The Seminar edition is R1.
 
 ## Download the exercise files
 
@@ -72,7 +72,7 @@ Back matter ([`ch16_back.tex`](ch16_back.tex)) includes answers to the in-text e
 | Path | Contents |
 |------|----------|
 | [`docs/`](docs/) | Seminar edition, Reference Book, Projects and seminar slides (PDF) and the worked-examples workbook (see [Read the course](#read-the-course) and [Download the exercise files](#download-the-exercise-files)) |
-| [`main.tex`](main.tex) | Master document. Build this to produce the Reference Book (R0). |
+| [`main.tex`](main.tex) | Master document. Build this to produce the Reference Book (R0.1). |
 | [`r1/`](r1/) | Builds the Seminar edition (R1) from the R0 chapters, which it only reads ([`r1/build_r1.py`](r1/build_r1.py), checked by [`r1/check_boxes.py`](r1/check_boxes.py)) |
 | [`modules/`](modules/) | Builds one PDF per module from the R0 chapters ([`modules/build_modules.py`](modules/build_modules.py)); the PDFs are in [`docs/modules/`](docs/modules/) |
 | [`projects/`](projects/) | Builds the Projects download from the R0 capstone and labs chapters ([`projects/build_projects.py`](projects/build_projects.py)) |
@@ -92,7 +92,7 @@ Back matter ([`ch16_back.tex`](ch16_back.tex)) includes answers to the in-text e
 
 Requires a LaTeX distribution such as TeX Live, with TikZ. The edition scripts also need Python 3 and Ghostscript (`gs`) for compression.
 
-**Reference Book (R0)**:
+**Reference Book (R0.1)**:
 
 ```bash
 latexmk -pdf main.tex
