@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from build_r1 import CHAPTERS, KEEP_BOXES, items  # noqa: E402
 
 R1 = Path(__file__).resolve().parent
-R0 = R1.parent
+R0 = R1.parent / "tex"
 OTHER_BOXES = re.compile(r"\\begin\{(eng|worked|tryit|improve|keyeq|seminar|tcolorbox)\}|\\sources\{")
 
 

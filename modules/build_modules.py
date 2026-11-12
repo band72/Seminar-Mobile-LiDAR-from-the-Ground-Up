@@ -17,6 +17,7 @@ HERE = Path(__file__).resolve().parent
 R0 = HERE.parent
 BUILD = HERE / "build"
 OUT = R0 / "docs" / "modules"
+TEX = R0 / "tex"
 
 # In R0 order: Module 1 = ch01_intro ... Module 21 = ch15_capstone.
 CHAPTERS = [
@@ -43,15 +44,15 @@ def latexmk(tex, outdir):
 
 def r0_labels():
     """Build the full Reference Book and return its \\newlabel lines by label name."""
-    latexmk(R0 / "main.tex", BUILD / "r0")
+    latexmk(TEX / "main.tex", BUILD / "r0")
     aux = (BUILD / "r0" / "main.aux").read_text()
     return {m.group(1): m.group(0) for m in re.finditer(r"\\newlabel\{([^}]*)\}.*", aux)}
 
 
 def preamble():
-    src = (R0 / "main.tex").read_text()
+    src = (TEX / "main.tex").read_text()
     pre = src[:src.index("\\begin{document}")]
-    pre = pre.replace("\\graphicspath{{figs/}}", "\\graphicspath{{../../figs/}}")
+    pre = pre.replace("\\graphicspath{{../figs/}}", "\\graphicspath{{../../figs/}}")
     # Try It answers are in the Reference Book, not in the module PDF.
     pre = pre.replace("``Answers to Try It Yourself,'' starting on page",
                       "``Answers to Try It Yourself,'' of the Reference Book, starting on page")
@@ -59,13 +60,13 @@ def preamble():
 
 
 def module_tex(num, name, labels, pre):
-    own = set(re.findall(r"\\label\{([^}]*)\}", (R0 / f"{name}.tex").read_text()))
+    own = set(re.findall(r"\\label\{([^}]*)\}", (TEX / f"{name}.tex").read_text()))
     external = "\n".join(line for label, line in labels.items() if label not in own)
     title = f"LiDAR from the Ground Up: Module {num}"
     return (pre.replace("pdftitle={LiDAR from the Ground Up}", f"pdftitle={{{title} (R0)}}")
             + "\\makeatletter\\AtBeginDocument{" + external + "}\\makeatother\n"
             + "\\begin{document}\n"
-            + f"\\setcounter{{chapter}}{{{num - 1}}}\n\\input{{../../{name}}}\n"
+            + f"\\setcounter{{chapter}}{{{num - 1}}}\n\\input{{../../tex/{name}}}\n"
             + "\\end{document}\n")
 
 

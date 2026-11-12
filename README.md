@@ -43,43 +43,44 @@ All PDFs are compressed for download. The Reference Book, module PDFs and Projec
 
 | # | Module | Source | PDF | Notes |
 |---|--------|--------|-----|-------|
-| 1 | [What Is LiDAR?](ch01_intro.tex) | [`ch01_intro.tex`](ch01_intro.tex) | [📄 PDF](docs/modules/Module_01_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_01.pdf) |
-| 2 | [The Math Toolkit](ch02_math.tex) | [`ch02_math.tex`](ch02_math.tex) | [📄 PDF](docs/modules/Module_02_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_02.pdf) |
-| 3 | [Measuring Distance with Light](ch03_tof.tex) | [`ch03_tof.tex`](ch03_tof.tex) | [📄 PDF](docs/modules/Module_03_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_03.pdf) |
-| 4 | [The Laser Beam and the Echo](ch04_beam.tex) | [`ch04_beam.tex`](ch04_beam.tex) | [📄 PDF](docs/modules/Module_04_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_04.pdf) |
-| 5 | [From Angles and Distance to X, Y, Z](ch05_polar.tex) | [`ch05_polar.tex`](ch05_polar.tex) | [📄 PDF](docs/modules/Module_05_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_05.pdf) |
-| 6 | [Rotation, Pose and Frames](ch06_rotation.tex) | [`ch06_rotation.tex`](ch06_rotation.tex) | [📄 PDF](docs/modules/Module_06_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_06.pdf) |
-| 7 | [The IMU: Feeling Motion](ch07_imu.tex) | [`ch07_imu.tex`](ch07_imu.tex) | [📄 PDF](docs/modules/Module_07_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_07.pdf) |
-| 8 | [Timing, GNSS and Motion Compensation](ch08_timing.tex) | [`ch08_timing.tex`](ch08_timing.tex) | [📄 PDF](docs/modules/Module_08_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_08.pdf) |
-| 9 | [Lever Arm and Boresight Calibration](ch09_calib.tex) | [`ch09_calib.tex`](ch09_calib.tex) | [📄 PDF](docs/modules/Module_09_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_09.pdf) |
-| 10 | [SLAM: Mapping While Finding Yourself](ch10_slam.tex) | [`ch10_slam.tex`](ch10_slam.tex) | [📄 PDF](docs/modules/Module_10_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_10.pdf) |
-| 11 | [Scan Matching: Fitting Clouds Together](ch11_scanmatch.tex) | [`ch11_scanmatch.tex`](ch11_scanmatch.tex) | [📄 PDF](docs/modules/Module_11_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_11.pdf) |
-| 12 | [Factor Graphs and LIO-SAM](ch12_factor.tex) | [`ch12_factor.tex`](ch12_factor.tex) | [📄 PDF](docs/modules/Module_12_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_12.pdf) |
-| 13 | [Control, Error Budgets and Accuracy Standards (incl. ASPRS Edition 2)](ch13_accuracy.tex) | [`ch13_accuracy.tex`](ch13_accuracy.tex) | [📄 PDF](docs/modules/Module_13_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_13.pdf) |
-| 14 | [Error Propagation and Error Budgets](ch13b_errprop.tex) | [`ch13b_errprop.tex`](ch13b_errprop.tex) | [📄 PDF](docs/modules/Module_14_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_14.pdf) |
-| 15 | [Ouster OS0 Case Study: Errors and Resolution](ch13c_os0.tex) | [`ch13c_os0.tex`](ch13c_os0.tex) | [📄 PDF](docs/modules/Module_15_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_15.pdf) |
-| 16 | [Choosing an IMU: AHRS, GNSS/INS and Tactical GNSS/INS](ch13d_gx5.tex) | [`ch13d_gx5.tex`](ch13d_gx5.tex) | [📄 PDF](docs/modules/Module_16_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_16.pdf) |
-| 17 | [Survey-Grade Case Study: RIEGL VUX-240](ch13e_riegl.tex) | [`ch13e_riegl.tex`](ch13e_riegl.tex) | [📄 PDF](docs/modules/Module_17_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_17.pdf) |
-| 18 | [Processing, QA/QC and Deliverables](ch14_processing.tex) | [`ch14_processing.tex`](ch14_processing.tex) | [📄 PDF](docs/modules/Module_18_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_18.pdf) |
-| 19 | [Florida Standards of Practice, FDOT and the New Datums](ch14b_florida.tex) | [`ch14b_florida.tex`](ch14b_florida.tex) | [📄 PDF](docs/modules/Module_19_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_19.pdf) |
-| 20 | [Professional Practice for LiDAR Surveys](ch14c_practice.tex) | [`ch14c_practice.tex`](ch14c_practice.tex) | [📄 PDF](docs/modules/Module_20_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_20.pdf) |
-| 21 | [Capstone and Sample Project Dataset](ch15_capstone.tex) | [`ch15_capstone.tex`](ch15_capstone.tex) | [📄 PDF](docs/modules/Module_21_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_21.pdf) |
+| 1 | [What Is LiDAR?](tex/ch01_intro.tex) | [`ch01_intro.tex`](tex/ch01_intro.tex) | [📄 PDF](docs/modules/Module_01_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_01.pdf) |
+| 2 | [The Math Toolkit](tex/ch02_math.tex) | [`ch02_math.tex`](tex/ch02_math.tex) | [📄 PDF](docs/modules/Module_02_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_02.pdf) |
+| 3 | [Measuring Distance with Light](tex/ch03_tof.tex) | [`ch03_tof.tex`](tex/ch03_tof.tex) | [📄 PDF](docs/modules/Module_03_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_03.pdf) |
+| 4 | [The Laser Beam and the Echo](tex/ch04_beam.tex) | [`ch04_beam.tex`](tex/ch04_beam.tex) | [📄 PDF](docs/modules/Module_04_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_04.pdf) |
+| 5 | [From Angles and Distance to X, Y, Z](tex/ch05_polar.tex) | [`ch05_polar.tex`](tex/ch05_polar.tex) | [📄 PDF](docs/modules/Module_05_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_05.pdf) |
+| 6 | [Rotation, Pose and Frames](tex/ch06_rotation.tex) | [`ch06_rotation.tex`](tex/ch06_rotation.tex) | [📄 PDF](docs/modules/Module_06_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_06.pdf) |
+| 7 | [The IMU: Feeling Motion](tex/ch07_imu.tex) | [`ch07_imu.tex`](tex/ch07_imu.tex) | [📄 PDF](docs/modules/Module_07_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_07.pdf) |
+| 8 | [Timing, GNSS and Motion Compensation](tex/ch08_timing.tex) | [`ch08_timing.tex`](tex/ch08_timing.tex) | [📄 PDF](docs/modules/Module_08_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_08.pdf) |
+| 9 | [Lever Arm and Boresight Calibration](tex/ch09_calib.tex) | [`ch09_calib.tex`](tex/ch09_calib.tex) | [📄 PDF](docs/modules/Module_09_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_09.pdf) |
+| 10 | [SLAM: Mapping While Finding Yourself](tex/ch10_slam.tex) | [`ch10_slam.tex`](tex/ch10_slam.tex) | [📄 PDF](docs/modules/Module_10_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_10.pdf) |
+| 11 | [Scan Matching: Fitting Clouds Together](tex/ch11_scanmatch.tex) | [`ch11_scanmatch.tex`](tex/ch11_scanmatch.tex) | [📄 PDF](docs/modules/Module_11_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_11.pdf) |
+| 12 | [Factor Graphs and LIO-SAM](tex/ch12_factor.tex) | [`ch12_factor.tex`](tex/ch12_factor.tex) | [📄 PDF](docs/modules/Module_12_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_12.pdf) |
+| 13 | [Control, Error Budgets and Accuracy Standards (incl. ASPRS Edition 2)](tex/ch13_accuracy.tex) | [`ch13_accuracy.tex`](tex/ch13_accuracy.tex) | [📄 PDF](docs/modules/Module_13_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_13.pdf) |
+| 14 | [Error Propagation and Error Budgets](tex/ch13b_errprop.tex) | [`ch13b_errprop.tex`](tex/ch13b_errprop.tex) | [📄 PDF](docs/modules/Module_14_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_14.pdf) |
+| 15 | [Ouster OS0 Case Study: Errors and Resolution](tex/ch13c_os0.tex) | [`ch13c_os0.tex`](tex/ch13c_os0.tex) | [📄 PDF](docs/modules/Module_15_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_15.pdf) |
+| 16 | [Choosing an IMU: AHRS, GNSS/INS and Tactical GNSS/INS](tex/ch13d_gx5.tex) | [`ch13d_gx5.tex`](tex/ch13d_gx5.tex) | [📄 PDF](docs/modules/Module_16_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_16.pdf) |
+| 17 | [Survey-Grade Case Study: RIEGL VUX-240](tex/ch13e_riegl.tex) | [`ch13e_riegl.tex`](tex/ch13e_riegl.tex) | [📄 PDF](docs/modules/Module_17_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_17.pdf) |
+| 18 | [Processing, QA/QC and Deliverables](tex/ch14_processing.tex) | [`ch14_processing.tex`](tex/ch14_processing.tex) | [📄 PDF](docs/modules/Module_18_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_18.pdf) |
+| 19 | [Florida Standards of Practice, FDOT and the New Datums](tex/ch14b_florida.tex) | [`ch14b_florida.tex`](tex/ch14b_florida.tex) | [📄 PDF](docs/modules/Module_19_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_19.pdf) |
+| 20 | [Professional Practice for LiDAR Surveys](tex/ch14c_practice.tex) | [`ch14c_practice.tex`](tex/ch14c_practice.tex) | [📄 PDF](docs/modules/Module_20_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_20.pdf) |
+| 21 | [Capstone and Sample Project Dataset](tex/ch15_capstone.tex) | [`ch15_capstone.tex`](tex/ch15_capstone.tex) | [📄 PDF](docs/modules/Module_21_R0.pdf) | [🧩 Simple Concept](docs/notes/Simple_Concept_21.pdf) |
 
-Back matter ([`ch16_back.tex`](ch16_back.tex)) includes answers to the in-text exercises, [hands-on labs](ch16b_labs.tex), a [sample SOP and client accuracy agreement](ch16c_sop.tex), an equation summary, a glossary and references. The front matter and "How to Use This Course" are in [`ch00_front.tex`](ch00_front.tex).
+Back matter ([`ch16_back.tex`](tex/ch16_back.tex)) includes answers to the in-text exercises, [hands-on labs](tex/ch16b_labs.tex), a [sample SOP and client accuracy agreement](tex/ch16c_sop.tex), an equation summary, a glossary and references. The front matter and "How to Use This Course" are in [`ch00_front.tex`](tex/ch00_front.tex).
 
 ## Repository layout
 
 | Path | Contents |
 |------|----------|
 | [`docs/`](docs/) | Seminar edition, Reference Book, Projects and seminar slides (PDF), the worked-examples workbook, and the [Supplementary Information](#supplementary-information) documents in [`docs/supplementary/`](docs/supplementary/) (see [Read the course](#read-the-course) and [Download the exercise files](#download-the-exercise-files)) |
-| [`main.tex`](main.tex) | Master document. Build this to produce the Reference Book (R0.1). |
+| [`tex/`](tex/) | LaTeX sources of the Reference Book: the master document, chapters, inserts, quiz questions and sample table |
+| [`tex/main.tex`](tex/main.tex) | Master document. Build this to produce the Reference Book (R0.1). |
 | [`r1/`](r1/) | Builds the Seminar edition (R1) from the R0 chapters, which it only reads ([`r1/build_r1.py`](r1/build_r1.py), checked by [`r1/check_boxes.py`](r1/check_boxes.py)) |
 | [`modules/`](modules/) | Builds one PDF per module from the R0 chapters ([`modules/build_modules.py`](modules/build_modules.py)); the PDFs are in [`docs/modules/`](docs/modules/) |
 | [`notes/`](notes/) | Builds the one-page Simple Concept notes, one per module ([`notes/build_notes.py`](notes/build_notes.py), text and drawings in [`notes/content.py`](notes/content.py)); the PDFs are in [`docs/notes/`](docs/notes/) |
 | [`projects/`](projects/) | Builds the Projects download from the R0 capstone and labs chapters ([`projects/build_projects.py`](projects/build_projects.py)) |
-| `ch*.tex` | Module chapters (linked in the table above) |
-| [`ins_asprs.tex`](ins_asprs.tex), [`ins_pen.tex`](ins_pen.tex), [`ins_rhr.tex`](ins_rhr.tex), [`ins_traj.tex`](ins_traj.tex) | Inserts used within the chapters |
-| [`quiz_items.tex`](quiz_items.tex), [`sample_table.tex`](sample_table.tex) | Quiz questions (no answers) and the sample results table |
+| `tex/ch*.tex` | Module chapters (linked in the table above) |
+| [`tex/ins_asprs.tex`](tex/ins_asprs.tex), [`ins_pen.tex`](tex/ins_pen.tex), [`ins_rhr.tex`](tex/ins_rhr.tex), [`ins_traj.tex`](tex/ins_traj.tex) | Inserts used within the chapters |
+| [`tex/quiz_items.tex`](tex/quiz_items.tex), [`tex/sample_table.tex`](tex/sample_table.tex) | Quiz questions (no answers) and the sample results table |
 | [`figs/`](figs/) | Figures |
 | [`figs/sample_trajectory.csv`](figs/sample_trajectory.csv), [`figs/sample_checkpoints.csv`](figs/sample_checkpoints.csv), [`figs/sample_stats.json`](figs/sample_stats.json) | Sample project dataset used in the capstone |
 | [`scripts/`](scripts/) | Python scripts. Run them from the repository root, for example `python3 scripts/figs1.py`. |
@@ -97,7 +98,7 @@ Requires a LaTeX distribution such as TeX Live, with TikZ. The edition scripts a
 **Reference Book (R0.1)**:
 
 ```bash
-latexmk -pdf main.tex
+cd tex && latexmk -pdf main.tex
 ```
 
 **Seminar edition (R1)**: generates the R1 chapters, checks every kept box and figure against R0, compiles, and writes the compressed `docs/LiDAR_from_the_Ground_Up_R1.pdf`.

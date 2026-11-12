@@ -84,7 +84,7 @@ json.dump(stats, open("figs/sample_stats.json", "w"), indent=1)
 print(stats)
 
 # LaTeX table of checkpoints
-with open("sample_table.tex", "w") as f:
+with open("tex/sample_table.tex", "w") as f:
     for r in rows:
         f.write(f"{r['id']} & {r['station']:.0f} / {r['station']/FT:.0f} & {r['side']} & {r['z_survey']:.3f} / {r['z_survey']/FT:.3f} & "
                 f"{r['dz']:+.1f} / {r['dz']/30.48:+.3f} & {r['dx']:+.1f} & {r['dy']:+.1f}\\\\\n")

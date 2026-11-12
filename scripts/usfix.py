@@ -20,7 +20,7 @@ pairs = {
  'practised':'practiced','analogue':'analog','tyre':'tire','behaviour':'behavior','favour':'favor','grey':'gray',
  'favourite':'favorite','programme':'program','catalogue':'catalog','fibre':'fiber','licence':'license',
 }
-files = glob.glob('ch*.tex')+glob.glob('figs*.py')
+files = glob.glob('tex/ch*.tex')+glob.glob('scripts/figs*.py')
 for f in files:
     s=open(f).read(); o=s
     for a,b in pairs.items():

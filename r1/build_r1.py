@@ -16,7 +16,7 @@ import re
 from pathlib import Path
 
 R1 = Path(__file__).resolve().parent
-R0 = R1.parent
+R0 = R1.parent / "tex"
 
 KEEP_BOXES = "kid|bigidea|tip|warning"
 CHAPTERS = [
@@ -126,7 +126,6 @@ The engineering track --- equations, worked examples, exercises, reference table
 def main_tex():
     src = (R0 / "main.tex").read_text()
     preamble = src[:src.index("\\begin{document}")]
-    preamble = preamble.replace("\\graphicspath{{figs/}}", "\\graphicspath{{../figs/}}")
     preamble = preamble.replace("pdftitle={LiDAR from the Ground Up}",
                                 "pdftitle={LiDAR from the Ground Up: Surveying Concepts Edition (R1)}")
     preamble = preamble.replace("LiDAR from the Ground Up}\n\\fancyhead[R]",

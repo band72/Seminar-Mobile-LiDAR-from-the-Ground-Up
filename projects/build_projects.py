@@ -19,6 +19,8 @@ R0 = HERE.parent
 sys.path.insert(0, str(R0 / "modules"))
 from build_modules import r0_labels  # noqa: E402
 
+TEX = R0 / "tex"
+
 CHAPTERS = ["ch15_capstone", "ch16b_labs"]
 
 FRONT = r"""\frontmatter
@@ -50,9 +52,8 @@ APPENDIX = r"""\appendix
 
 
 def main():
-    src = (R0 / "main.tex").read_text()
+    src = (TEX / "main.tex").read_text()
     preamble = src[:src.index("\\begin{document}")]
-    preamble = preamble.replace("\\graphicspath{{figs/}}", "\\graphicspath{{../figs/}}")
     preamble = preamble.replace("pdftitle={LiDAR from the Ground Up}",
                                 "pdftitle={LiDAR from the Ground Up: Projects (R0)}")
     preamble = preamble.replace("LiDAR from the Ground Up}\n\\fancyhead[R]",
@@ -60,13 +61,13 @@ def main():
     # Labels defined outside these chapters live in the Reference Book: say so after the number.
     own = set()
     for name in CHAPTERS:
-        own |= set(re.findall(r"\\label\{([^}]*)\}", (R0 / f"{name}.tex").read_text()))
+        own |= set(re.findall(r"\\label\{([^}]*)\}", (TEX / f"{name}.tex").read_text()))
     external = "\n".join(re.sub(r"^(\\newlabel\{[^}]*\}\{\{)([^}]*)", r"\1\2 of the Reference Book", line)
                          for label, line in r0_labels().items() if label not in own)
     preamble += "\\makeatletter\\AtBeginDocument{" + external + "}\\makeatother\n"
     body = (FRONT
-            + "\\setcounter{chapter}{20}\n\\input{../ch15_capstone}\n"
-            + APPENDIX + "\\input{../ch16b_labs}\n")
+            + "\\setcounter{chapter}{20}\n\\input{../tex/ch15_capstone}\n"
+            + APPENDIX + "\\input{../tex/ch16b_labs}\n")
     (HERE / "main_projects.tex").write_text(preamble + "\\begin{document}\n" + body + "\\end{document}\n")
     print(f"Wrote {HERE / 'main_projects.tex'}")
 
