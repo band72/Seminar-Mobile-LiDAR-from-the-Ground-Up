@@ -69,6 +69,9 @@ Back matter ([`ch16_back.tex`](tex/ch16_back.tex)) includes answers to the in-te
 
 ## Repository layout
 
+<details>
+<summary>Show the folders and files in this repository</summary>
+
 | Path | Contents |
 |------|----------|
 | [`docs/`](docs/) | Seminar edition, Reference Book, Projects and seminar slides (PDF), the worked-examples workbook, and the [Supplementary Information](#supplementary-information) documents in [`docs/supplementary/`](docs/supplementary/) (see [Read the course](#read-the-course) and [Download the exercise files](#download-the-exercise-files)) |
@@ -90,6 +93,8 @@ Back matter ([`ch16_back.tex`](tex/ch16_back.tex)) includes answers to the in-te
 | [`xl/`](xl/) | Builds the companion Excel workbook of worked examples ([`xl/build.py`](xl/build.py)) |
 | [`review/`](review/) | [`tech_review.py`](review/tech_review.py) recomputes key printed values; results in [`Technical_Review_Log.txt`](review/Technical_Review_Log.txt) |
 | [`LICENSE`](LICENSE), [`LICENSE-CODE`](LICENSE-CODE) | Content license (CC BY-NC-ND 4.0) and code license (MIT) |
+
+</details>
 
 ## Building
 
