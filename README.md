@@ -98,6 +98,9 @@ Back matter ([`ch16_back.tex`](tex/ch16_back.tex)) includes answers to the in-te
 
 ## Building
 
+<details>
+<summary>Show how to build the PDFs, figures, workbook and technical review</summary>
+
 Requires a LaTeX distribution such as TeX Live, with TikZ. The edition scripts also need Python 3 and Ghostscript (`gs`) for compression.
 
 **Reference Book (R0.1)**:
@@ -149,6 +152,8 @@ cd xl && python3 build.py
 ```bash
 python3 review/tech_review.py
 ```
+
+</details>
 
 ## Assessment materials
 
