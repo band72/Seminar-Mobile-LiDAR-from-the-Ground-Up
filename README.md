@@ -71,7 +71,7 @@ Back matter ([`ch16_back.tex`](ch16_back.tex)) includes answers to the in-text e
 
 | Path | Contents |
 |------|----------|
-| [`docs/`](docs/) | Seminar edition, Reference Book, Projects and seminar slides (PDF) and the worked-examples workbook (see [Read the course](#read-the-course) and [Download the exercise files](#download-the-exercise-files)) |
+| [`docs/`](docs/) | Seminar edition, Reference Book, Projects and seminar slides (PDF), the worked-examples workbook, and the [Supplementary Information](#supplementary-information) documents in [`docs/supplementary/`](docs/supplementary/) (see [Read the course](#read-the-course) and [Download the exercise files](#download-the-exercise-files)) |
 | [`main.tex`](main.tex) | Master document. Build this to produce the Reference Book (R0.1). |
 | [`r1/`](r1/) | Builds the Seminar edition (R1) from the R0 chapters, which it only reads ([`r1/build_r1.py`](r1/build_r1.py), checked by [`r1/check_boxes.py`](r1/check_boxes.py)) |
 | [`modules/`](modules/) | Builds one PDF per module from the R0 chapters ([`modules/build_modules.py`](modules/build_modules.py)); the PDFs are in [`docs/modules/`](docs/modules/) |
@@ -152,6 +152,34 @@ The quiz answer key and the final-exam builder are not published here. Instructo
 This course is maintained as a living document and will be refined at regular intervals as standards and technology change. A project-based companion with worked, real-world examples is in development to clarify and standardize LiDAR deliverables.
 
 Each revision is published as a [GitHub Release](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/releases) with a summary of what changed. Questions, corrections and project ideas for the companion are welcome in [Discussions](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/discussions).
+
+## Supplementary Information
+
+Reference documents for planning, scoping and testing mobile LiDAR surveys in Florida.
+
+### Florida agency standards and guidelines
+
+| Document | Description | |
+|----------|-------------|---|
+| 📘 [**FDOT Surveying and Mapping Handbook**](docs/supplementary/01_FDOT_Surveying_and_Mapping_Handbook_2025-02-28.pdf) (PDF, 146 pages) | Current edition (February 28, 2025). Sections 35–40 and Appendix C cover Terrestrial Mobile LiDAR (Module 19) | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/supplementary/01_FDOT_Surveying_and_Mapping_Handbook_2025-02-28.pdf) |
+| 📝 [**Handbook summary of changes**](docs/supplementary/02_FDOT_Handbook_Summary_of_Changes_2025-02-28.pdf) (PDF, 16 pages) | What changed in the February 2025 Handbook | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/supplementary/02_FDOT_Handbook_Summary_of_Changes_2025-02-28.pdf) |
+| 📄 [**FDOT Procedure 550-030-101, Surveying and Mapping**](docs/supplementary/03_FDOT_Surveying_and_Mapping_Procedure_550-030-101.pdf) (PDF, 6 pages) | The FDOT procedure that the Handbook supplements (effective May 14, 2019) | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/supplementary/03_FDOT_Surveying_and_Mapping_Procedure_550-030-101.pdf) |
+| 📄 [**FDOT Terrestrial Mobile LiDAR general scope**](docs/supplementary/04_FDOT_Terrestrial_Mobile_Lidar_General_Scope_Guidelines_2014.pdf) (PDF, 2 pages) | Activity 30 scope language for Terrestrial Mobile LiDAR (2014) | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/supplementary/04_FDOT_Terrestrial_Mobile_Lidar_General_Scope_Guidelines_2014.pdf) |
+| 📊 [**FDOT Terrestrial Mobile LiDAR staff-hour guidelines**](docs/supplementary/05_FDOT_Terrestrial_Mobile_Lidar_Staff_Hour_Guidelines_2015.xlsx) (Excel) | Task-by-task staff-hour estimating guide for Activity 30 (2015) | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/supplementary/05_FDOT_Terrestrial_Mobile_Lidar_Staff_Hour_Guidelines_2015.xlsx) |
+| 📄 [**FDOT Digital Corridor Strategic Framework Plan**](docs/supplementary/06_FDOT_Digital_Corridor_Strategic_Framework_Plan_2023.pdf) (PDF, 59 pages) | Technology review prepared for the FDOT Surveying and Mapping Office (June 30, 2023) | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/supplementary/06_FDOT_Digital_Corridor_Strategic_Framework_Plan_2023.pdf) |
+| 📄 [**Florida's Turnpike Enterprise scope of services**](docs/supplementary/07_FTE_Surveying_and_Mapping_Scope_of_Services_2022.pdf) (PDF, 65 pages) | Exhibit A for the surveying and mapping continuing services contract, including Activity 30 Terrestrial Mobile LiDAR (September 30, 2022) | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/supplementary/07_FTE_Surveying_and_Mapping_Scope_of_Services_2022.pdf) |
+| 📄 [**Monroe County mobile LiDAR accuracy assessment**](docs/supplementary/08_Monroe_County_Mobile_Lidar_Accuracy_Assessment_2019.pdf) (PDF, 7 pages) | Technical memorandum on the vertical accuracy of mobile LiDAR road elevations and finished-floor elevations (2019) | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/supplementary/08_Monroe_County_Mobile_Lidar_Accuracy_Assessment_2019.pdf) |
+
+Documents 01–08 are published by FDOT, Florida's Turnpike Enterprise and Monroe County. They are copied here for convenience, are not covered by this repository's license, and may have been superseded: always check the publisher for the current edition.
+
+### Course companion documents
+
+| Document | Description | |
+|----------|-------------|---|
+| 📄 [**Mobile LiDAR accuracy testing SOP**](docs/supplementary/09_Mobile_Lidar_Accuracy_Testing_SOP.pdf) (PDF, 8 pages) | Step-by-step independent checkpoint test: at least 30 checkpoints, RMSE computation and reporting | [⬇ PDF](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/supplementary/09_Mobile_Lidar_Accuracy_Testing_SOP.pdf) · [⬇ Word](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/supplementary/09_Mobile_Lidar_Accuracy_Testing_SOP.docx) |
+| 📄 [**Florida mobile LiDAR projects, Nov 2023 – Nov 2026**](docs/supplementary/10_Florida_Mobile_Lidar_Projects_2023-2026.pdf) (PDF, 9 pages) | Survey of about 15 Florida mobile LiDAR efforts and what public accuracy documentation exists for each | [⬇ PDF](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/supplementary/10_Florida_Mobile_Lidar_Projects_2023-2026.pdf) · [⬇ Word](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/supplementary/10_Florida_Mobile_Lidar_Projects_2023-2026.docx) |
+| 📄 [**How to read mobile laser scanner accuracy specifications**](docs/supplementary/11_How_to_Read_Mobile_Laser_Scanner_Accuracy_Specifications.pdf) (PDF, 11 pages) | What a scanner datasheet does and does not tell you about delivered accuracy | [⬇ PDF](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/supplementary/11_How_to_Read_Mobile_Laser_Scanner_Accuracy_Specifications.pdf) · [⬇ Word](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/supplementary/11_How_to_Read_Mobile_Laser_Scanner_Accuracy_Specifications.docx) |
+| 📊 [**Mobile LiDAR accuracy workbook**](docs/supplementary/12_Mobile_Lidar_Accuracy_Workbook.xlsx) (Excel, 6 sheets) | FDOT limits converted to ASPRS RMSE, scanner comparisons, a checkpoint test, and three worked examples (raw vs. adjusted, control adjustment, GNSS outage) | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/supplementary/12_Mobile_Lidar_Accuracy_Workbook.xlsx) |
 
 ## Tools
 
