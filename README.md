@@ -82,9 +82,10 @@ Back matter ([`ch16_back.tex`](ch16_back.tex)) includes answers to the in-text e
 | [`quiz_items.tex`](quiz_items.tex), [`sample_table.tex`](sample_table.tex) | Quiz questions (no answers) and the sample results table |
 | [`figs/`](figs/) | Figures |
 | [`figs/sample_trajectory.csv`](figs/sample_trajectory.csv), [`figs/sample_checkpoints.csv`](figs/sample_checkpoints.csv), [`figs/sample_stats.json`](figs/sample_stats.json) | Sample project dataset used in the capstone |
-| [`style.py`](style.py), `figs1.py` … `figs9.py`, [`crop.py`](crop.py) | Scripts that generate the figures |
-| [`calc.py`](calc.py), [`calc2.py`](calc2.py), [`calc3.py`](calc3.py), [`calc_ep.py`](calc_ep.py), [`calc_ep2.py`](calc_ep2.py), [`calc_riegl.py`](calc_riegl.py), [`calc_trav.py`](calc_trav.py) | Scripts behind the worked examples' numbers |
-| [`usfix.py`](usfix.py) | Converts British spellings to US spellings in the chapter files |
+| [`scripts/`](scripts/) | Python scripts. Run them from the repository root, for example `python3 scripts/figs1.py`. |
+| [`scripts/style.py`](scripts/style.py), `scripts/figs1.py` … `scripts/figs9.py`, [`scripts/crop.py`](scripts/crop.py) | Scripts that generate the figures |
+| [`scripts/calc.py`](scripts/calc.py), [`calc2.py`](scripts/calc2.py), [`calc3.py`](scripts/calc3.py), [`calc_ep.py`](scripts/calc_ep.py), [`calc_ep2.py`](scripts/calc_ep2.py), [`calc_riegl.py`](scripts/calc_riegl.py), [`calc_trav.py`](scripts/calc_trav.py) | Scripts behind the worked examples' numbers |
+| [`scripts/usfix.py`](scripts/usfix.py) | Converts British spellings to US spellings in the chapter files |
 | [`xl/`](xl/) | Builds the companion Excel workbook of worked examples ([`xl/build.py`](xl/build.py)) |
 | [`review/`](review/) | [`tech_review.py`](review/tech_review.py) recomputes key printed values; results in [`Technical_Review_Log.txt`](review/Technical_Review_Log.txt) |
 | [`LICENSE`](LICENSE), [`LICENSE-CODE`](LICENSE-CODE) | Content license (CC BY-NC-ND 4.0) and code license (MIT) |
@@ -126,10 +127,10 @@ projects/make_pdf.sh
 **Figures**: requires Python 3 with `matplotlib`, `numpy` and `Pillow`.
 
 ```bash
-python3 figs1.py
+python3 scripts/figs1.py
 ```
 
-(Repeat for `figs2.py` … `figs9.py`.)
+(Repeat for `scripts/figs2.py` … `scripts/figs9.py`. Run `scripts/calc_ep2.py` before `scripts/figs4.py`, which reads its Monte Carlo output.)
 
 **Worked-examples workbook**: a ready-made copy is in [`docs/`](docs/LiDAR_Worked_Examples.xlsx). To rebuild it, install `openpyxl`; the script writes `xl/LiDAR_Worked_Examples.xlsx`.
 
