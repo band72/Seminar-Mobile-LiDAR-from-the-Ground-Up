@@ -234,6 +234,8 @@ An interactive, eight-step animation of how SLAM works: look, roll and guess, ma
 
 ▶ **[Learn LiDAR with Robotics](https://www.theconstruct.ai/)** (omitted from the seminar)
 
+▶ **[Photogrammetry & Robotics Bonn](https://github.com/PRBonn)**
+
 ## To-do
 
 - [x] Independent review of the Florida standards module by a second PSM
