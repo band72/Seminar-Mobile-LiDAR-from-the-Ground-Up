@@ -32,7 +32,7 @@ The advanced seminar. It covers what Seminar 1 leaves out: the engineering track
 | 🖥️ [**Seminar 2 slides** (PDF, 64 slides)](docs/Seminar_2_Slides.pdf) | The same slides full screen, for presenting | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/Seminar_2_Slides.pdf) |
 | 📐 [**Seminar 2 design**](docs/seminars/Seminar_2_Advanced_Design.md) | Six-hour agenda in six sessions: the single measurement in numbers; pose, IMU and calibration math; estimation (Kalman filter, ICP, factor graphs); error propagation and budgets; hardware in numbers; the ASPRS and FDOT standards in numbers. With learning objectives, in-seminar labs, materials and the assessment plan | [Open](docs/seminars/Seminar_2_Advanced_Design.md) |
 
-Seminar 2 uses the Reference Book, the worked-examples workbook and the Supplementary Information. Its problem set and answer key are not built yet.
+Seminar 2 uses the Reference Book, the worked-examples workbook and the Supplementary Information. Its 20-problem set and answer key are held with the instructor materials.
 
 ### Seminar 3: Mobile LiDAR Projects (in development)
 
@@ -186,7 +186,7 @@ python3 review/tech_review.py
 
 ## Assessment materials
 
-The quiz answer key and the final-exam builder are not published here. Instructors can request them from the author.
+The quiz answer key, the final-exam builder, and the Seminar 2 problem set with its answer key are not published here. Instructors can request them from the author.
 
 ## Updates
 
@@ -276,7 +276,7 @@ An interactive, eight-step animation of how SLAM works: look, roll and guess, ma
 - [x] Update the book's agenda to match the slide deck (SLAM as the 70-minute core block)
 - [ ] Replace the simulated capstone dataset with a real, de-identified project
 - [ ] Release the project-based companion with real-world LiDAR deliverable examples
-- [ ] Seminar 2: build the problem set and answer key
+- [x] Seminar 2 problem set and answer key (held with the instructor materials)
 - [x] Seminar 2 slide deck with speaker notes
 - [ ] Seminar 3: add real, de-identified project data to the five projects
 - [x] Re-check the NSRS modernization timeline before each offering

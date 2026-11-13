@@ -22,3 +22,4 @@ modules/build/
 notes/build/
 tex/main.pdf
 slides/build/
+problems_S2.py

@@ -2,7 +2,7 @@
 
 *LiDAR from the Ground Up, D.S. Banks, PSM. Design draft, November 2026.*
 
-**Status: slides built.** The course text, workbook, supplementary documents and the slide deck exist. The problem set is not built yet (see [What still has to be built](#what-still-has-to-be-built)).
+**Status: ready to teach.** The course text, workbook, supplementary documents, slide deck, problem set and answer key exist. Two optional items remain (see [What still has to be built](#what-still-has-to-be-built)).
 
 ## Purpose
 
@@ -85,11 +85,11 @@ Session 3 is the core block, as in Seminar 1. Session 6 is the one most particip
 
 ## Assessment
 
-A worked problem set, open book, with a calculator and the workbook allowed. Proposed: 20 problems, at least two from each session, 70% to pass. Each problem asks for a number and a one-line conclusion ("meets Type B", "outage too long for this IMU"), so the grade tests judgment as well as arithmetic.
+A worked problem set, open book, with a calculator and the workbook allowed: 20 problems, at least three from each session, 70% to pass (14 of 20). Each problem asks for a number and a one-line conclusion ("meets Type B", "outage too long for this IMU"), so the grade tests judgment as well as arithmetic.
 
 ## What still has to be built
 
 - [x] Slide deck with speaker notes for the six sessions: 64 slides (`docs/Seminar_2_Slides.pdf`, `docs/Seminar_2_Slides_with_Notes.pdf`)
-- [ ] Problem set (20 problems) and instructor answer key
+- [x] Problem set (20 problems) and instructor answer key: held with the instructor materials, not published
 - [ ] Participant handout: the equation summary and the FDOT/ASPRS conversion table on one sheet
 - [ ] Optional: an Advanced edition PDF generated from the Reference Book, holding only the engineering-track boxes, as the counterpart of the Seminar 1 edition
