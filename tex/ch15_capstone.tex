@@ -168,6 +168,20 @@ Signature and seal & PSM in responsible charge; digital deliverables sealed by s
 \end{tabularx}
 \end{tcolorbox}
 
+\subsection*{How the sample compares with FDOT mobile LiDAR types}
+The report above passes the ASPRS classes agreed with the client. Resurfacing design is Type A work on an FDOT project, so the same results are converted to FDOT's 95\% tolerances (Module 13, Module 19):
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{>{\bfseries}p{3.0cm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X}\toprule
+Item & This sample & Type A & Type B\\\midrule
+Vertical at 95\% & $1.96\times2.06=4.04$ cm (0.132 ft) & $\le$ 0.06 ft --- \textbf{fails} & $\le$ 0.10 ft --- \textbf{fails}\\
+Horizontal at 95\% & $1.7308\times2.82=4.88$ cm (0.160 ft) & $\le$ 0.06 ft --- \textbf{fails} & $\le$ 0.10 ft --- \textbf{fails}\\
+Point density & 58 points/ft$^2$ & $\ge$ 20 --- meets & $\ge$ 10 --- meets\\
+Checkpoints & 30, about 220 ft apart & $\ge$ 20, $\le$ 1000 ft --- meets & $\ge$ 20, $\le$ 2500 ft --- meets\\
+GNSS & 300 m outage (about 85\% of each pass fixed), bridged by SLAM and a control target & document against Note 4 & document against Note 4\\\bottomrule
+\end{tabularx}\end{center}
+The survey meets its ASPRS agreement but would meet \emph{neither} FDOT Type A nor Type B. Reaching Type A means roughly halving the RMSE, to 0.93 cm vertical and 1.06 cm horizontal: shorter ranges, slower passes, more control and checkpoints, a better IMU through the underpass, or collecting when the outage can be avoided. Settle which standard governs before mobilization (Appendix E), not after the test.
+
 \section{One pulse, one more time: the master checklist}
 \begin{center}\small
 \renewcommand{\arraystretch}{1.25}

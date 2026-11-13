@@ -70,6 +70,18 @@ $\text{RMSE}_H$ & horizontal (radial) RMSE & m\\
 The seminar's error-budget slide used ``5 cm horizontal at 95\% confidence.'' Under ASPRS Edition 2 the same requirement would be written as an RMSE. If a specification still quotes a 95\% value, convert carefully: for vertical, $\text{RMSE}_z=\text{Acc}_{95}/1.96$; for horizontal, $\text{RMSE}_H=\text{Acc}_{95}/1.7308$ (valid when $\text{RMSE}_x\approx\text{RMSE}_y$), so 5 cm at 95\% horizontal $\approx$ 2.9 cm $\text{RMSE}_H$ --- a much tighter target than ``5 cm'' sounds, and one the budget below (4.2 cm, 1$\sigma$ per component) would \emph{not} meet. Units and confidence levels must be settled before the budget is written.
 \end{improve}
 
+\subsection*{ASPRS RMSE and FDOT mobile LiDAR tolerances}
+FDOT states its Terrestrial Mobile LiDAR (TML) tolerances at the 95\% confidence level under NSSDA, tested on at least 20 checkpoints (Handbook Sections 39.6.2 and 39.7). ASPRS Edition 2 reports RMSE from at least 30. Dividing by the NSSDA factors gives the RMSE each FDOT type demands:
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{>{\bfseries}lXXX}\toprule
+FDOT type & 95\% tolerance (H and V) & RMSE$_V$ needed ($\div1.96$) & RMSE$_H$ needed ($\div1.7308$)\\\midrule
+A & 0.06 ft (1.83 cm) & 0.031 ft (0.93 cm) & 0.035 ft (1.06 cm)\\
+B & 0.10 ft (3.05 cm) & 0.051 ft (1.56 cm) & 0.058 ft (1.76 cm)\\
+C & set by the PSM and the scope & --- & ---\\\bottomrule
+\end{tabularx}\end{center}
+A project can pass an ASPRS accuracy class and still fail an FDOT type: the Module 21 sample does exactly that. Agree in writing which standard governs, and use 30 checkpoints so one test satisfies both.
+
 \section{ASPRS lidar data standards in detail}
 Two ASPRS documents govern almost every LiDAR deliverable in the United States: the \textbf{Positional Accuracy Standards for Digital Geospatial Data} (Edition 2, Version 2, 2024), which say how accurate the data are and how that is proven, and the \textbf{LAS Specification} (version 1.4), which says how the points are stored and labeled. Client specifications --- FDOT, USGS and others --- build on both.
 

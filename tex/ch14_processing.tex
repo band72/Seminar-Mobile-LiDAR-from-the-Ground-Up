@@ -8,7 +8,7 @@
 \begin{tabularx}{\linewidth}{>{\bfseries}lX}\toprule
 Step & What happens \\\midrule
 1 Ingest & copy raw LiDAR, IMU, GNSS, camera and field logs; verify time bases and the calibration file\\
-2 Trajectory & GNSS/INS post-processing (PPK) and/or SLAM with loop closures; inspect the trajectory's standard deviations\\
+2 Trajectory & GNSS/INS post-processing (PPK) and/or SLAM with loop closures; inspect the trajectory's standard deviations; report the percentage of the trajectory with a fixed GNSS solution and the length of every outage (on FDOT work an outage must not exceed what the IMU can bridge, Handbook Section 39.6.2, Note 4)\\
 3 Georeference & apply lever arm, boresight, de-skew; generate the point cloud (Module 9)\\
 4 Clean & remove noise, outliers and moving objects\\
 5 Adjust & introduce control; strip-to-strip alignment if needed\\
