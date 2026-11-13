@@ -2,7 +2,7 @@
 
 *LiDAR from the Ground Up, D.S. Banks, PSM. Design draft, November 2026.*
 
-**Status: design.** The course text, workbook and supplementary documents this seminar uses already exist. The slides and the problem set are not built yet (see [What still has to be built](#what-still-has-to-be-built)).
+**Status: slides built.** The course text, workbook, supplementary documents and the slide deck exist. The problem set is not built yet (see [What still has to be built](#what-still-has-to-be-built)).
 
 ## Purpose
 
@@ -73,6 +73,7 @@ Session 3 is the core block, as in Seminar 1. Session 6 is the one most particip
 
 | Material | Where |
 |----------|-------|
+| Slides, with and without speaker notes | `docs/Seminar_2_Slides_with_Notes.pdf`, `docs/Seminar_2_Slides.pdf` |
 | Reference Book (R0.1) | `docs/LiDAR_from_the_Ground_Up_R0.pdf` |
 | Module PDFs | `docs/modules/` |
 | Worked-examples workbook | `docs/LiDAR_Worked_Examples.xlsx` |
@@ -88,7 +89,7 @@ A worked problem set, open book, with a calculator and the workbook allowed. Pro
 
 ## What still has to be built
 
-- [ ] Slide deck with speaker notes for the six sessions
+- [x] Slide deck with speaker notes for the six sessions: 64 slides (`docs/Seminar_2_Slides.pdf`, `docs/Seminar_2_Slides_with_Notes.pdf`)
 - [ ] Problem set (20 problems) and instructor answer key
 - [ ] Participant handout: the equation summary and the FDOT/ASPRS conversion table on one sheet
 - [ ] Optional: an Advanced edition PDF generated from the Reference Book, holding only the engineering-track boxes, as the counterpart of the Seminar 1 edition

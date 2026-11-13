@@ -22,15 +22,17 @@ The course is taught as three seminars, backed by the Reference Book.
 | 🎓 [**Seminar edition** (PDF, 71 pages)](docs/LiDAR_from_the_Ground_Up_R1.pdf) | The Surveying Concepts edition used in the seminar: all 21 modules in plain language, with every Simple Approach, Big Idea, Field Tip and Warning box and the illustrations | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/LiDAR_from_the_Ground_Up_R1.pdf) |
 | 🎤 [**Seminar slides with speaker notes** (PDF, 76 pages)](docs/Seminar_Slides_with_Notes_R0.pdf) | The six-hour seminar presentation, with the presenter's notes for each slide | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/Seminar_Slides_with_Notes_R0.pdf) |
 
-### Seminar 2: Engineering, Error Budgets and Standards in Numbers (design)
+### Seminar 2: Engineering, Error Budgets and Standards in Numbers
 
 The advanced seminar. It covers what Seminar 1 leaves out: the engineering track of the Reference Book, with calculations on every topic.
 
-| Document | Description |
-|----------|-------------|
-| 📐 [**Seminar 2 design**](docs/seminars/Seminar_2_Advanced_Design.md) | Six-hour agenda in six sessions: the single measurement in numbers; pose, IMU and calibration math; estimation (Kalman filter, ICP, factor graphs); error propagation and budgets; hardware in numbers; the ASPRS and FDOT standards in numbers. With learning objectives, in-seminar labs, materials and the assessment plan |
+| Document | Description | |
+|----------|-------------|---|
+| 🎤 [**Seminar 2 slides with speaker notes** (PDF, 64 pages)](docs/Seminar_2_Slides_with_Notes.pdf) | The six-hour advanced presentation, with the presenter's notes for each slide | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/Seminar_2_Slides_with_Notes.pdf) |
+| 🖥️ [**Seminar 2 slides** (PDF, 64 slides)](docs/Seminar_2_Slides.pdf) | The same slides full screen, for presenting | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/Seminar_2_Slides.pdf) |
+| 📐 [**Seminar 2 design**](docs/seminars/Seminar_2_Advanced_Design.md) | Six-hour agenda in six sessions: the single measurement in numbers; pose, IMU and calibration math; estimation (Kalman filter, ICP, factor graphs); error propagation and budgets; hardware in numbers; the ASPRS and FDOT standards in numbers. With learning objectives, in-seminar labs, materials and the assessment plan | [Open](docs/seminars/Seminar_2_Advanced_Design.md) |
 
-Seminar 2 uses the Reference Book, the worked-examples workbook and the Supplementary Information. Its slides and problem set are not built yet.
+Seminar 2 uses the Reference Book, the worked-examples workbook and the Supplementary Information. Its problem set and answer key are not built yet.
 
 ### Seminar 3: Mobile LiDAR Projects (in development)
 
@@ -100,6 +102,7 @@ Back matter ([`ch16_back.tex`](tex/ch16_back.tex)) includes answers to the in-te
 | [`r1/`](r1/) | Builds the Seminar edition (R1) from the R0 chapters, which it only reads ([`r1/build_r1.py`](r1/build_r1.py), checked by [`r1/check_boxes.py`](r1/check_boxes.py)) |
 | [`modules/`](modules/) | Builds one PDF per module from the R0 chapters ([`modules/build_modules.py`](modules/build_modules.py)); the PDFs are in [`docs/modules/`](docs/modules/) |
 | [`notes/`](notes/) | Builds the one-page Simple Concept notes, one per module ([`notes/build_notes.py`](notes/build_notes.py), text and drawings in [`notes/content.py`](notes/content.py)); the PDFs are in [`docs/notes/`](docs/notes/) |
+| [`slides/`](slides/) | Builds the Seminar 2 slide deck and its speaker-notes pages ([`slides/build_slides.py`](slides/build_slides.py), content in [`slides/seminar2.py`](slides/seminar2.py)) |
 | [`projects/`](projects/) | Builds the Projects download from the R0 capstone and labs chapters ([`projects/build_projects.py`](projects/build_projects.py)) |
 | `tex/ch*.tex` | Module chapters (linked in the table above) |
 | [`tex/ins_asprs.tex`](tex/ins_asprs.tex), [`ins_pen.tex`](tex/ins_pen.tex), [`ins_rhr.tex`](tex/ins_rhr.tex), [`ins_traj.tex`](tex/ins_traj.tex) | Inserts used within the chapters |
@@ -145,6 +148,12 @@ python3 modules/build_modules.py
 
 ```bash
 python3 notes/build_notes.py
+```
+
+**Seminar 2 slides**: writes `docs/Seminar_2_Slides.pdf` and `docs/Seminar_2_Slides_with_Notes.pdf`.
+
+```bash
+python3 slides/build_slides.py seminar2 Seminar_2_Slides
 ```
 
 **Projects**: writes the compressed `docs/LiDAR_Projects_R0.pdf`.
@@ -267,7 +276,8 @@ An interactive, eight-step animation of how SLAM works: look, roll and guess, ma
 - [x] Update the book's agenda to match the slide deck (SLAM as the 70-minute core block)
 - [ ] Replace the simulated capstone dataset with a real, de-identified project
 - [ ] Release the project-based companion with real-world LiDAR deliverable examples
-- [ ] Seminar 2: build the slide deck, problem set and answer key
+- [ ] Seminar 2: build the problem set and answer key
+- [x] Seminar 2 slide deck with speaker notes
 - [ ] Seminar 3: add real, de-identified project data to the five projects
 - [x] Re-check the NSRS modernization timeline before each offering
 - [x] Conceptualize each breakout topic with 5 minute summary
