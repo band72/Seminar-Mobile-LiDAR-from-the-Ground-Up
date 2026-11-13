@@ -67,6 +67,43 @@ Accuracy is tested under NSSDA at the 95% confidence level on at least 20 checkp
 
 Use 300 ft as the default and allow 500 ft only where the trajectory report shows a clean fixed solution. Place checkpoints midway between control points: if the midpoint residuals are clearly larger than those near control, the spacing is too wide for that stretch. On a 2 km corridor with pairs on both sides, 300 ft spacing means about 44 control points against about 14 at 1000 ft, each needing leveling-grade elevations. That cost is why Type A should be reserved for design-grade work.
 
+**Scans between control points.** Distance in feet is a stand-in. What accumulates between control points is uncertainty, and both the number of scans and the conditions feed it. At a 10 Hz scanner rate:
+
+| Speed | 300 ft spacing | 1000 ft spacing |
+|-------|----------------|-----------------|
+| 13 m/s (29 mph) | about 70 scans, 7 s | about 235 scans, 23 s |
+| 5 m/s (11 mph) | about 180 scans, 18 s | about 610 scans, 61 s |
+
+Slowing down gives more scans and better overlap, but also more time between control points, and IMU drift grows with time, not distance. Slower is not automatically better where GNSS is weak.
+
+Each scan's pose is tied to the world by GNSS and to its neighbors by the IMU and by scan matching, each with its own weight. Between two control points the scans behave like the legs of a traverse: small independent errors per scan accumulate with the square root of the number of scans, and the uncertainty peaks midway. Assuming 1 mm of relative error per scan for illustration:
+
+| Scans between control | Peak uncertainty at the midpoint |
+|-----------------------|----------------------------------|
+| 70 | about 4 mm |
+| 235 | about 8 mm |
+
+Against the roughly 6 mm available for Type A, 70 scans fits and 235 does not. A systematic error per scan, such as a small boresight or scale error, is worse: it grows in direct proportion to the scan count.
+
+Each condition weakens a different weight:
+
+| Condition | What weakens | Effect on each scan |
+|-----------|--------------|---------------------|
+| Canopy, buildings | GNSS: float solutions, multipath or no fix | the pose leans on the IMU and scan matching, and errors start to accumulate |
+| Speed | scan matching: less overlap, more motion distortion | weaker tie between scans, though less time for drift |
+| Moments (turns, bumps, braking) | IMU and de-skewing: high rotation rates magnify timing and calibration errors | individual scans get noticeably worse |
+| Featureless scene (open field, plain wall) | scan matching: nothing to grip in one direction | the chain is loose along that direction |
+
+With good GNSS every scan is tied to the world directly and the scan count hardly matters. When GNSS weakens, the chain of scans carries the solution, and both the number of links and the quality of each one count.
+
+**Recommendation:** budget uncertainty, not feet.
+
+1. Use the trajectory's estimated standard deviation, reported by the processing software along the route, and place control so it stays inside the tolerance everywhere. That puts more control under canopy, through turns and in outages.
+2. Do not trust the weights blindly. The reported uncertainty is only as good as the software's noise models and is often optimistic. Midpoint checkpoints in the weakest stretches are the proof.
+3. Collect each stretch twice, in opposite directions. Direction-dependent errors partly cancel, and the disagreement between passes shows where the chain is weak.
+
+The 1 mm per scan figure is an assumption for illustration. The real value depends on the scanner, the scene and the software.
+
 ### 6. Point density is a count, not a guarantee
 
 - The standard does not say where to measure density: at what range, or on what surface.
@@ -162,6 +199,7 @@ As random errors shrink, what remains is increasingly systematic: calibration, c
 | Swath-to-swath | 20% overlap | numeric limit, tested on every project |
 | GNSS outages | within IMU capability | predicted drift within tolerance; control and checkpoint in every outage; fixed % and outages reported |
 | Control spacing, Type A | 1000 ft (recommended) | 500 ft in open sky, 300 ft where GNSS is weak, 150–300 ft in outages |
+| Control placement | by distance | by trajectory uncertainty: more control under canopy, through turns and in outages; each stretch collected in both directions |
 | IMU and mounting | manufacturer's specifications | stated IMU grade; one stiff plate; 200 Hz or faster; lever arms to a few millimeters |
 
 ## Sources
