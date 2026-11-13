@@ -173,13 +173,15 @@ Reference documents for planning, scoping and testing mobile LiDAR surveys in Fl
 
 **FDOT Terrestrial Mobile LiDAR survey types** (FDOT Surveying and Mapping Handbook, February 28, 2025, Section 39.6.2)
 
-| Type | Accuracy (95% confidence) | Control and checkpoint layout (recommended) |
-|------|---------------------------|---------------------------------------------|
-| A | H and V ≤ 0.06 ft; ≥ 20 points/ft² | control pairs ≤ 1000 ft apart, on each side of the road; checkpoints ≤ 1000 ft apart |
-| B | H and V ≤ 0.10 ft; ≥ 10 points/ft² | control pairs ≤ 1500 ft apart, on each side of the road; checkpoints 1000–2500 ft apart |
-| C | set by the PSM in responsible charge and the scope of services | chosen by the PSM; published control may be used with Department approval |
+| Type | Accuracy (95% confidence) | Control and checkpoint layout (recommended) | GNSS fixed (course target) |
+|------|---------------------------|---------------------------------------------|----------------------------|
+| A | H and V ≤ 0.06 ft; ≥ 20 points/ft² | control pairs ≤ 1000 ft apart, on each side of the road; checkpoints ≤ 1000 ft apart | 100% |
+| B | H and V ≤ 0.10 ft; ≥ 10 points/ft² | control pairs ≤ 1500 ft apart, on each side of the road; checkpoints 1000–2500 ft apart | 100% |
+| C | set by the PSM in responsible charge and the scope of services | chosen by the PSM; published control may be used with Department approval | per scope |
 
 Spacing values are recommendations; the PSM in responsible charge sets the final layout. Confirm the Handbook edition named in your contract.
+
+The GNSS column is this course's planning target, not an FDOT requirement. The Handbook (Section 39.6.2, Note 4) allows stretches with fewer than 5 satellites in view only for as long as the IMU can bridge them, so any outage must be short, bridged by the IMU and SLAM, and covered by control and checkpoints (as in the Module 21 sample project).
 
 | Document | Description | |
 |----------|-------------|---|
