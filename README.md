@@ -171,6 +171,16 @@ Reference documents for planning, scoping and testing mobile LiDAR surveys in Fl
 
 ### Florida agency standards and guidelines
 
+**FDOT Terrestrial Mobile LiDAR survey types** (FDOT Surveying and Mapping Handbook, February 28, 2025, Section 39.6.2)
+
+| Type | Accuracy (95% confidence) | Control and checkpoint layout (recommended) |
+|------|---------------------------|---------------------------------------------|
+| A | H and V ≤ 0.06 ft; ≥ 20 points/ft² | control pairs ≤ 1000 ft apart, on each side of the road; checkpoints ≤ 1000 ft apart |
+| B | H and V ≤ 0.10 ft; ≥ 10 points/ft² | control pairs ≤ 1500 ft apart, on each side of the road; checkpoints 1000–2500 ft apart |
+| C | set by the PSM in responsible charge and the scope of services | chosen by the PSM; published control may be used with Department approval |
+
+Spacing values are recommendations; the PSM in responsible charge sets the final layout. Confirm the Handbook edition named in your contract.
+
 | Document | Description | |
 |----------|-------------|---|
 | 📘 [**FDOT Surveying and Mapping Handbook**](docs/supplementary/01_FDOT_Surveying_and_Mapping_Handbook_2025-02-28.pdf) (PDF, 146 pages) | Current edition (February 28, 2025). Sections 35–40 and Appendix C cover Terrestrial Mobile LiDAR (Module 19) | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/supplementary/01_FDOT_Surveying_and_Mapping_Handbook_2025-02-28.pdf) |
