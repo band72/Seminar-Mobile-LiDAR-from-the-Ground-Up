@@ -14,7 +14,7 @@ This note reviews the Terrestrial Mobile LiDAR (TML) survey types in the FDOT *S
 
 Accuracy is tested under NSSDA at the 95% confidence level on at least 20 checkpoints.
 
-## Eight problems
+## Nine problems
 
 ### 1. Type A is at the edge of what mobile LiDAR can prove
 
@@ -55,7 +55,17 @@ Accuracy is tested under NSSDA at the 95% confidence level on at least 20 checkp
 - Nothing says to place checkpoints between control points, where error is largest. Checkpoints placed beside control test the cloud at its best spots.
 - Type B's "1000–2500 ft" is a range with no rule for choosing within it.
 
-**Recommendation:** tighten control spacing wherever GNSS is weak, place checkpoints midway between control points, and put a control target and a checkpoint inside every GNSS outage.
+**Why 1000 ft is too wide for Type A.** Type A needs about 9 mm RMSE vertical. Checkpoint error (about 5 mm) and laser range and attitude noise (about 4–5 mm) use part of that, leaving roughly 6 mm for trajectory error between control points. The adjustment pins the cloud only at each control point; in between, the cloud follows the GNSS/IMU trajectory, whose error wanders by a centimeter or more over tens of seconds. At 13 m/s, 1000 ft is about 23 seconds between control points; 300 ft is about 7 seconds, short enough that the error is nearly constant and the adjustment removes it.
+
+**Recommendation:** for Type A, set the maximum control spacing by GNSS conditions:
+
+| Conditions | Maximum control spacing |
+|------------|-------------------------|
+| Open sky, clean fixed solution throughout | 500 ft |
+| Tree canopy, buildings, intermittent fix | 300 ft |
+| GNSS outage (overpass, tunnel) | 150–300 ft, with at least one point inside the outage |
+
+Use 300 ft as the default and allow 500 ft only where the trajectory report shows a clean fixed solution. Place checkpoints midway between control points: if the midpoint residuals are clearly larger than those near control, the spacing is too wide for that stretch. On a 2 km corridor with pairs on both sides, 300 ft spacing means about 44 control points against about 14 at 1000 ft, each needing leveling-grade elevations. That cost is why Type A should be reserved for design-grade work.
 
 ### 6. Point density is a count, not a guarantee
 
@@ -84,6 +94,61 @@ Accuracy is tested under NSSDA at the 95% confidence level on at least 20 checkp
 3. Put a control target inside every outage for Type A and Type B, and a checkpoint inside or immediately beyond it.
 4. Report the percentage of the trajectory with a fixed solution, the length of every outage, and how each was bridged.
 
+### 9. Nothing on IMU grade, vibration or mounting
+
+The Handbook requires an IMU and says only that the manufacturer's specifications must be sufficient (Note 6). Three effects decide whether that is true, and they act on different time scales. Control can remove slow drift. It cannot remove fast vibration.
+
+**IMU drift (slow: seconds to minutes).** The IMU integrates its readings, so sensor biases grow with time: accelerometer bias with time squared, gyro bias with time cubed. For a tactical-grade unit with an assumed 0.1 mg accelerometer bias and 1°/h gyro bias, with no GNSS help:
+
+| Time without correction | Distance at 13 m/s | From accelerometer bias | From gyro bias |
+|-------------------------|--------------------|-------------------------|----------------|
+| 7 s | 300 ft | 2.4 cm | 0.3 cm |
+| 23 s | 1000 ft | 26 cm | 10 cm |
+
+With good GNSS the drift never gets this large. In an outage these numbers apply, reduced by forward and backward processing, with the error peaking mid-outage. Tripling the spacing costs about ten times the drift.
+
+**Vibration (fast: 10–200 Hz from engine, tires and road).**
+
+- *False bias.* MEMS accelerometers turn sustained vibration into a small steady offset (vibration rectification). It looks like sensor bias and feeds the drift above.
+- *Aliasing.* Vibration above half the IMU's sample rate folds down and looks like real, slow motion. A 200 Hz IMU cannot correctly see anything above 100 Hz.
+- *Mount flex.* If the plate between the IMU and scanner bends, the boresight angle jitters. A jitter of 0.01° at 30 m moves a point 5 mm, more than half the Type A budget.
+
+Vibration changes faster than control points are spaced, so it becomes permanent noise in the cloud and leaves less of the budget for drift.
+
+**Moments of inertia (how the rig and vehicle respond).**
+
+- *The sensor mount.* Moment of inertia grows with mass times distance squared. A heavy pod on a tall mast has a low natural rocking frequency, easily excited by bumps and braking, which flexes the mount.
+- *The vehicle.* A heavy vehicle rotates slowly and smoothly. A light platform (ATV, backpack, drone) snaps around quickly, and fast rotation magnifies timing error: 1 ms at 30°/s moves a point at 30 m by about 1.6 cm, against 1.6 mm at 3°/s.
+- *Lever arms.* Rotation turns a lever-arm error into a velocity error. A 1 cm error in the antenna-to-IMU lever arm at 20°/s gives about 3.5 mm/s, which the IMU reads as real motion.
+
+**Recommendation:** for Type A,
+
+1. Mount the IMU and scanner on one stiff plate, as close together as possible. If isolators are used, isolate the plate as a unit, never the IMU and scanner separately.
+2. Keep the rig low and compact. Avoid tall masts.
+3. Sample the IMU at 200 Hz or faster, with filtering before sampling.
+4. Drive smoothly through critical areas: steady speed, no hard braking or sharp turns.
+5. Measure lever arms to a few millimeters.
+6. State the IMU grade in the scope, and use its datasheet biases to predict drift through every outage.
+
+The bias and rate figures here are assumed, representative values. Take the real ones from the IMU's datasheet.
+
+## What limits accuracy: sensors or the surveyor?
+
+SLAM is a probability machine. Every measurement carries an uncertainty, and the solution is the trajectory and map that best fit all of them, each weighted by how far it is trusted. It is the same mathematics as a least-squares network adjustment.
+
+It is tempting to say the result is limited by the worst sensor. That is not quite how fusion works. When two sensors measure the same quantity, proper weighting makes the result better than the best one: fusing a 2 cm sensor with a 5 cm sensor gives about 1.9 cm. The weakest-link idea does hold in four situations, and they are the ones that matter:
+
+- **Each sensor has its own job.** GNSS gives absolute position, the IMU gives short-term motion, and the LiDAR gives relative motion from scan matching. Absolute accuracy is limited by GNSS and control; accuracy through an outage is limited by the IMU and the scene geometry.
+- **The largest error dominates.** Independent errors combine by root-sum-square. Terms of 1, 1 and 3 cm total 3.3 cm, so improving the small ones barely helps.
+- **An overconfident sensor poisons the result.** A wrong GNSS fix that claims 1 cm accuracy drags the whole solution with it. The limit is the worst-modeled sensor, not the noisiest.
+- **Systematic errors do not average out.** Timing offsets, lever arms, boresight and a wrong geoid shift everything together. Fusion cannot see them, because every sensor agrees on the wrong answer.
+
+So accuracy is limited by the largest unmodeled or uncorrected error, wherever it comes from.
+
+Cheaper sensors will shrink random error: MEMS IMUs are approaching tactical grade, several cheap sensors can beat one expensive one, and better algorithms extract more from the same hardware. They will not move the GNSS floor (about 1–2 cm vertical from the atmosphere), remove bias, or supply the reference. Control, checkpoints, calibration, timing and datums come from surveying, not from sensors. So far, falling prices have mostly brought lower-grade automotive sensors, with 1–3 cm range noise and wide beams, into survey use.
+
+As random errors shrink, what remains is increasingly systematic: calibration, control and reference. That is the part the surveyor owns.
+
 ## Summary of recommended practice
 
 | Topic | FDOT minimum | Recommended |
@@ -96,6 +161,8 @@ Accuracy is tested under NSSDA at the 95% confidence level on at least 20 checkp
 | Density check | project average | delivered data, at the farthest design range |
 | Swath-to-swath | 20% overlap | numeric limit, tested on every project |
 | GNSS outages | within IMU capability | predicted drift within tolerance; control and checkpoint in every outage; fixed % and outages reported |
+| Control spacing, Type A | 1000 ft (recommended) | 500 ft in open sky, 300 ft where GNSS is weak, 150–300 ft in outages |
+| IMU and mounting | manufacturer's specifications | stated IMU grade; one stiff plate; 200 Hz or faster; lever arms to a few millimeters |
 
 ## Sources
 
