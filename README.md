@@ -13,14 +13,34 @@ The course was built from an earlier *Mobile LiDAR Basics* seminar, a four-modul
 
 ## Read the course
 
-The course comes in two editions with separate downloads.
+The course is taught as three seminars, backed by the Reference Book.
 
-### Seminar (R1)
+### Seminar 1: Surveying Concepts (R1)
 
 | Document | Description | |
 |----------|-------------|---|
 | 🎓 [**Seminar edition** (PDF, 71 pages)](docs/LiDAR_from_the_Ground_Up_R1.pdf) | The Surveying Concepts edition used in the seminar: all 21 modules in plain language, with every Simple Approach, Big Idea, Field Tip and Warning box and the illustrations | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/LiDAR_from_the_Ground_Up_R1.pdf) |
 | 🎤 [**Seminar slides with speaker notes** (PDF, 76 pages)](docs/Seminar_Slides_with_Notes_R0.pdf) | The six-hour seminar presentation, with the presenter's notes for each slide | [⬇ Download](https://github.com/band72/Seminar-Mobile-LiDAR-from-the-Ground-Up/raw/main/docs/Seminar_Slides_with_Notes_R0.pdf) |
+
+### Seminar 2: Engineering, Error Budgets and Standards in Numbers (design)
+
+The advanced seminar. It covers what Seminar 1 leaves out: the engineering track of the Reference Book, with calculations on every topic.
+
+| Document | Description |
+|----------|-------------|
+| 📐 [**Seminar 2 design**](docs/seminars/Seminar_2_Advanced_Design.md) | Six-hour agenda in six sessions: the single measurement in numbers; pose, IMU and calibration math; estimation (Kalman filter, ICP, factor graphs); error propagation and budgets; hardware in numbers; the ASPRS and FDOT standards in numbers. With learning objectives, in-seminar labs, materials and the assessment plan |
+
+Seminar 2 uses the Reference Book, the worked-examples workbook and the Supplementary Information. Its slides and problem set are not built yet.
+
+### Seminar 3: Mobile LiDAR Projects (in development)
+
+Projects only, with no lectures. Five projects worked from scope to signed deliverable under the ASPRS and FDOT standards.
+
+| Document | Description |
+|----------|-------------|
+| 🛠️ [**Seminar 3 design**](docs/seminars/Seminar_3_Projects_Design.md) | 1. Urban arterial resurfacing design (FDOT Type A) · 2. Rural highway asset inventory and earthwork (Type B) · 3. Interchange with GNSS outages (Type A through an underpass) · 4. County road elevations for flood vulnerability (Type C) · 5. Independent acceptance test of a delivered dataset |
+
+**Seminar 3 is not complete.** It cannot be offered until each project has real, de-identified project data. The design lists the data each project needs.
 
 ### Reference Book (R0.1)
 
@@ -247,6 +267,8 @@ An interactive, eight-step animation of how SLAM works: look, roll and guess, ma
 - [x] Update the book's agenda to match the slide deck (SLAM as the 70-minute core block)
 - [ ] Replace the simulated capstone dataset with a real, de-identified project
 - [ ] Release the project-based companion with real-world LiDAR deliverable examples
+- [ ] Seminar 2: build the slide deck, problem set and answer key
+- [ ] Seminar 3: add real, de-identified project data to the five projects
 - [x] Re-check the NSRS modernization timeline before each offering
 - [x] Conceptualize each breakout topic with 5 minute summary
 - [x] SLAM animation (Scout Maps the Park)
