@@ -233,7 +233,7 @@ An interactive, eight-step animation of how SLAM works: look, roll and guess, ma
 ## To-do
 
 - [x] Independent review of the Florida standards module by a second PSM
-- [x] Expand the examples for post processing the bulk data with open source software and integrate with Civil 3D.
+- [ ] Expand the examples for post processing the bulk data with open source software and integrate with Civil 3D.
 - [x] Add the FDOT Mobile LiDAR (TML) accuracy tolerances for Types A, B and C from the current Surveying and Mapping Handbook
 - [x] Update the book's agenda to match the slide deck (SLAM as the 70-minute core block)
 - [ ] Replace the simulated capstone dataset with a real, de-identified project
